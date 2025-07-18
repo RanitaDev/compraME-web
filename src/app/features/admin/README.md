@@ -1,0 +1,2 @@
+# Admin
+Panel de administración.
