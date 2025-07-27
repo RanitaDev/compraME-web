@@ -1,8 +1,10 @@
 @import 'primeicons/primeicons.css';
-/* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap');
 
 body {
   background: #fff !important;
 }
-
+ ul li {
+  text-shadow: 1px 1px 10px rgba(18, 227, 255, 0.637);
+ }

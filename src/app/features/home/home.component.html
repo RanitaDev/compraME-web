@@ -1,0 +1,52 @@
+<div class="bg-gradient-to-b mx-10 flex-col items-center justify-center align-middle h-[65vh]">
+  <div class="flex items-center justify-center w-full h-[94%]">
+    <div class="flex-1 flex justify-center items-center">
+      <img src="assets/banner-bg.png" alt="" class="max-w-[60vh] object-contain">
+    </div>
+    <div class="flex-1 flex flex-col justify-center items-start px-8">
+      <span class="font-gabarito ml-1 font-medium text-l" style="color: #C5FDFF">LOS MEJORES</span>
+      <h1 class="font-gabarito font-bold text-5xl">PRODUCTOS DE</h1>
+      <h1 class="font-gabarito font-bold text-5xl mb-2">VANGUARDIA</h1>
+      <hr style="background: white;">
+      <p class="mt-2 mb-4 text-xs font-medium">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugit, doloremque consectetur tempore voluptatibus totam asperiores veniam autem sit qui id.</p>
+      <div class="flex gap-3">
+        <button class="bg-[#1B3A67] px-4 py-2 border border-[#6DB6E4] more" style="border-radius: 0 10px 10px 10px;">Conocer ahora</button>
+      </div>
+    </div>
+  </div>
+    <ul class="flex gap-3 justify-center items-center">
+      <li><i class="pi pi-circle-fill"></i></li>
+      <li><i class="pi pi-circle"></i></li>
+      <li><i class="pi pi-circle"></i></li>
+      <li><i class="pi pi-circle"></i></li>
+    </ul>
+</div>
+
+<div class="flex w-full gap-2 px-8 mt-4">
+  <ng-container>
+    <div class="flex-1 flex">
+      <app-cards
+        [title]="'Prueba uno'"
+        class="w-full"
+        several="info"
+        [buttonRounded]="true"
+        [buttonSize]="'small'"
+      ></app-cards>
+
+      <app-cards
+        [title]="'Prueba uno'"
+        class="w-full"
+        several="info"
+        [buttonRaised]="true"
+        [buttonSize]="'small'"
+      ></app-cards>
+
+      <app-cards
+        [title]="'Prueba uno'"
+        class="w-full"
+        several="info"
+        [noBorderButton]="true"
+      ></app-cards>
+    </div>
+  </ng-container>
+</div>

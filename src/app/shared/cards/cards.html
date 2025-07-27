@@ -1,0 +1,25 @@
+<div class="card-container">
+  <div class="card-content">
+    <!-- Imagen opcional -->
+    <div class="card-image" *ngIf="imageUrl">
+      <img [src]="imageUrl" [alt]="imageAlt" class="image">
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="card-body">
+      <h3 class="card-title">{{ title }}</h3>
+      <p class="card-description">{{ description }}</p>
+
+      <!-- Botón de acción -->
+       <p-button
+        [severity]="several"
+        [rounded]="buttonRounded"
+        [raised]="buttonRaised"
+        [text]="noBorderButton"
+        [size]="buttonSize"
+        label="{{ buttonText }}"
+        icon="{{ buttonIcon }}"
+       ></p-button>
+    </div>
+  </div>
+</div>
