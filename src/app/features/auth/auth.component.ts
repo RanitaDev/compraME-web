@@ -8,7 +8,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { DividerModule } from 'primeng/divider';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TooltipModule } from 'primeng/tooltip';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth',
@@ -34,7 +34,9 @@ export class AuthComponent {
 
   public checked: boolean = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -59,7 +61,9 @@ export class AuthComponent {
     if (this.loginForm.valid) {
       console.log('Login form:', this.loginForm.value);
       // Aquí implementarás la lógica de login
+      this.router.navigate(['/home']); // Redirigir al usuario a la página de inicio después del login exitoso
     }
+      this.router.navigate(['/home']);
   }
 
   onRegister() {

@@ -9,18 +9,3 @@ body {
   text-shadow: 1px 1px 10px rgba(18, 227, 255, 0.637);
  }
 
-/* Configuración global de PrimeNG Checkboxes */
-:root {
-  --p-checkbox-background: white;
-  --p-checkbox-hover-border-color: #1B3A67;
-  --p-checkbox-checked-background: #1B3A67;
-  --p-checkbox-checked-hover-background: #2563eb;
-  --p-checkbox-icon-color: white;
-  --p-checkbox-icon-checked-color: white;
-  --p-checkbox-checked-border-color: #1B3A67;
-  --p-checkbox-checked-hover-border-color: #2563eb;
-  --p-checkbox-icon-checked-hover-color: white;
-  --p-checkbox-border-color: #d1d5db;
-  --p-checkbox-focus-border-color: #1B3A67;
-  --p-checkbox-focus-ring-color: rgba(27, 58, 103, 0.1);
-}

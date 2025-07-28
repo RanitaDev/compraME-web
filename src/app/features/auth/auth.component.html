@@ -19,15 +19,16 @@
              [pTooltip]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? 'Ingresa un email válido' : ''"
              tooltipPosition="top"
              [tooltipOptions]="{showDelay: 0, hideDelay: 0, tooltipStyleClass: 'error-tooltip'}">
-          <input
-            pInputText
-            id="loginEmail"
-            type="email"
-            formControlName="email"
-            placeholder="tu@email.com"
-            class="form-input"
-            [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-          />
+            <input
+              pInputText
+              id="loginEmail"
+              type="email"
+              formControlName="email"
+              placeholder="tu@email.com"
+              class="form-input text-[#1B3A67] autofill:!text-[#34373a]"
+              [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              autocomplete="username"
+            />
         </div>
       </div>
 
@@ -57,6 +58,17 @@
               formControlName="rememberMe"
               inputId="rememberMe"
               styleClass="align-middle"
+              [ngStyle]="{
+                '--p-checkbox-background': 'white',
+                '--p-checkbox-hover-border-color': '#1B3A67',
+                '--p-checkbox-checked-background': '#1B3A67',
+                '--p-checkbox-checked-hover-background': '#9E4647',
+                '--p-checkbox-icon-color': 'white',
+                '--p-checkbox-icon-checked-color': 'white',
+                '--p-checkbox-checked-border-color': '#1B3A67',
+                '--p-checkbox-checked-hover-border-color': '#9E4647',
+                '--p-checkbox-icon-checked-hover-color': 'white'
+              }"
               binary="true"
               [size]="'small'"
               >
@@ -77,7 +89,9 @@
         label="Iniciar Sesión"
         styleClass="auth-button primary"
         icon="pi pi-sign-in"
-        [disabled]="loginForm.invalid">
+        [disabled]="loginForm.invalid"
+        (onClick)="onLogin()"
+        >
       </p-button>
 
       <p-divider align="center" styleClass="auth-divider">
