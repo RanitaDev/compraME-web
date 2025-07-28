@@ -1,0 +1,255 @@
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #1B3A67, #6DB6E4);
+}
+
+/* FORMULARIO */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group.half {
+  flex: 1;
+  min-height: 80px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  margin: 0;
+  font-family: 'Gabarito', sans-serif;
+  padding-left: 5px;
+}
+
+.form-input {
+  width: 100% !important;
+  padding: 0.875rem 1rem !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  background: #fafafa !important;
+  color: #1B3A67 !important;
+  font-weight: 600 !important;
+}
+
+.form-input:focus {
+  border-color: #6DB6E4 !important;
+  background: white !important;
+  box-shadow: 0 0 0 3px rgba(109, 182, 228, 0.1) !important;
+}
+
+.form-input.error {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+.form-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Password Input */
+:host ::ng-deep .password-input .p-inputtext {
+  width: 100% !important;
+  padding: 0.875rem 1rem !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  background: #fafafa !important;
+  width: 100% !important;
+  color: #1B3A67 !important;
+  font-weight: 700 !important;
+}
+
+:host ::ng-deep .password-input .p-inputtext:focus {
+  border-color: #6DB6E4 !important;
+  background: white !important;
+  box-shadow: 0 0 0 3px rgba(109, 182, 228, 0.1) !important;
+}
+
+:host ::ng-deep .password-input.error .p-inputtext {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+/* Error Messages */
+.error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -0.5rem 0 0.5rem 0;
+  gap: 1rem;
+}
+
+.forgot-password, .link {
+  color: #2c6283;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.forgot-password:hover, .link:hover {
+  color: #1B3A67;
+  text-decoration: underline;
+}
+
+
+/* Custom Toggle Button */
+:host ::ng-deep .custom-toggle {
+  width: fit-content !important;
+  height: 20px !important;
+  font-size: medium !important;
+}
+
+:host ::ng-deep .custom-toggle .p-button .p-button-icon {
+  display: none !important;
+}
+
+/* Botones */
+:host ::ng-deep .auth-button {
+  border-radius: 10px !important;
+  padding: 0.875rem 1.5rem !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  transition: all 0.5s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  width: 100% !important;
+}
+
+:host ::ng-deep .auth-button.primary {
+  background: linear-gradient(135deg, #1B3A67, #2563eb) !important;
+  color: white !important;
+}
+
+:host ::ng-deep .auth-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1B3A67) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 25px rgba(27, 58, 103, 0.3) !important;
+}
+
+:host ::ng-deep .auth-button.primary:disabled {
+  background: #d1d5db !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Social Buttons */
+.social-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+:host ::ng-deep .auth-button.social {
+  background: #f8fafc !important;
+  color: #374151 !important;
+  border: 2px solid #e5e7eb !important;
+  flex: 1 !important;
+}
+
+:host ::ng-deep .auth-button.social:hover {
+  background: #f1f5f9 !important;
+  border-color: #d1d5db !important;
+  transform: translateY(-1px) !important;
+}
+
+:host ::ng-deep .auth-button.social.google:hover {
+  border-color: #ea4335 !important;
+  color: #ea4335 !important;
+}
+
+:host ::ng-deep .auth-button.social.facebook:hover {
+  border-color: #1877f2 !important;
+  color: #1877f2 !important;
+}
+
+/* Divider */
+:host ::ng-deep .auth-divider .p-divider-content {
+  background: white !important;
+  padding: 0 1rem !important;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+    margin: 0;
+    border-radius: 16px;
+  }
+
+  .auth-title {
+    font-size: 1.75rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .social-buttons {
+    flex-direction: column;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+/* Tooltip de error personalizado */
+:host ::ng-deep .error-tooltip {
+  background: #ef4444 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+:host ::ng-deep .error-tooltip .p-tooltip-arrow {
+  border-top-color: #ef4444 !important;
+}

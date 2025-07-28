@@ -1,6 +1,6 @@
 .card-container {
+  max-width: 98%;
   cursor: pointer;
-  max-width: 400px;
   margin: 0 auto;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border-radius: 16px;

@@ -1,0 +1,247 @@
+<div class="flex align-items-center justify-center">
+  <div class="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md relative overflow-hidden auth-card">
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-[#243755] font-gabarito m-0 p-0">
+        {{ isLoginMode() ? 'Bienvenido de nuevo' : 'Crear cuenta' }}
+      </h1>
+      <p class="auth-subtitle m-0 p-0 text-lgc text-gray-500">
+        {{ isLoginMode() ? 'Inicia sesión en tu cuenta' : 'Únete a nuestra comunidad' }}
+      </p>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <form *ngIf="isLoginMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="flex flex-col gap-4">
+      <!-- INPUT DEL EMAIL -->
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
+        <label for="loginEmail" class="form-label">Correo electrónico o número de teléfono</label>
+        <div class="input-wrapper"
+             [pTooltip]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? 'Ingresa un email válido' : ''"
+             tooltipPosition="top"
+             [tooltipOptions]="{showDelay: 0, hideDelay: 0, tooltipStyleClass: 'error-tooltip'}">
+          <input
+            pInputText
+            id="loginEmail"
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+            class="form-input"
+            [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          />
+        </div>
+      </div>
+
+      <!-- INPUT DE LA CONTRASEÑA -->
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px] mb-2">
+        <label for="loginPassword" class="form-label">Contraseña</label>
+        <!-- INPUT DE LA CONTRASEÑ -->
+        <div class="input-wrapper"
+          [pTooltip]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched ? 'La contraseña debe tener al menos 6 caracteres' : ''"
+          tooltipPosition="top"
+             [tooltipOptions]="{showDelay: 0, hideDelay: 0, tooltipStyleClass: 'error-tooltip'}">
+          <p-password
+            formControlName="password"
+            placeholder="••••••••"
+            styleClass="password-input w-full"
+            [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            [feedback]="false"
+            [toggleMask]="true">
+          </p-password>
+        </div>
+      </div>
+
+      <!-- OPCIONES DE FORMULARIO -->
+      <div class="form-options flex items-center justify-between">
+        <div class="flex items-center gap-2 justify-center">
+            <p-checkbox
+              formControlName="rememberMe"
+              inputId="rememberMe"
+              styleClass="align-middle"
+              binary="true"
+              [size]="'small'"
+              >
+          </p-checkbox>
+          <label
+            for="rememberMe"
+            class="text-sm text-gray-600 cursor-pointer select-none flex items-center h-full"
+            (click)="loginForm.get('rememberMe')?.setValue(!loginForm.get('rememberMe')?.value)">
+            Recordar usuario
+          </label>
+        </div>
+        <a href="#" class="forgot-password text-sm text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <!-- BOTÓN DE INICIO / REGISTRO -->
+      <p-button
+        type="submit"
+        label="Iniciar Sesión"
+        styleClass="auth-button primary"
+        icon="pi pi-sign-in"
+        [disabled]="loginForm.invalid">
+      </p-button>
+
+      <p-divider align="center" styleClass="auth-divider">
+        <span class="divider-text text-[#585a5c] text-[0.95rem]">o continúa con</span>
+      </p-divider>
+
+      <div class="social-buttons flex gap-2 w-[100%] justify-between">
+        <p-button
+          type="button"
+          label="Google"
+          icon="pi pi-google"
+          styleClass="auth-button social google">
+        </p-button>
+        <p-button
+          type="button"
+          label="Facebook"
+          icon="pi pi-facebook"
+          styleClass="auth-button social facebook">
+        </p-button>
+      </div>
+    </form>
+
+    <!-- FORM REGISTRO -->
+    <form *ngIf="!isLoginMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form">
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="firstName" class="form-label">Nombre</label>
+          <div class="input-wrapper w-full"
+               [pTooltip]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched ? 'Nombre requerido' : ''"
+               tooltipPosition="top"
+               [tooltipOptions]="{showDelay: 0, hideDelay: 0, tooltipStyleClass: 'error-tooltip'}">
+            <input
+              pInputText
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              placeholder="Juan"
+              class="form-input"
+              [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+            />
+          </div>
+        </div>
+
+        <div class="form-group half">
+          <label for="lastName" class="form-label">Apellido</label>
+          <div class="input-wrapper"
+               [pTooltip]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched ? 'Apellido requerido' : ''"
+               tooltipPosition="top"
+               [tooltipOptions]="{showDelay: 0, hideDelay: 0, tooltipStyleClass: 'error-tooltip'}">
+            <input
+              pInputText
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              placeholder="Pérez"
+              class="form-input"
+              [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="registerEmail" class="form-label">Correo electrónico</label>
+        <input
+          pInputText
+          id="registerEmail"
+          type="email"
+          formControlName="email"
+          placeholder="tu@email.com"
+          class="form-input"
+          [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        />
+        <small
+          *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          class="error-message">
+          Ingresa un email válido
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="registerPassword" class="form-label">Contraseña</label>
+        <p-password
+          formControlName="password"
+          placeholder="••••••••"
+          styleClass="password-input"
+          [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          [feedback]="true"
+          [toggleMask]="true">
+        </p-password>
+        <small
+          *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          class="error-message">
+          La contraseña debe tener al menos 8 caracteres
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+        <p-password
+          formControlName="confirmPassword"
+          placeholder="••••••••"
+          styleClass="password-input"
+          [class.error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+          [feedback]="false"
+          [toggleMask]="true">
+        </p-password>
+        <small
+          *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+          class="error-message">
+          Las contraseñas no coinciden
+        </small>
+      </div>
+
+      <div class="checkbox-wrapper terms">
+        <p-checkbox
+          formControlName="acceptTerms"
+          inputId="acceptTerms"
+          styleClass="custom-checkbox">
+        </p-checkbox>
+        <label for="acceptTerms" class="checkbox-label">
+          Acepto los <a href="#" class="link">términos y condiciones</a> y la <a href="#" class="link">política de privacidad</a>
+        </label>
+      </div>
+
+      <p-button
+        type="submit"
+        label="Crear Cuenta"
+        styleClass="auth-button primary"
+        [disabled]="registerForm.invalid">
+      </p-button>
+
+      <p-divider align="center">
+        <span class="divider-text">o regístrate con</span>
+      </p-divider>
+
+      <div class="social-buttons">
+        <p-button
+          type="button"
+          label="Google"
+          icon="pi pi-google"
+          styleClass="auth-button social google">
+        </p-button>
+        <p-button
+          type="button"
+          label="Facebook"
+          icon="pi pi-facebook"
+          styleClass="auth-button social facebook">
+        </p-button>
+      </div>
+    </form>
+
+    <!-- SWITCH A LOGIN/REGISTER -->
+    <div class="auth-footer text-center mt-8 border-t border-gray-200 pt-4">
+      <p class="toggle-text text-gray-400 text-s m-0 p-0">
+        {{ isLoginMode() ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?' }}
+        <p-button
+          label="{{ isLoginMode() ? 'Regístrate' : 'Inicia sesión' }}"
+          (click)="toggleMode()"
+          size="small"
+          text="true"
+          severity="info"
+        ></p-button>
+      </p>
+    </div>
+  </div>
+</div>
