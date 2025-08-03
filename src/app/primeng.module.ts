@@ -1,16 +1,38 @@
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-// Importa aquí solo los módulos de PrimeNG que necesites
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
-// Agrega más módulos según los vayas necesitando
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
+// Importa aquí solo los módulos de PrimeNG que necesites
 
 @NgModule({
+  imports: [
+    ButtonModule,
+    TooltipModule,
+    TableModule,
+    FloatLabelModule,
+    CardModule,
+    //ANGULAR
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule
+  ],
   exports: [
     ButtonModule,
-    InputTextModule,
-    CardModule
-    // Agrega aquí los módulos importados
+    TooltipModule,
+    TableModule,
+    FloatLabelModule,
+    CardModule,
+    //ANGULAR
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule
+  ],
+  declarations: [
+    // Aquí puedes declarar componentes si es necesario
   ]
 })
 export class PrimeNgModule {}
