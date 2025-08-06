@@ -1,0 +1,107 @@
+<div class="product-slider-container" *ngIf="!isLoading">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Cargando productos destacados...</p>
+  </div>
+
+  <!-- Product Slider -->
+  <div *ngIf="!isLoading && currentProduct" class="slider-content">
+
+    <!-- Product Image Container -->
+    <div class="image-container">
+      <div class="product-image-wrapper"
+           [class.transitioning]="isTransitioning">
+        <img
+          [src]="currentProduct.image"
+          [alt]="currentProduct.title"
+          class="product-image"
+          loading="lazy">
+      </div>
+    </div>
+
+    <!-- Product Info Section -->
+    <div class="product-info">
+      <div class="product-details">
+        <h1 class="product-title"
+            [class.transitioning]="isTransitioning">
+          {{ currentProduct.title }}
+        </h1>
+
+        <p class="product-description"
+           [class.transitioning]="isTransitioning">
+          {{ currentProduct.description }}
+        </p>
+
+        <div class="product-price"
+             [class.transitioning]="isTransitioning">
+          <span class="price-amount">${{ currentProduct.price | number:'1.2-2' }}</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons"
+             [class.transitioning]="isTransitioning">
+          <p-button
+            label="Ver detalles"
+            severity="secondary"
+            size="large"
+            styleClass="details-btn"
+            (onClick)="goToProductDetails()">
+          </p-button>
+
+          <p-button
+            icon="pi pi-shopping-cart"
+            severity="primary"
+            size="large"
+            styleClass="cart-btn"
+            [rounded]="true"
+            (onClick)="addToCart()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="navigation-controls">
+      <p-button
+        icon="pi pi-chevron-left"
+        severity="secondary"
+        size="large"
+        [rounded]="true"
+        styleClass="nav-btn prev-btn"
+        [disabled]="isTransitioning"
+        (onClick)="previousProduct()">
+      </p-button>
+
+      <p-button
+        icon="pi pi-chevron-right"
+        severity="secondary"
+        size="large"
+        [rounded]="true"
+        styleClass="nav-btn next-btn"
+        [disabled]="isTransitioning"
+        (onClick)="nextProduct()">
+      </p-button>
+    </div>
+
+    <!-- Product Indicators -->
+    <div class="product-indicators">
+      <span
+        *ngFor="let product of featuredProducts; let i = index"
+        class="indicator"
+        [class.active]="i === currentProductIndex"
+        (click)="selectProduct(i)">
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!isLoading && featuredProducts.length === 0" class="empty-state">
+  <div class="empty-content">
+    <i class="pi pi-box" style="font-size: 4rem; color: #6b7280;"></i>
+    <h2>No hay productos destacados</h2>
+    <p>Por el momento no tenemos productos destacados disponibles.</p>
+  </div>
+</div>

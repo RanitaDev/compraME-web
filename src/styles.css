@@ -1,11 +1,13 @@
+/* Imports - SIEMPRE deben ir al principio del archivo */
 @import 'primeicons/primeicons.css';
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap');
+@import "tailwindcss";
 
+/* Estilos globales */
 body {
-  background: #fff !important;
+  background: #000000 !important;
 }
- ul li {
-  text-shadow: 1px 1px 10px rgba(18, 227, 255, 0.637);
- }
 
+ul li {
+  text-shadow: 1px 1px 10px rgba(18, 227, 255, 0.637);
+}
