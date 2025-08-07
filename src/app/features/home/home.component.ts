@@ -25,6 +25,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   isTransitioning = false;
   private subscription: Subscription = new Subscription();
 
+  public index: number = 0;
+
   constructor(
     private backgroundService: BackgroundService,
     private productsService: ProductsService
