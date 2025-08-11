@@ -6,12 +6,11 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { IUser, IAuthResponse, ILoginRequest, IRegisterRequest } from '../interfaces/auth.interface';   
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl || 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl || 'http://localhost:3010';
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
 
@@ -28,6 +27,7 @@ export class AuthService {
   ) {
     // Verificar si el token sigue siendo válido al inicializar el servicio
     this.checkTokenValidity();
+    console.log('🔧 AuthService configurado con URL:', this.apiUrl);
   }
 
   /**
@@ -38,13 +38,31 @@ export class AuthService {
       'Content-Type': 'application/json'
     });
 
-    return this.http.post<IAuthResponse>(`${this.apiUrl}/auth/register`, registerData, { headers })
+    // Remover confirmPassword antes de enviar (el backend no lo acepta)
+    const { confirmPassword, ...dataToSend } = registerData;
+    
+    console.log('📤 AuthService - Datos enviados:', dataToSend);
+    console.log('🔗 AuthService - URL:', `${this.apiUrl}/auth/register`);
+
+    return this.http.post<any>(`${this.apiUrl}/auth/register`, dataToSend, { headers })
       .pipe(
         map(response => {
-          if (response.token && response.user) {
-            this.setSession(response.token, response.user);
-          }
-          return response;
+          console.log('✅ AuthService - Respuesta recibida:', response);
+          
+          // Crear respuesta compatible con IAuthResponse
+          const authResponse: IAuthResponse = {
+            token: this.generateTempToken(response),
+            user: {
+              id: response._id || response.id || 'temp-id',
+              email: response.email,
+              name: response.name,
+              role: response.role || 'user'
+            },
+            message: 'Usuario registrado exitosamente'
+          };
+          
+          this.setSession(authResponse.token, authResponse.user);
+          return authResponse;
         }),
         catchError(this.handleError)
       );
@@ -74,18 +92,7 @@ export class AuthService {
    * Cerrar sesión
    */
   logout(): void {
-    // Llamar al endpoint de logout si existe
-    this.http.post(`${this.apiUrl}/auth/logout`, {}, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: () => {
-        this.clearSession();
-      },
-      error: () => {
-        // Incluso si falla la llamada al servidor, limpiamos la sesión local
-        this.clearSession();
-      }
-    });
+    this.clearSession();
   }
 
   /**
@@ -114,55 +121,6 @@ export class AuthService {
    */
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
-  }
-
-  /**
-   * Refrescar el token (si tu API lo soporta)
-   */
-  refreshToken(): Observable<IAuthResponse> {
-    const refreshToken = localStorage.getItem('refresh_token');
-    
-    if (!refreshToken) {
-      return throwError(() => new Error('No refresh token available'));
-    }
-
-    return this.http.post<IAuthResponse>(`${this.apiUrl}/auth/refresh`, {
-      refreshToken: refreshToken
-    }).pipe(
-      map(response => {
-        if (response.token && response.user) {
-          this.setSession(response.token, response.user);
-        }
-        return response;
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  /**
-   * Verificar si el email está disponible
-   */
-  checkEmailAvailability(email: string): Observable<{ available: boolean }> {
-    return this.http.get<{ available: boolean }>(`${this.apiUrl}/auth/check-email/${email}`)
-      .pipe(catchError(this.handleError));
-  }
-
-  /**
-   * Solicitar restablecimiento de contraseña
-   */
-  forgotPassword(email: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/forgot-password`, { email })
-      .pipe(catchError(this.handleError));
-  }
-
-  /**
-   * Restablecer contraseña
-   */
-  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/reset-password`, {
-      token,
-      password: newPassword
-    }).pipe(catchError(this.handleError));
   }
 
   // MÉTODOS PRIVADOS
@@ -262,6 +220,10 @@ export class AuthService {
   private handleError = (error: any): Observable<never> => {
     let errorMessage = 'Ha ocurrido un error inesperado';
     
+    console.error('🚨 Error en AuthService:', error);
+    console.error('📊 Status:', error.status);
+    console.error('📝 Error body:', error.error);
+    
     if (error.error instanceof ErrorEvent) {
       // Error del lado del cliente
       errorMessage = `Error: ${error.error.message}`;
@@ -269,7 +231,8 @@ export class AuthService {
       // Error del lado del servidor
       switch (error.status) {
         case 400:
-          errorMessage = error.error?.message || 'Datos inválidos';
+          errorMessage = error.error?.message || 'Datos inválidos - Verifica los campos';
+          console.error('❌ Error 400 - Detalles:', error.error);
           break;
         case 401:
           errorMessage = 'Credenciales inválidas';
@@ -292,7 +255,28 @@ export class AuthService {
       }
     }
 
-    console.error('Error en AuthService:', error);
     return throwError(() => new Error(errorMessage));
   };
+
+  /**
+   * Generar token temporal cuando el backend no devuelve uno
+   */
+  private generateTempToken(userData: any): string {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const payload = {
+      sub: userData._id || userData.id || 'temp-id',
+      email: userData.email,
+      name: userData.name,
+      role: userData.role || 'user',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 horas
+    };
+
+    // Generar un JWT básico (no es seguro, solo para desarrollo)
+    const encodedHeader = btoa(JSON.stringify(header));
+    const encodedPayload = btoa(JSON.stringify(payload));
+    const signature = 'temp-signature';
+
+    return `${encodedHeader}.${encodedPayload}.${signature}`;
+  }
 }

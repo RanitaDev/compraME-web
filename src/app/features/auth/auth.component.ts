@@ -65,7 +65,7 @@ export class AuthComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
-      acceptTerms: [false, [Validators.requiredTrue]]
+      //acceptTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -120,6 +120,7 @@ export class AuthComponent {
   }
 
   onRegister() {
+    console.log('Llegué al registro:');
     if (this.registerForm.valid) {
       const registerData: RegisterRequest = {
         name: `${this.registerForm.value.firstName} ${this.registerForm.value.lastName}`,

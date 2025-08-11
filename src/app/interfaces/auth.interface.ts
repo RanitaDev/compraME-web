@@ -2,6 +2,7 @@ export interface IUser {
   id: string;
   email: string;
   name: string;
+  lastName?: string; // Hacer opcional
   role?: string;
 }
 
