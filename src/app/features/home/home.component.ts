@@ -6,6 +6,7 @@ import { ProductService } from '../../services/products.service';
 import { Subscription } from 'rxjs';
 import { CarouselBannerComponent } from './components/carousel-banner/carousel-banner.component';
 import { CategoryCardsComponent } from './components/category-cards/category-cards.component';
+import { ProductCardsComponent } from '../products/product-cards.component/product-cards.component';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +15,8 @@ import { CategoryCardsComponent } from './components/category-cards/category-car
     CommonModule,
     PrimeNgModule,
     CarouselBannerComponent,
-    CategoryCardsComponent
+    CategoryCardsComponent,
+    ProductCardsComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
