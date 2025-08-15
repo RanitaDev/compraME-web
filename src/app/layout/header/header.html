@@ -27,9 +27,15 @@
         text
         severity="info"
         styleClass="w-12 h-12"
+        (onClick)="abrirCarrito()"
       ></p-button>
       <p-avatar icon="pi pi-user text-gray-200" class="w-12 h-12" shape="circle" />
     </div>
   </div>
 </div>
 <div class="border-b border-gray-300"></div>
+
+<app-cart-modal
+  (modalClosed)="modalCarritoCerrada()"
+  (checkoutRequested)="onCheckout()">
+</app-cart-modal>
