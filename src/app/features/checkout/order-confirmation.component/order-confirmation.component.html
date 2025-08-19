@@ -1,0 +1,285 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-3xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Confirmar pedido</h1>
+      <p class="text-gray-600">Revisa los detalles antes de finalizar tu compra</p>
+    </div>
+
+    @if (orderData()) {
+      <!-- Información del pedido -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
+
+        <!-- Header del pedido -->
+        <div class="border-b border-gray-200 p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Pedido #{{ orderData()!.ordenId }}</h2>
+              <p class="text-sm text-gray-600">{{ formatDate(orderData()!.fecha) }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span class="text-sm font-medium text-gray-700 capitalize">{{ orderData()!.estado }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dirección de entrega -->
+        <div class="border-b border-gray-200 p-6">
+          <h3 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            Dirección de entrega
+          </h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900">{{ orderData()!.direccionEntrega.nombreCompleto }}</p>
+            <p class="text-gray-700">{{ orderData()!.direccionEntrega.direccionCompleta }}</p>
+            <p class="text-gray-600">Tel: {{ orderData()!.direccionEntrega.telefono }}</p>
+            @if (orderData()!.direccionEntrega.referencias) {
+              <p class="text-sm text-gray-600 mt-1">
+                <span class="font-medium">Referencias:</span> {{ orderData()!.direccionEntrega.referencias }}
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="border-b border-gray-200 p-6">
+          <h3 class="font-medium text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 11V7a4 4 0 0 0-8 0v4H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-3z"/>
+            </svg>
+            Productos ({{ getTotalItems() }})
+          </h3>
+          <div class="space-y-4">
+            @for (producto of orderData()!.productos; track producto.idProducto) {
+              <div class="flex gap-4">
+                <div class="flex-shrink-0">
+                  <img
+                    [src]="producto.imagen"
+                    [alt]="producto.nombre"
+                    class="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                  >
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium text-gray-900 line-clamp-2">{{ producto.nombre }}</h4>
+                  <div class="flex items-center justify-between mt-2">
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                      <span>Cantidad: {{ producto.cantidad }}</span>
+                      <span>Precio: ${{ formatPrice(producto.precio) }}</span>
+                    </div>
+                    <p class="font-semibold text-gray-900">${{ formatPrice(producto.subtotal) }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="border-b border-gray-200 p-6">
+          <h3 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="14" x="2" y="5" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            Método de pago
+          </h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center gap-3">
+              @switch (orderData()!.metodoPago.tipo) {
+                @case ('tarjeta') {
+                  <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 2v2H4V6h16zm0 6H4v6h16v-6z"/>
+                    </svg>
+                  </div>
+                }
+                @case ('oxxo') {
+                  <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <span class="text-red-600 font-bold text-xs">OX</span>
+                  </div>
+                }
+                @case ('transferencia') {
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                }
+              }
+              <div>
+                <p class="font-medium text-gray-900">{{ orderData()!.metodoPago.nombre }}</p>
+                @if (orderData()!.metodoPago.ultimosDigitos) {
+                  <p class="text-sm text-gray-600">**** {{ orderData()!.metodoPago.ultimosDigitos }}</p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entrega estimada -->
+        <div class="p-6">
+          <h3 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+              <path d="M6 10V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"/>
+            </svg>
+            Entrega estimada
+          </h3>
+          <div class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v10l3-3m6 1a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-medium text-blue-900">
+                  {{ formatDate(orderData()!.entregaEstimada.fechaMinima) }} -
+                  {{ formatDate(orderData()!.entregaEstimada.fechaMaxima) }}
+                </p>
+                <p class="text-sm text-blue-700">{{ orderData()!.entregaEstimada.diasHabiles }} días hábiles</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen de totales -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-8">
+        <div class="p-6">
+          <h3 class="font-semibold text-gray-900 mb-4">Resumen del pedido</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>${{ formatPrice(orderData()!.resumen.subtotal) }}</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Impuestos (IVA 16%)</span>
+              <span>${{ formatPrice(orderData()!.resumen.impuestos) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span
+                [class.text-gray-600]="orderData()!.resumen.envio > 0"
+                [class.text-green-600]="orderData()!.resumen.envio === 0"
+              >
+                Envío
+              </span>
+              <span
+                [class.text-gray-600]="orderData()!.resumen.envio > 0"
+                [class.text-green-600]="orderData()!.resumen.envio === 0"
+                [class.font-medium]="orderData()!.resumen.envio === 0"
+              >
+                {{ orderData()!.resumen.envio === 0 ? 'GRATIS' : '$' + formatPrice(orderData()!.resumen.envio) }}
+              </span>
+            </div>
+            @if ((orderData()!.resumen.descuentos ?? 0) > 0) {
+              <div class="flex justify-between text-green-600">
+                <span>Descuentos</span>
+                <span>-${{ formatPrice(orderData()!.resumen.descuentos ?? 0) }}</span>
+              </div>
+            }
+            <hr class="my-3">
+            <div class="flex justify-between text-xl font-bold text-gray-900">
+              <span>Total a pagar</span>
+              <span>${{ formatPrice(orderData()!.resumen.total) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de compra interactivo -->
+      <div class="sticky bottom-4">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-lg p-6">
+          <div class="text-center mb-4">
+            <p class="text-lg font-semibold text-gray-900 mb-1">Total: ${{ formatPrice(orderData()!.resumen.total) }}</p>
+            <p class="text-sm text-gray-600">Tu pedido será procesado de forma segura</p>
+          </div>
+
+          <!-- Botón principal -->
+          <button
+            class="purchase-button w-full relative overflow-hidden bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            [disabled]="isProcessing() || isSuccess()"
+            (click)="processPurchase()"
+            type="button"
+          >
+            <!-- Estados del botón -->
+            @if (!isProcessing() && !isSuccess()) {
+              <span class="flex items-center justify-center gap-3 text-lg">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Realizar compra
+              </span>
+            }
+
+            @if (isProcessing() && !isSuccess()) {
+              <span class="flex items-center justify-center gap-3 text-lg">
+                <svg class="w-6 h-6 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Procesando compra...
+              </span>
+            }
+
+            @if (isSuccess()) {
+              <span class="flex items-center justify-center gap-3 text-lg">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                ¡Compra realizada!
+              </span>
+            }
+
+            <!-- Barra de progreso -->
+            @if (isProcessing()) {
+              <div class="absolute bottom-0 left-0 h-1 bg-white bg-opacity-30 overflow-hidden w-full">
+                <div class="progress-bar h-full bg-white"></div>
+              </div>
+            }
+
+            <!-- Efecto de ondas -->
+            <div class="button-ripple"></div>
+          </button>
+
+          <!-- Indicadores de seguridad -->
+          <div class="flex items-center justify-center gap-6 mt-4 text-xs text-gray-500">
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L9 9l-8 .75L8.5 16 7 21l5-3 5 3-1.5-5L23 9.75 15 9z"/>
+              </svg>
+              <span>Pago seguro SSL</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <span>Garantía de devolución</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <svg class="w-4 h-4 text-purple-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <span>Protección al comprador</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    } @else {
+      <!-- Loading state -->
+      <div class="flex items-center justify-center py-16">
+        <div class="text-center">
+          <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-gray-600">Cargando información del pedido...</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
