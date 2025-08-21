@@ -1,8 +1,10 @@
+import { routes } from './../../app.routes';
 // footer.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate, stagger, query } from '@angular/animations';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
@@ -47,12 +49,20 @@ import { trigger, transition, style, animate, stagger, query } from '@angular/an
     ])
   ]
 })
+
 export class FooterComponent implements OnInit {
   newsletterEmail: string = '';
   currentYear: number = new Date().getFullYear();
+  public navigationLinks: Array<{ name: string; href: string; icon: string }> = [];
+  public supportLinks: Array<{ name: string; href: string; icon: string }> = [];
+  public legalLinks: Array<{ name: string; href: string; icon: string }> = [];
+  public socialLinks: Array<{ name: string; href: string; platform: string }> = [];
 
-  // Navigation links data
-  navigationLinks = [
+  constructor(
+    public router: Router
+  ){
+    // Navigation links data
+  this.navigationLinks = [
     { name: 'Inicio', href: '#', icon: 'home' },
     { name: 'Productos', href: '#', icon: 'products' },
     { name: 'Categorías', href: '#', icon: 'categories' },
@@ -62,7 +72,7 @@ export class FooterComponent implements OnInit {
   ];
 
   // Help & Support links data
-  supportLinks = [
+  this.supportLinks = [
     { name: 'Preguntas Frecuentes', href: '#', icon: 'faq' },
     { name: 'Centro de Ayuda', href: '#', icon: 'help' },
     { name: 'Contacto', href: '#', icon: 'contact' },
@@ -72,7 +82,7 @@ export class FooterComponent implements OnInit {
   ];
 
   // Legal & Privacy links data
-  legalLinks = [
+  this.legalLinks = [
     { name: 'Política de Privacidad', href: '#', icon: 'privacy' },
     { name: 'Términos y Condiciones', href: '#', icon: 'terms' },
     { name: 'Política de Cookies', href: '#', icon: 'cookies' },
@@ -82,12 +92,13 @@ export class FooterComponent implements OnInit {
   ];
 
   // Social media links data
-  socialLinks = [
+  this.socialLinks = [
     { name: 'Facebook', href: '#', platform: 'facebook' },
     { name: 'Instagram', href: '#', platform: 'instagram' },
     { name: 'Twitter', href: '#', platform: 'twitter' },
     { name: 'YouTube', href: '#', platform: 'youtube' }
   ];
+  }
 
   ngOnInit(): void {
     // Inicialización del componente
@@ -157,4 +168,11 @@ export class FooterComponent implements OnInit {
       action();
     }
   }
+
+  public navegar(ruta: string): void {
+    console.log('Navegando a:', ruta);
+    const orderId = 'ORD-87654321';
+    this.router.navigate([`${ruta}/${orderId}`]);
+  }
+
 }

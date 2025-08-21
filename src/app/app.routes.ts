@@ -24,7 +24,15 @@ export const routes: Routes = [
     loadComponent: () => import('./features/checkout/checkout.component/checkout.component').then(m => m.CheckoutComponent)
   },
   {
-    path: 'checkout/order-confirmation',
+    path: 'checkout/order-confirmation/:orderId',
     loadComponent: () => import('./features/checkout/order-confirmation.component/order-confirmation.component').then(m => m.OrderConfirmationComponent)
+  },
+  {
+    path: 'checkout/purchase-success/:orderId',
+    loadComponent: () => import('./features/checkout/purchase-success.component/purchase-success.component').then(m => m.PurchaseSuccessComponent)
+  },
+  {
+    path: 'orders/order-detail',
+    loadComponent: () => import('./features/orders/order-detail.component/order-detail.component').then(m => m.OrderDetailComponent)
   }
 ];

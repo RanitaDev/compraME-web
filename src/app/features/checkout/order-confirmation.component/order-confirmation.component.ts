@@ -1,6 +1,6 @@
-import { Component, OnInit, Input, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { IOrderConfirmation } from '../../../interfaces/order-confirmation.interface';
 
 @Component({
@@ -12,15 +12,24 @@ import { IOrderConfirmation } from '../../../interfaces/order-confirmation.inter
   styleUrls: ['./order-confirmation.component.css']
 })
 export class OrderConfirmationComponent implements OnInit {
-  @Input() orderId?: string;
+  orderId?: string;
 
   orderData = signal<IOrderConfirmation | null>(null);
   isProcessing = signal(false);
   isSuccess = signal(false);
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
+    // Obtener el orderId de los parámetros de la ruta
+    this.route.paramMap.subscribe(params => {
+      this.orderId = params.get('orderId') || undefined;
+      console.log('Order ID recibido:', this.orderId);
+    });
+    
     this.loadOrderData();
   }
 
