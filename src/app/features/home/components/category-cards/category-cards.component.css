@@ -1,0 +1,116 @@
+/* category-cards.component.css */
+
+/* Efectos adicionales para las category cards */
+.category-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto de profundidad en hover */
+.category-card:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Animación del blur en la imagen */
+.category-card img {
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: blur(2px);
+}
+
+.category-card:hover img {
+  filter: blur(0px);
+  transform: scale(1.1);
+}
+
+/* Efecto glassmorphism para el contenido en hover */
+.category-card .hover-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación suave para el texto */
+.category-card h3 {
+  transition: all 0.5s ease;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.category-card:hover h3 {
+  text-shadow: none;
+}
+
+/* Efecto de partículas decorativas */
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.category-card:hover::before {
+  opacity: 1;
+}
+
+/* Animación para el botón CTA */
+.cta-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card:hover .cta-button {
+  animation: pulse-scale 2s infinite;
+}
+
+@keyframes pulse-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .category-card {
+    height: 200px;
+  }
+
+  .category-card h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-card {
+    height: 180px;
+    border-radius: 1.5rem;
+  }
+}
+
+/* Efecto de loading skeleton (opcional) */
+.category-card.loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

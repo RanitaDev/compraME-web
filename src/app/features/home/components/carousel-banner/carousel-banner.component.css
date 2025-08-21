@@ -1,0 +1,107 @@
+/* carousel-banner.component.css */
+
+/* Efectos adicionales que complementan Tailwind */
+.carousel-container {
+  transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effect para mostrar las flechas de navegación */
+.carousel-container:hover .nav-arrow {
+  opacity: 1 !important;
+}
+
+/* Animaciones personalizadas para transiciones suaves */
+.carousel-slide-enter {
+  animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Efecto de glassmorphism para el contenido */
+.content-glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animación de pulso sutil para los dots activos */
+.dot-active {
+  animation: pulse-gentle 2s infinite;
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Transición suave para el cambio de colores de fondo */
+.bg-transition {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Media queries para diseño responsivo adicional */
+@media (max-width: 768px) {
+  .carousel-container {
+    margin: 0.5rem auto;
+    border-radius: 1rem;
+    height: 50vh;
+  }
+
+  .content-section {
+    padding: 1.5rem;
+  }
+
+  .product-title {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .nav-arrow {
+    width: 2.5rem;
+    height: 2.5rem;
+    opacity: 1 !important;
+  }
+}
+
+/* Override PrimeNG button styles for carousel */
+::ng-deep .carousel-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.75rem !important;
+  padding: 1rem 1.5rem !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 2px solid transparent !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
+
+::ng-deep .carousel-btn-details {
+  background: rgb(255, 255, 255) !important;
+  backdrop-filter: blur(8px) !important;
+  border-color: var(--border-color) !important;
+}
+
+::ng-deep .carousel-btn-details:hover:not(:disabled) {
+  background: rgb(243, 244, 246) !important;
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.10) !important;
+  border-color: var(--border-color) !important;
+}

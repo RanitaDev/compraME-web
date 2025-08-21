@@ -1,0 +1,136 @@
+/* Animaciones personalizadas */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Clases de animación */
+.animate-slide-up {
+  animation: slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-in-up-1 {
+  animation: fade-in-up 0.6s ease 0.2s both;
+}
+
+.animate-fade-in-up-2 {
+  animation: fade-in-up 0.6s ease 0.3s both;
+}
+
+.animate-fade-in-up-3 {
+  animation: fade-in-up 0.6s ease 0.4s both;
+}
+
+.animate-fade-in-up-4 {
+  animation: fade-in-up 0.6s ease 0.5s both;
+}
+
+.animate-fade-in-up-5 {
+  animation: fade-in-up 0.6s ease 0.6s both;
+}
+
+.animate-fade-in-up-6 {
+  animation: fade-in-up 0.6s ease 0.7s both;
+}
+
+/* Estados de imagen */
+.image-loaded {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* Thumbnails */
+.thumbnail-active {
+  border-color: #667eea !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Estados de stock */
+.stock-normal {
+  background-color: #f0fff4;
+  color: #22543d;
+  border-color: #9ae6b4;
+}
+
+.stock-low {
+  background-color: #fff5f5;
+  color: #742a2a;
+  border-color: #feb2b2;
+}
+
+/* Botones */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}

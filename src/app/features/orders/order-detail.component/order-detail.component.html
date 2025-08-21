@@ -1,0 +1,321 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+
+    @if (orderDetail()) {
+      <!-- Header -->
+      <div class="mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+              Pedido #{{ orderDetail()!.order.orderNumber }}
+            </h1>
+            <p class="text-gray-600">
+              Realizado el {{ formatDate(orderDetail()!.order.createdAt!) }}
+            </p>
+          </div>
+
+          <!-- Estado del pedido -->
+          <div class="flex items-center gap-3">
+            <div
+              class="px-4 py-2 rounded-full text-sm font-medium"
+              [class.bg-yellow-100]="orderDetail()!.order.status === 'pending'"
+              [class.text-yellow-800]="orderDetail()!.order.status === 'pending'"
+              [class.bg-green-100]="orderDetail()!.order.status === 'completed'"
+              [class.text-green-800]="orderDetail()!.order.status === 'completed'"
+              [class.bg-red-100]="orderDetail()!.order.status === 'canceled'"
+              [class.text-red-800]="orderDetail()!.order.status === 'canceled'"
+            >
+              {{ getStatusLabel(orderDetail()!.order.status) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Navegación -->
+        <nav class="flex items-center gap-2 text-sm text-gray-600">
+          <button
+            class="hover:text-gray-900 transition-colors duration-200"
+            (click)="goBack()"
+            type="button"
+          >
+            ← Volver a mis pedidos
+          </button>
+        </nav>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Información principal -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Timeline del pedido -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado del pedido</h2>
+
+            <div class="space-y-4">
+              @for (step of orderDetail()!.timeline; track step.id; let i = $index) {
+                <div class="flex gap-4">
+                  <div class="flex flex-col items-center">
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center border-2"
+                      [class.bg-green-500]="step.isCompleted"
+                      [class.border-green-500]="step.isCompleted"
+                      [class.text-white]="step.isCompleted"
+                      [class.border-gray-300]="!step.isCompleted"
+                      [class.text-gray-400]="!step.isCompleted"
+                    >
+                      @if (step.isCompleted) {
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9 12l2 2 4-4"/>
+                        </svg>
+                      } @else {
+                        <span class="w-2 h-2 bg-current rounded-full"></span>
+                      }
+                    </div>
+                    @if (i < orderDetail()!.timeline.length - 1) {
+                      <div
+                        class="w-0.5 h-8 mt-2"
+                        [class.bg-green-500]="step.isCompleted"
+                        [class.bg-gray-200]="!step.isCompleted"
+                      ></div>
+                    }
+                  </div>
+
+                  <div class="flex-1 pb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <h3
+                        class="font-medium"
+                        [class.text-gray-900]="step.isCompleted"
+                        [class.text-gray-500]="!step.isCompleted"
+                      >
+                        {{ step.status }}
+                      </h3>
+                      <span
+                        class="text-sm"
+                        [class.text-gray-600]="step.isCompleted"
+                        [class.text-gray-400]="!step.isCompleted"
+                      >
+                        {{ step.isCompleted ? formatDateTime(step.timestamp) : 'Pendiente' }}
+                      </span>
+                    </div>
+                    <p
+                      class="text-sm"
+                      [class.text-gray-600]="step.isCompleted"
+                      [class.text-gray-400]="!step.isCompleted"
+                    >
+                      {{ step.description }}
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Productos -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">
+              Productos ({{ getTotalItems() }})
+            </h2>
+
+            <div class="space-y-4">
+              @for (item of orderDetail()!.order.items; track item.productId) {
+                <div class="flex gap-4 p-4 border border-gray-100 rounded-lg">
+                  <div class="flex-shrink-0">
+                    <img
+                      [src]="item.productImage"
+                      [alt]="item.productName"
+                      class="w-16 h-16 rounded-lg object-cover"
+                    >
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-medium text-gray-900 line-clamp-2">
+                      {{ item.productName }}
+                    </h3>
+                    <div class="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div class="flex items-center gap-4 text-sm text-gray-600">
+                        <span>Cantidad: {{ item.quantity }}</span>
+                        <span>Precio: ${{ formatPrice(item.price) }}</span>
+                      </div>
+                      <p class="font-semibold text-gray-900">
+                        ${{ formatPrice(item.subtotal!) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Información de envío -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Información de envío</h2>
+
+            <div class="space-y-4">
+              <div>
+                <h3 class="font-medium text-gray-900 mb-2">Dirección de entrega</h3>
+                <div class="text-gray-600">
+                  <p>{{ orderDetail()!.customerInfo.name }}</p>
+                  <p>{{ orderDetail()!.shipping.address }}</p>
+                  <p>{{ orderDetail()!.shipping.city }}, {{ orderDetail()!.shipping.postalCode }}</p>
+                  <p>{{ orderDetail()!.shipping.country }}</p>
+                  <p class="mt-1">Tel: {{ orderDetail()!.customerInfo.phone }}</p>
+                </div>
+              </div>
+
+              @if (orderDetail()!.shipping.trackingNumber) {
+                <div class="border-t border-gray-200 pt-4">
+                  <h3 class="font-medium text-gray-900 mb-2">Seguimiento</h3>
+                  <div class="space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span class="text-sm text-gray-600">Número de rastreo:</span>
+                      <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                        {{ orderDetail()!.shipping.trackingNumber }}
+                      </span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span class="text-sm text-gray-600">Paquetería:</span>
+                      <span class="text-sm font-medium">{{ orderDetail()!.shipping.carrier }}</span>
+                    </div>
+                    @if (orderDetail()!.shipping.estimatedDelivery) {
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span class="text-sm text-gray-600">Entrega estimada:</span>
+                        <span class="text-sm font-medium">
+                          {{ formatDate(orderDetail()!.shipping.estimatedDelivery!) }}
+                        </span>
+                      </div>
+                    }
+                    <button
+                      class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium mt-2"
+                      (click)="trackPackage()"
+                      type="button"
+                    >
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13l5 5-7-7 7-7-5 5z"/>
+                      </svg>
+                      Rastrear paquete
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar con resumen -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
+
+            <!-- Resumen del pedido -->
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen del pedido</h2>
+
+            <div class="space-y-3 mb-6">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal</span>
+                <span>${{ formatPrice(orderDetail()!.order.subtotal!) }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Impuestos</span>
+                <span>${{ formatPrice(orderDetail()!.order.taxes!) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span
+                  [class.text-gray-600]="orderDetail()!.order.shippingCost! > 0"
+                  [class.text-green-600]="orderDetail()!.order.shippingCost! === 0"
+                >
+                  Envío
+                </span>
+                <span
+                  [class.text-gray-600]="orderDetail()!.order.shippingCost! > 0"
+                  [class.text-green-600]="orderDetail()!.order.shippingCost! === 0"
+                  [class.font-medium]="orderDetail()!.order.shippingCost! === 0"
+                >
+                  {{ orderDetail()!.order.shippingCost! === 0 ? 'GRATIS' : '$' + formatPrice(orderDetail()!.order.shippingCost!) }}
+                </span>
+              </div>
+              @if (orderDetail()!.order.discounts! > 0) {
+                <div class="flex justify-between text-green-600">
+                  <span>Descuentos</span>
+                  <span>-${{ formatPrice(orderDetail()!.order.discounts!) }}</span>
+                </div>
+              }
+              <hr class="my-3">
+              <div class="flex justify-between text-lg font-bold text-gray-900">
+                <span>Total</span>
+                <span>${{ formatPrice(orderDetail()!.order.totalAmount) }}</span>
+              </div>
+            </div>
+
+            <!-- Método de pago -->
+            <div class="border-t border-gray-200 pt-4 mb-6">
+              <h3 class="font-medium text-gray-900 mb-2">Método de pago</h3>
+              <p class="text-sm text-gray-600">{{ orderDetail()!.order.paymentMethod }}</p>
+            </div>
+
+            <!-- Acciones -->
+            <div class="space-y-3">
+              @if (orderDetail()!.order.status === 'pending') {
+                <button
+                  class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                  [disabled]="isCanceling()"
+                  (click)="cancelOrder()"
+                  type="button"
+                >
+                  @if (isCanceling()) {
+                    <span class="flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Cancelando...
+                    </span>
+                  } @else {
+                    Cancelar pedido
+                  }
+                </button>
+              }
+
+              <button
+                class="w-full border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                (click)="downloadInvoice()"
+                type="button"
+              >
+                Descargar factura
+              </button>
+
+              <button
+                class="w-full border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                (click)="contactSupport()"
+                type="button"
+              >
+                Contactar soporte
+              </button>
+            </div>
+
+            <!-- Información de contacto -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+              <p class="text-xs text-gray-500 text-center">
+                ¿Necesitas ayuda? <br>
+                Llámanos al
+                <a href="tel:477-123-4567" class="text-blue-600 hover:text-blue-700 font-medium">
+                  477-123-4567
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    } @else {
+      <!-- Loading state -->
+      <div class="flex items-center justify-center py-16">
+        <div class="text-center">
+          <div class="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-gray-600">Cargando detalles del pedido...</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

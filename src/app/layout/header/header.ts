@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
 import { ButtonModule } from "primeng/button";
 import { InputTextModule } from 'primeng/inputtext';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddon } from 'primeng/inputgroupaddon';
+import { CartModalComponent } from '../../features/cart/cart-modal.component/cart-modal.component';
 
 @Component({
   selector: 'app-header',
@@ -15,9 +14,27 @@ import { InputGroupAddon } from 'primeng/inputgroupaddon';
     DividerModule,
     ButtonModule,
     InputTextModule,
+    //COMPONENTES
+    CartModalComponent
 ],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
 export class Header {
+  @ViewChild(CartModalComponent) modalCarrito!: CartModalComponent;
+
+  /**
+   * @description: Función que controla la visibilidad de la modal.
+   */
+  public abrirCarrito(): void {
+    this.modalCarrito.openModal();
+  }
+
+  onCheckout(): void {
+    this.modalCarrito.checkout();
+  }
+
+  public modalCarritoCerrada(): void {
+    console.log("Modal cerrada");
+  }
 }
