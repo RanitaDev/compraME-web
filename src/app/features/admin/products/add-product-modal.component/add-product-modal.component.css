@@ -1,0 +1,108 @@
+/* Forzar tema claro en modal - siempre fondo blanco */
+:host {
+  background: white !important;
+  color: #1f2937 !important;
+}
+
+/* Contenedor del formulario siempre blanco */
+form {
+  background: white !important;
+  color: #1f2937 !important;
+  border-radius: 12px;
+}
+
+/* Animación simple para el spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Estados de validación con colores más suaves */
+input.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: #f87171;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.1);
+  background: white !important;
+  color: #1f2937 !important;
+}
+
+input.ng-valid.ng-touched,
+textarea.ng-valid.ng-touched,
+select.ng-valid.ng-touched {
+  border-color: #34d399;
+  background: white !important;
+  color: #1f2937 !important;
+}
+
+/* Todos los inputs, textareas y selects siempre blancos */
+input, textarea, select {
+  background: white !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db;
+}
+
+/* Labels y textos siempre oscuros */
+label, p, h3, div {
+  color: #1f2937 !important;
+}
+
+/* Textos de error en rojo */
+.text-red-600 {
+  color: #dc2626 !important;
+}
+
+/* Textos grises */
+.text-gray-500, .text-gray-600, .text-gray-700 {
+  color: #6b7280 !important;
+}
+
+/* Transiciones suaves */
+input, textarea, select, button {
+  transition: all 0.15s ease-in-out;
+}
+
+/* Estados hover para botones */
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Color picker más limpio */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+/* Mejoras para responsive */
+@media (max-width: 1024px) {
+  .grid.lg\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Estados de focus más suaves */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}

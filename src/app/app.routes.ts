@@ -1,8 +1,8 @@
-
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 
 export const routes: Routes = [
+  // Rutas públicas existentes
   {
     path: '',
     component: HomeComponent
@@ -34,5 +34,46 @@ export const routes: Routes = [
   {
     path: 'orders/order-detail',
     loadComponent: () => import('./features/orders/order-detail.component/order-detail.component').then(m => m.OrderDetailComponent)
+  },
+
+  // Rutas de administración
+  {
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin-layout.component/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      // {
+      //   path: 'dashboard',
+      //   loadComponent: () => import('./features/admin/pages/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      // },
+      {
+        path: 'product-list',
+        loadComponent: () =>
+          import('./features/admin/products/products-list.component/products-list.component')
+            .then(m => m.ProductsListComponent)
+      },
+      // {
+      //   path: 'categories',
+      //   loadChildren: () => import('./features/admin/pages/categories/categories.routes').then(m => m.CATEGORIES_ROUTES)
+      // },
+      // {
+      //   path: 'users',
+      //   loadChildren: () => import('./pages/admin/users/users.routes').then(m => m.USERS_ROUTES)
+      // },
+      // {
+      //   path: 'sales',
+      //   loadChildren: () => import('./features/admin/pages/sales/sales.routes').then(m => m.SALES_ROUTES)
+      // }
+    ]
+  },
+
+  // Ruta 404 - debe ir al final
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];

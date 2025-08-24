@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
@@ -15,6 +16,7 @@ import { TooltipModule } from 'primeng/tooltip';
     TableModule,
     FloatLabelModule,
     CardModule,
+    DialogModule,
     //ANGULAR
     CommonModule,
     ReactiveFormsModule,
@@ -26,6 +28,7 @@ import { TooltipModule } from 'primeng/tooltip';
     TableModule,
     FloatLabelModule,
     CardModule,
+    DialogModule,
     //ANGULAR
     CommonModule,
     ReactiveFormsModule,

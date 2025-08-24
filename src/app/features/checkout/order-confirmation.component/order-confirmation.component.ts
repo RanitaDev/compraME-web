@@ -29,7 +29,7 @@ export class OrderConfirmationComponent implements OnInit {
       this.orderId = params.get('orderId') || undefined;
       console.log('Order ID recibido:', this.orderId);
     });
-    
+
     this.loadOrderData();
   }
 
