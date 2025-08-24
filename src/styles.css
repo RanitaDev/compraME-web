@@ -61,8 +61,8 @@ body {
 }
 
 /* Estilos para inputs dentro de modales */
-.p-dialog input, 
-.p-dialog textarea, 
+.p-dialog input,
+.p-dialog textarea,
 .p-dialog select,
 .p-dialog .p-inputtext {
   background: white !important;
