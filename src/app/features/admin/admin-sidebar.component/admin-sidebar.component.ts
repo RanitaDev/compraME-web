@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AddProductModalComponent } from '../products/add-product-modal.component/add-product-modal.component';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { CategoryModalComponent } from '../categories/category-modal.component/category-modal.component';
 
 
 @Component({
@@ -157,6 +158,10 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
         componentToOpen = AddProductModalComponent;
         titleModal = 'Agregar Producto';
         break;
+      case 'categories-add':
+        componentToOpen = CategoryModalComponent;
+        titleModal = 'Agregar Categoría';
+        break;
     }
 
     this.ref = this.dialog.open(componentToOpen, {
@@ -164,7 +169,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       width: '800px',
       modal: true,
       data: {
-        id: 123,
         isEditMode: 'crear'
       }
     });

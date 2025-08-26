@@ -41,12 +41,6 @@ export class AdminNavigationService {
           route: '/admin/product-add',
           icon: 'pi pi-plus'
         },
-        {
-          id: 'product-stock',
-          label: 'Control de Stock',
-          route: '/admin/product-stock',
-          icon: 'pi pi-database'
-        }
       ]
     },
     {
@@ -59,12 +53,12 @@ export class AdminNavigationService {
         {
           id: 'categories-list',
           label: 'Lista de Categorías',
-          route: '/admin/categories/list'
+          route: '/admin/categories-list'
         },
         {
           id: 'categories-add',
           label: 'Nueva Categoría',
-          route: '/admin/categories/add'
+          route: ''
         }
       ]
     },
@@ -80,40 +74,40 @@ export class AdminNavigationService {
           label: 'Lista de Usuarios',
           route: '/admin/users/list'
         },
-        {
-          id: 'users-admins',
-          label: 'Administradores',
-          route: '/admin/users/admins'
-        },
-        {
-          id: 'users-permissions',
-          label: 'Permisos',
-          route: '/admin/users/permissions'
-        }
+        // {
+        //   id: 'users-admins',
+        //   label: 'Administradores',
+        //   route: '/admin/users/admins'
+        // },
+        // {
+        //   id: 'users-permissions',
+        //   label: 'Permisos',
+        //   route: '/admin/users/permissions'
+        // }
       ]
     },
     {
-      id: 'sales',
-      label: 'Ventas',
+      id: 'orders',
+      label: 'Órdenes / Compras',
       icon: 'pi pi-chart-bar',
-      route: '/admin/sales',
+      route: '/admin/orders-list',
       badge: 3,
       subItems: [
         {
-          id: 'sales-orders',
+          id: 'orders-list',
           label: 'Órdenes',
-          route: '/admin/sales/orders'
+          route: '/admin/orders-list'
         },
-        {
-          id: 'sales-reports',
-          label: 'Reportes',
-          route: '/admin/sales/reports'
-        },
-        {
-          id: 'sales-analytics',
-          label: 'Analytics',
-          route: '/admin/sales/analytics'
-        }
+        // {
+        //   id: 'orders-reports',
+        //   label: 'Reportes',
+        //   route: '/admin/orders-reports'
+        // },
+        // {
+        //   id: 'orders-analytics',
+        //   label: 'Analytics',
+        //   route: '/admin/orders-analytics'
+        // }
       ]
     }
   ];

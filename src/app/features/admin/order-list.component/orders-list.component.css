@@ -1,0 +1,150 @@
+/* pages/admin/orders/orders-list/orders-list.component.css */
+
+/* Minimal CSS - La mayoría del styling está manejado por Tailwind */
+
+/* Transiciones suaves para las cards */
+.order-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.order-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Efectos hover para stats cards */
+.stat-card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Efectos hover para botones */
+.view-btn:hover,
+.status-btn:hover,
+.export-btn:hover,
+.load-more-btn:hover,
+.clear-filters-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Estilos para el select personalizado */
+.status-filter {
+  background-image: none;
+  cursor: pointer;
+}
+
+.status-filter:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Focus para inputs */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estados de loading */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Ajustes responsive */
+@media (max-width: 1024px) {
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-grid {
+    padding: 1rem;
+  }
+
+  .order-card {
+    margin-bottom: 1rem;
+  }
+
+  .stats-section {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .search-section {
+    flex-direction: column;
+  }
+
+  .actions-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-section .stat-card {
+    padding: 0.75rem;
+  }
+
+  .order-header,
+  .order-content {
+    padding: 0.75rem;
+  }
+
+  .order-summary {
+    font-size: 0.875rem;
+  }
+}
+
+/* Estados de focus para accesibilidad */
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* Estilos para impresión */
+@media print {
+  .actions-section,
+  .export-btn,
+  .search-section,
+  .load-more-btn,
+  .clear-filters-btn {
+    display: none !important;
+  }
+
+  .order-card {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  .stats-section {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+/* Animación para badges de estado */
+.status-badge {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

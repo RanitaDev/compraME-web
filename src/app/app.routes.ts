@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
+import { OrdersListComponent } from './features/admin/order-list.component/orders-list.component';
 
 export const routes: Routes = [
   // Rutas públicas existentes
@@ -56,18 +57,18 @@ export const routes: Routes = [
           import('./features/admin/products/products-list.component/products-list.component')
             .then(m => m.ProductsListComponent)
       },
-      // {
-      //   path: 'categories',
-      //   loadChildren: () => import('./features/admin/pages/categories/categories.routes').then(m => m.CATEGORIES_ROUTES)
-      // },
-      // {
-      //   path: 'users',
-      //   loadChildren: () => import('./pages/admin/users/users.routes').then(m => m.USERS_ROUTES)
-      // },
-      // {
-      //   path: 'sales',
-      //   loadChildren: () => import('./features/admin/pages/sales/sales.routes').then(m => m.SALES_ROUTES)
-      // }
+      {
+        path: 'categories-list',
+        loadComponent: () =>
+          import('./features/admin/categories/categories-list.component/categories-list.component')
+            .then(m => m.CategoriesListComponent)
+      },
+      {
+        path: 'orders-list',
+        loadComponent: () =>
+          import('./features/admin/order-list.component/orders-list.component')
+            .then(m => m.OrdersListComponent)
+      },
     ]
   },
 
