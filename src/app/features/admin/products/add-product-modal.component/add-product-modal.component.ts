@@ -4,6 +4,9 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FormsModule } from '@angular/forms';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { IProduct } from '../../../../interfaces/products.interface';
+import { ProductService } from '../../../../services/products.service';
+import { SpinnerService } from '../../../../core/services/spinner.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-add-product-modal',
@@ -13,11 +16,8 @@ import { IProduct } from '../../../../interfaces/products.interface';
   styleUrls: ['./add-product-modal.component.css']
 })
 export class AddProductModalComponent implements OnInit {
-
-  // Formulario reactivo
   productForm!: FormGroup;
 
-  // Estado del componente
   isSubmitting = false;
   isEditMode = false;
   productId: number | null = null;
@@ -26,7 +26,9 @@ export class AddProductModalComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private ref: DynamicDialogRef,
-    private config: DynamicDialogConfig
+    private config: DynamicDialogConfig,
+    private readonly productsService: ProductService,
+    private readonly spinnerService: SpinnerService
   ) {}
 
   ngOnInit() {
@@ -35,20 +37,13 @@ export class AddProductModalComponent implements OnInit {
     this.loadProductData();
   }
 
-  /**
-   * Inicializa el componente con los datos del config
-   */
   private initializeComponent() {
-    // Obtener datos del config de PrimeNG
     const data = this.config.data;
 
     if (data) {
       this.productId = data.id || null;
       this.isEditMode = data.isEditMode === 'editar' && this.productId !== null;
     }
-
-    console.log('Modo:', this.isEditMode ? 'Edición' : 'Creación');
-    console.log('ID Producto:', this.productId);
   }
 
   /**
@@ -71,14 +66,52 @@ export class AddProductModalComponent implements OnInit {
   /**
    * Carga los datos del producto si está en modo edición
    */
-  private loadProductData() {
+  private loadProductData(): void {
     if (this.isEditMode && this.productId) {
-      // Aquí harías la llamada a tu servicio para obtener el producto
-      // Por ahora simulo con datos de ejemplo
-      this.loadProductFromService(this.productId);
+      // Mostrar spinner con mensaje personalizado
+      this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
+
+      this.productsService.getProduct(this.productId)
+        .pipe(
+          finalize(() => {
+            this.spinnerService.hide('product-load');
+          })
+        )
+        .subscribe({
+          next: (product) => {
+            if (product) {
+              this.loadProductDataIntoForm(product);
+            }
+          },
+          error: (error) => {
+            console.error('Error al cargar el producto:', error);
+          }
+        });
     } else {
-      // Modo creación - valores por defecto
       this.resetFormToDefault();
+    }
+  }
+
+  /**
+   * Carga los datos del producto en el formulario
+   */
+  private loadProductDataIntoForm(product: IProduct): void {
+    this.productForm.patchValue({
+      nombre: product.nombre,
+      descripcion: product.descripcion,
+      precio: product.precio,
+      stock: product.stock,
+      imagenes: product.imagenes,
+      idCategoria: product.idCategoria.toString(),
+      activo: product.activo,
+      color: product.color,
+      destacado: product.destacado
+    });
+
+    // Cargar las URLs de imágenes
+    this.imageUrls = [...product.imagenes];
+    if (this.imageUrls.length === 0) {
+      this.imageUrls = [''];
     }
   }
 
@@ -86,14 +119,14 @@ export class AddProductModalComponent implements OnInit {
    * Simula la carga de un producto desde el servicio
    * Reemplazar con tu llamada real al backend
    */
-  private loadProductFromService(id: number) {
+  private loadProducts(id: number): void {
     // AQUÍ CONECTAR CON TU BACKEND
     // this.productService.getProduct(id).subscribe(...)
 
     // Simulación con datos de ejemplo
     const mockProducts: IProduct[] = [
       {
-        idProducto: 1,
+        idProducto: '1',
         nombre: 'Auriculares Bluetooth Premium',
         descripcion: 'Experimenta una calidad de sonido excepcional con cancelación de ruido activa y hasta 30 horas de batería.',
         precio: 299.99,
@@ -111,27 +144,10 @@ export class AddProductModalComponent implements OnInit {
       }
     ];
 
-    const product = mockProducts.find(p => p.idProducto === id);
+    const product = mockProducts.find(p => p.idProducto === id.toString());
 
     if (product) {
-      // Cargar datos en el formulario
-      this.productForm.patchValue({
-        nombre: product.nombre,
-        descripcion: product.descripcion,
-        precio: product.precio,
-        stock: product.stock,
-        imagenes: product.imagenes,
-        idCategoria: product.idCategoria.toString(),
-        activo: product.activo,
-        color: product.color,
-        destacado: product.destacado
-      });
-
-      // Cargar las URLs de imágenes
-      this.imageUrls = [...product.imagenes];
-      if (this.imageUrls.length === 0) {
-        this.imageUrls = [''];
-      }
+      this.loadProductDataIntoForm(product);
     }
   }
 
@@ -156,16 +172,21 @@ export class AddProductModalComponent implements OnInit {
   /**
    * Maneja el envío del formulario
    */
-  onSubmit() {
+  onSubmit(): void {
     if (this.productForm.valid) {
       this.isSubmitting = true;
 
       // Preparar datos para envío
       const formData = this.prepareFormData();
 
+      // Mostrar spinner para operación de guardado
+      const message = this.isEditMode ? 'Actualizando producto...' : 'Creando producto...';
+      this.spinnerService.show(message, 'bar', 'product-save');
+
       // Simular guardado (AQUÍ CONECTAR CON TU BACKEND)
       setTimeout(() => {
         this.isSubmitting = false;
+        this.spinnerService.hide('product-save');
 
         // Cerrar modal y devolver datos
         this.ref.close({

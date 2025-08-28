@@ -1,6 +1,5 @@
 <section class="py-16 px-4 bg-gradient-to-br from-gray-50 to-slate-100">
   <div class="max-w-7xl mx-auto">
-    <!-- Header de la sección -->
     <div class="text-center mb-12">
       <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 animate-fade-in">
         Productos Destacados
@@ -10,7 +9,6 @@
       </p>
     </div>
 
-    <!-- Grid de productos -->
     @if (featuredProducts().length > 0) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
         @for (product of featuredProducts(); track product.idProducto; let i = $index) {

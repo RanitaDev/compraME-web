@@ -69,7 +69,6 @@ export class ProductCardsComponent implements OnInit {
 
   private loadProducts(): void {
     this.productService.getProducts().subscribe(products => {
-      // Filtrar solo productos activos con stock
       const activeProducts = products.filter(product =>
         product.activo && product.stock > 0
       );

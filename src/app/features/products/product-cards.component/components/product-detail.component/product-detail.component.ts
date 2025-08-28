@@ -2,6 +2,9 @@ import { Component, OnInit, Input, signal, computed, ChangeDetectionStrategy } f
 import { CommonModule } from '@angular/common';
 import { IProduct } from '../../../../../interfaces/products.interface';
 import { FeaturedProductsComponent } from '../featured-products.component/featured-products.component';
+import { finalize } from 'rxjs';
+import { SpinnerService } from '../../../../../core/services';
+import { ProductService } from '../../../../../services/products.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -28,29 +31,30 @@ export class ProductDetailComponent implements OnInit {
     this.loadProduct();
   }
 
+  constructor(
+    private readonly productsService: ProductService,
+    private readonly spinnerService: SpinnerService
+  ){}
+
   private loadProduct() {
-    // Simulamos la carga del producto
-    // En tu implementación real, aquí llamarías a tu ProductService
-    setTimeout(() => {
-      // Datos de ejemplo usando el primer producto de tu servicio
-      this.product.set({
-        idProducto: 1,
-        nombre: 'Auriculares Bluetooth Premium',
-        descripcion: 'Experimenta una calidad de sonido excepcional con cancelación de ruido activa y hasta 30 horas de batería.',
-        precio: 299.99,
-        stock: 15,
-        imagenes: [
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop',
-          'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=600&fit=crop'
-        ],
-        idCategoria: 1,
-        activo: true,
-        fechaCreacion: new Date('2024-01-15'),
-        fechaActualizacion: new Date('2024-08-01'),
-        color: '#667eea',
-        destacado: true
+    this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
+
+    this.productsService.getProduct(this.productId)
+      .pipe(
+        finalize(() => {
+          this.spinnerService.hide('product-load');
+        })
+      )
+      .subscribe({
+        next: (product) => {
+          if (product) {
+            this.product.set(product);
+          }
+        },
+        error: (error) => {
+          console.error('Error al cargar el producto:', error);
+        }
       });
-    }, 500);
   }
 
   selectImage(index: number) {

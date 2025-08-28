@@ -13,8 +13,8 @@ import { ProductCommentsComponent } from '../../../product-comments.component/pr
   styleUrls: ['./featured-products.component.css']
 })
 export class FeaturedProductsComponent implements OnInit {
-  @Output() productSelected = new EventEmitter<number>();
-  @Output() quickActionClicked = new EventEmitter<number>();
+  @Output() productSelected = new EventEmitter<string>();
+  @Output() quickActionClicked = new EventEmitter<string>();
 
   featuredProducts = signal<IProduct[]>([]);
   isLoading = signal(true);
@@ -43,11 +43,11 @@ export class FeaturedProductsComponent implements OnInit {
     }, 800);
   }
 
-  onProductClick(productId: number) {
+  onProductClick(productId: string) {
     this.productSelected.emit(productId);
   }
 
-  onQuickAction(productId: number) {
+  onQuickAction(productId: string) {
     this.quickActionClicked.emit(productId);
   }
 

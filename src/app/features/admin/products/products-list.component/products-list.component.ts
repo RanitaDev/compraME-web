@@ -1,4 +1,4 @@
-// pages/admin/products/products-list/products-list.component.ts
+// Componente de lista de productos para el panel de administración
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,28 +17,28 @@ import { Category } from '../../../../interfaces/categories.interface';
   styleUrls: ['./products-list.component.css']
 })
 export class ProductsListComponent implements OnInit, OnDestroy {
-  // Dependency injection usando inject()
+  // Inyección de dependencias usando inject()
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
 
-  // Data properties
+  // Propiedades de datos
   allProducts: IProduct[] = [];
   filteredProducts: IProduct[] = [];
   categories: Category[] = [];
   searchTerm = '';
 
-  // Stats
+  // Estadísticas
   totalProducts = 0;
   featuredProducts = 0;
   hasMoreProducts = false;
 
-  // Pagination
+  // Paginación
   currentPage = 1;
   itemsPerPage = 12;
 
-  // Search subject for debounce
+  // Subject para búsqueda con debounce
   private searchSubject = new Subject<string>();
 
   ngOnInit(): void {
@@ -123,7 +123,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.updateFilteredProducts();
   }
 
-  // Public methods
+  // Métodos públicos
   onSearch(): void {
     this.searchSubject.next(this.searchTerm);
   }
@@ -150,7 +150,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.updateFilteredProducts();
   }
 
-  // Utility methods
+  // Métodos utilitarios
   getCategoryName(categoryId: number): string {
     const category = this.categories.find(c => c.idCateogria === categoryId);
     return category ? category.nombre : 'Sin categoría';
@@ -194,8 +194,8 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     // Por ejemplo: this.toastService.error(message);
   }
 
-  // TrackBy function for ngFor optimization
-  trackByProductId(index: number, product: IProduct): number {
+  // Función trackBy para optimización de ngFor
+  trackByProductId(index: number, product: IProduct): string {
     return product.idProducto;
   }
 }

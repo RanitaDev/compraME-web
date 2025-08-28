@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
 import { CheckoutService } from '../../../services/checkout.service';
-import { IPaymentMethod, IAddress, ICheckoutSummary } from '../../../interfaces/checkout.interface';
+import { IPaymentMethod, IAddress, ICheckoutSummary, ICartProducts } from '../../../interfaces/checkout.interface';
 
 @Component({
   selector: 'app-checkout',
@@ -69,9 +69,8 @@ export class CheckoutComponent implements OnInit {
 
   private buildCheckoutSummary() {
     if (this.fromCart) {
-      // Construir desde el carrito
       const cartSummary = this.cartService.cartSummary();
-      const checkoutItems = cartSummary.items.map(item => ({
+      const checkoutItems: ICartProducts[] = cartSummary.items.map(item => ({
         idProducto: item.producto.idProducto,
         nombre: item.producto.nombre,
         cantidad: item.cantidad,

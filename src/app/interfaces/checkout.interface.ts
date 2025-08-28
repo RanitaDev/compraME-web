@@ -24,13 +24,7 @@ export interface IPaymentMethod {
 }
 
 export interface ICheckoutSummary {
-  items: Array<{
-    idProducto: number;
-    nombre: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-  }>;
+  items: ICartProducts[];
   subtotal: number;
   impuestos: number;
   envio: number;
@@ -38,4 +32,13 @@ export interface ICheckoutSummary {
   total: number;
   direccionSeleccionada?: IAddress;
   metodoPagoSeleccionado?: IPaymentMethod;
+}
+
+
+export interface ICartProducts {
+    idProducto: string;
+    nombre: string;
+    cantidad: number;
+    precio: number;
+    subtotal: number;
 }

@@ -42,7 +42,7 @@ export class CartModalComponent {
     }
   }
 
-  increaseQuantity(productId: number) {
+  increaseQuantity(productId: string) {
     const item = this.cartItems().find(item => item.producto.idProducto === productId);
     if (item) {
       const success = this.cartService.updateQuantity(productId, item.cantidad + 1);
@@ -52,14 +52,14 @@ export class CartModalComponent {
     }
   }
 
-  decreaseQuantity(productId: number) {
+  decreaseQuantity(productId: string) {
     const item = this.cartItems().find(item => item.producto.idProducto === productId);
     if (item && item.cantidad > 1) {
       this.cartService.updateQuantity(productId, item.cantidad - 1);
     }
   }
 
-  removeItem(productId: number) {
+  removeItem(productId: string) {
     this.cartService.removeFromCart(productId);
   }
 

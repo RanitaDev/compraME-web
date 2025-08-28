@@ -52,12 +52,19 @@ export class CategoryCardsComponent implements OnInit {
   }
 
   private loadActiveCategories(): void {
-    this.categoryService.getActiveCategories().subscribe(categories => {
-      this.activeCategories.set(categories);
+    this.categoryService.getActiveCategories()
+      .pipe().subscribe({
+        next: (categorias) => {
+          console.log('CATEGORIAS', categorias);
+          this.activeCategories.set(categorias);
+        }
+      });
+    // this.categoryService.getActiveCategories().subscribe(categories => {
+    //   this.activeCategories.set(categories);
 
-      // Simular si hay más categorías (puedes ajustar esta lógica)
-      this.hasMoreCategories.set(categories.length > 6);
-    });
+    //   // Simular si hay más categorías (puedes ajustar esta lógica)
+    //   this.hasMoreCategories.set(categories.length > 6);
+    // });
   }
 
   selectCategory(category: Category): void {
