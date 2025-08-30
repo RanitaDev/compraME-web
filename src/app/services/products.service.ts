@@ -1,8 +1,7 @@
-// product.service.ts
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, of } from 'rxjs';
 import { IProduct } from '../interfaces/products.interface';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -41,4 +40,5 @@ export class ProductService {
         })
       );
   }
+
 }
