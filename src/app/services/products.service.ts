@@ -12,7 +12,7 @@ export class ProductService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/products`;
 
-  getProducts(): Observable<IProduct[]> {
+  public getProducts(): Observable<IProduct[]> {
     return this.http.get<IProduct[]>(`${this.apiUrl}/`)
       .pipe(
         catchError(error => {
@@ -32,7 +32,7 @@ export class ProductService {
       );
   }
 
-  getProduct(id: number): Observable<IProduct | undefined> {
+  public getProduct(id: string): Observable<IProduct | undefined> {
     return this.http.get<IProduct>(`${this.apiUrl}/${id}`)
       .pipe(
         catchError(error => {

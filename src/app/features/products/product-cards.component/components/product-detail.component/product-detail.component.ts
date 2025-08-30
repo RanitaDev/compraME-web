@@ -15,7 +15,7 @@ import { ProductService } from '../../../../../services/products.service';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  @Input() productId: number = 3;
+  @Input() productId: string = '';
 
   product = signal<IProduct | null>(null);
   selectedImageIndex = signal(0);
@@ -36,7 +36,10 @@ export class ProductDetailComponent implements OnInit {
     private readonly spinnerService: SpinnerService
   ){}
 
-  private loadProduct() {
+  /**
+   * @description Carga los datos de un producto específico.
+   */
+  private loadProduct(): void {
     this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
 
     this.productsService.getProduct(this.productId)

@@ -195,7 +195,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   // Función trackBy para optimización de ngFor
-  trackByProductId(index: number, product: IProduct): string {
-    return product.idProducto;
+  trackByProductId(index: number, product: IProduct): string | undefined {
+    return product?.idProducto;
   }
 }

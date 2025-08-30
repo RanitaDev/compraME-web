@@ -6,6 +6,7 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
 import { IProduct } from '../../../../interfaces/products.interface';
 import { ProductService } from '../../../../services/products.service';
 import { interval, Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-carousel-banner',
@@ -39,7 +40,10 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
   private autoplaySubscription?: Subscription;
   private isAutoplayPaused = false;
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadFeaturedProducts();
@@ -74,8 +78,12 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
    * @description Muestra los detalles de un producto en su respectiva página
    * @param product - El producto a visualizar
    */
-  viewProduct(product: IProduct): void {
-    console.log('Agregando al carrito:', product);
+  public viewProduct(product: IProduct): void {
+    console.log('Visualizando producto:', product);
+    if(!product) {
+      //SNACK TOAST
+    }
+    this.router.navigate(['/product', product._id]);
   }
 
   /**

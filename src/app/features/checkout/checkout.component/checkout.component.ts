@@ -71,7 +71,7 @@ export class CheckoutComponent implements OnInit {
     if (this.fromCart) {
       const cartSummary = this.cartService.cartSummary();
       const checkoutItems: ICartProducts[] = cartSummary.items.map(item => ({
-        idProducto: item.producto.idProducto,
+        idProducto: item.producto._id,
         nombre: item.producto.nombre,
         cantidad: item.cantidad,
         precio: item.producto.precio,

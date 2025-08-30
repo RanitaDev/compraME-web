@@ -20,7 +20,7 @@ export class AddProductModalComponent implements OnInit {
 
   isSubmitting = false;
   isEditMode = false;
-  productId: number | null = null;
+  productId: string | null = null;
   imageUrls: string[] = [''];
 
   constructor(
@@ -124,31 +124,31 @@ export class AddProductModalComponent implements OnInit {
     // this.productService.getProduct(id).subscribe(...)
 
     // Simulación con datos de ejemplo
-    const mockProducts: IProduct[] = [
-      {
-        idProducto: '1',
-        nombre: 'Auriculares Bluetooth Premium',
-        descripcion: 'Experimenta una calidad de sonido excepcional con cancelación de ruido activa y hasta 30 horas de batería.',
-        precio: 299.99,
-        stock: 15,
-        imagenes: [
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop',
-          'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=600&fit=crop'
-        ],
-        idCategoria: 1,
-        activo: true,
-        fechaCreacion: new Date('2024-01-15'),
-        fechaActualizacion: new Date('2024-08-01'),
-        color: '#667eea',
-        destacado: true
-      }
-    ];
+    // const mockProducts: IProduct[] = [
+    //   {
+    //     idProducto: '1',
+    //     nombre: 'Auriculares Bluetooth Premium',
+    //     descripcion: 'Experimenta una calidad de sonido excepcional con cancelación de ruido activa y hasta 30 horas de batería.',
+    //     precio: 299.99,
+    //     stock: 15,
+    //     imagenes: [
+    //       'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop',
+    //       'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=600&fit=crop'
+    //     ],
+    //     idCategoria: 1,
+    //     activo: true,
+    //     fechaCreacion: new Date('2024-01-15'),
+    //     fechaActualizacion: new Date('2024-08-01'),
+    //     color: '#667eea',
+    //     destacado: true
+    //   }
+    // ];
 
-    const product = mockProducts.find(p => p.idProducto === id.toString());
+    // const product = mockProducts.find(p => p.idProducto === id.toString());
 
-    if (product) {
-      this.loadProductDataIntoForm(product);
-    }
+    // if (product) {
+    //   this.loadProductDataIntoForm(product);
+    // }
   }
 
   /**

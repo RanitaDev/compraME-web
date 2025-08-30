@@ -99,8 +99,7 @@
 /* Button hover effects */
 .action-button:hover {
   cursor: pointer;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Price animation */
