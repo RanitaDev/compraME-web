@@ -55,7 +55,7 @@
                         <div class="flex items-center gap-2">
                           <button
                             class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                            (click)="decreaseQuantity(item.producto.idProducto)"
+                            (click)="decreaseQuantity(item.producto._id)"
                             [disabled]="item.cantidad <= 1"
                             type="button"
                             aria-label="Disminuir"
@@ -69,7 +69,7 @@
 
                           <button
                             class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                            (click)="increaseQuantity(item.producto.idProducto)"
+                            (click)="increaseQuantity(item.producto._id)"
                             [disabled]="item.cantidad >= item.producto.stock"
                             type="button"
                             aria-label="Aumentar"
@@ -81,7 +81,7 @@
                         <!-- Remove Button -->
                         <button
                           class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                          (click)="removeItem(item.producto.idProducto)"
+                          (click)="removeItem(item.producto._id)"
                           type="button"
                           aria-label="Eliminar"
                         >

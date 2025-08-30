@@ -15,7 +15,7 @@
           <div
             class="product-card group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer transform"
             [class]="'animate-slide-up-' + (i % 4 + 1)"
-            (click)="onProductClick(product.idProducto)"
+            (click)="onProductClick(product._id)"
           >
             <!-- Imagen del producto -->
             <div class="relative aspect-square overflow-hidden">
@@ -78,7 +78,7 @@
                   [disabled]="product.stock === 0"
                   [class.opacity-50]="product.stock === 0"
                   [class.cursor-not-allowed]="product.stock === 0"
-                  (click)="$event.stopPropagation(); onQuickAction(product.idProducto)"
+                  (click)="$event.stopPropagation(); onQuickAction(product._id)"
                   type="button"
                 >
                   <i class="pi pi-arrow-right text-white text-base"></i>
