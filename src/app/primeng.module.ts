@@ -6,6 +6,7 @@ import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 // Importa aquí solo los módulos de PrimeNG que necesites
 
@@ -17,6 +18,7 @@ import { TooltipModule } from 'primeng/tooltip';
     FloatLabelModule,
     CardModule,
     DialogModule,
+    ToastModule,
     //ANGULAR
     CommonModule,
     ReactiveFormsModule,
@@ -29,6 +31,7 @@ import { TooltipModule } from 'primeng/tooltip';
     FloatLabelModule,
     CardModule,
     DialogModule,
+    ToastModule,
     //ANGULAR
     CommonModule,
     ReactiveFormsModule,
