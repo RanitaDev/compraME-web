@@ -1,0 +1,366 @@
+/* layouts/admin-sidebar/admin-sidebar.component.css */
+
+/* Sidebar container */
+.admin-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-sidebar.collapsed {
+  width: 80px !important;
+}
+
+/* Smooth transitions for all interactive elements */
+.admin-sidebar * {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Menu item styles */
+.menu-item {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: rgba(148, 163, 184, 0.1);
+  transform: translateX(2px);
+}
+
+.menu-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  color: #ffffff;
+}
+
+/* Menu label styling */
+.menu-label {
+  color: #ffffff !important;
+}
+
+/* Icon styling for consistent white color */
+.menu-icon svg {
+  color: #ffffff !important;
+}
+
+/* Footer actions styling */
+.footer-action span {
+  color: #ffffff !important;
+  font-weight: 500;
+}
+
+.footer-action:last-child span {
+  color: #ffffff !important;
+}
+
+/* Menu icon animations */
+.menu-icon svg {
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover .menu-icon svg {
+  transform: scale(1.1);
+}
+
+.menu-item.active .menu-icon svg {
+  color: #2563eb;
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
+}
+
+/* Badge styling */
+.badge {
+  font-size: 10px;
+  line-height: 1;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Submenu styles */
+.submenu {
+  padding-left: 0;
+  margin-left: 1rem;
+}
+
+.submenu-item {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.submenu-item:hover {
+  background: rgba(148, 163, 184, 0.08);
+  transform: translateX(4px);
+}
+
+.submenu-item.active {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+/* Submenu text styling */
+.submenu-item span {
+  color: #ffffff !important;
+}
+
+/* User profile enhancements */
+.user-avatar img {
+  transition: all 0.3s ease;
+}
+
+.user-avatar:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Footer actions */
+.sidebar-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  background: inherit; /* Same as sidebar background */
+  padding: 1rem;
+}
+
+.sidebar-footer .space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.footer-action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Configuración button - Gray background */
+.footer-action:first-child {
+  background: #6b7280;
+  color: #ffffff !important;
+  margin-bottom: 0.5rem;
+}
+
+.footer-action:first-child:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.footer-action:first-child svg {
+  color: #ffffff !important;
+}
+
+.footer-action:first-child span {
+  color: #ffffff !important;
+}
+
+/* Logout button - Red background */
+.footer-action:last-child {
+  background: #dc2626;
+  color: #ffffff !important;
+}
+
+.footer-action:last-child:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.footer-action:last-child svg {
+  color: #ffffff !important;
+}
+
+.footer-action:last-child span {
+  color: #ffffff !important;
+}
+
+/* Collapsed state adjustments */
+.admin-sidebar.collapsed .footer-action {
+  padding: 0.75rem 0.5rem;
+  justify-content: center !important;
+  min-height: 3rem;
+}
+
+.admin-sidebar.collapsed .footer-action:first-child {
+  margin-bottom: 0.5rem;
+}
+
+/* Logo positioning when collapsed */
+.admin-sidebar.collapsed .brand-section {
+  justify-content: flex-start !important;
+  padding-left: 0.5rem;
+}
+
+.admin-sidebar.collapsed .logo-container {
+  margin-left: -0.25rem;
+}
+
+/* Override any conflicting footer action styles */
+.footer-action span {
+  color: #ffffff !important;
+  font-weight: 500;
+}
+
+.footer-action:last-child span {
+  color: #ffffff !important;
+}
+
+/* Expand button when collapsed */
+.expand-btn {
+  transition: all 0.3s ease;
+}
+
+.expand-btn:hover {
+  transform: scale(1.1);
+  background: #f8fafc;
+}
+
+/* Sidebar header */
+.sidebar-header {
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Navigation area */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0; /* Important for proper flex behavior */
+}
+
+/* Scrollbar styling */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+/* Focus styles for accessibility */
+.menu-item:focus,
+.submenu-item:focus,
+.footer-action:focus,
+.toggle-btn:focus,
+.expand-btn:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Loading states */
+.menu-item.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.menu-item.loading .menu-icon svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Glassmorphism effects */
+.user-profile,
+.sidebar-footer {
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Hover effects for sections */
+/* .brand-section:hover .logo-container {
+  transform: rotate(5deg) scale(1.05);
+  transition: transform 0.3s ease;
+} */
+
+/* Animation for menu items appearance */
+.menu-item-container {
+  animation: slideInLeft 0.3s ease-out forwards;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.menu-item-container:nth-child(1) { animation-delay: 0.1s; }
+.menu-item-container:nth-child(2) { animation-delay: 0.2s; }
+.menu-item-container:nth-child(3) { animation-delay: 0.3s; }
+.menu-item-container:nth-child(4) { animation-delay: 0.4s; }
+.menu-item-container:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .admin-sidebar {
+    background: linear-gradient(to bottom, #1e293b, #0f172a);
+    border-color: #334155;
+  }
+
+  .menu-item:hover {
+    background: rgba(71, 85, 105, 0.1);
+  }
+
+  .menu-item.active {
+    background: rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Print styles */
+  @media print {
+    .admin-sidebar {
+      display: none !important;
+    }
+  }

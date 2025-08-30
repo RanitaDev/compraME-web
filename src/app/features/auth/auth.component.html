@@ -206,6 +206,7 @@
         </small>
       </div>
 
+      <!--
       <div class="checkbox-wrapper terms">
         <p-checkbox
           formControlName="acceptTerms"
@@ -215,13 +216,13 @@
         <label for="acceptTerms" class="checkbox-label">
           Acepto los <a href="#" class="link">términos y condiciones</a> y la <a href="#" class="link">política de privacidad</a>
         </label>
-      </div>
+      </div>-->
 
       <p-button
         type="submit"
         label="Crear Cuenta"
         styleClass="auth-button primary"
-        [disabled]="registerForm.invalid">
+        (onClick)="onRegister()">
       </p-button>
 
       <p-divider align="center">

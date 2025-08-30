@@ -1,0 +1,127 @@
+/* Animaciones del modal */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Clases de animación */
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-slide-up-1 {
+  animation: slide-up 0.4s ease-out 0.05s both;
+}
+
+.animate-slide-up-2 {
+  animation: slide-up 0.4s ease-out 0.1s both;
+}
+
+.animate-slide-up-3 {
+  animation: slide-up 0.4s ease-out 0.15s both;
+}
+
+/* Utilidades */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure pointer cursor for actionable buttons inside the modal */
+.fixed .cursor-pointer,
+.fixed button.cursor-pointer,
+.fixed .quick-action,
+.fixed .action-button {
+  cursor: pointer;
+}
+
+/* Icon visibility fixes - force colors for primeicons */
+.fixed i.pi-plus,
+.fixed i.pi-minus {
+  color: #374151 !important; /* gray-700 */
+}
+
+.fixed i.pi-trash {
+  color: #dc2626 !important; /* red-600 */
+}
+
+.fixed i.pi-times {
+  color: #6b7280 !important; /* gray-500 */
+}
+
+.fixed i.pi-shopping-cart {
+  color: #4f46e5 !important; /* indigo-600 */
+}
+
+/* Ensure all buttons have pointer cursor */
+.fixed button:not(:disabled) {
+  cursor: pointer !important;
+}
+
+/* Scroll personalizado */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Estados de botones deshabilitados */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  transform: none !important;
+}
+
+/* Stabilize footer height to prevent layout shifts */
+
+/* Ensure shipping line has consistent height */
+.flex.justify-between.text-sm {
+  min-height: 1.5rem;
+  align-items: center;
+}

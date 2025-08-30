@@ -1,0 +1,129 @@
+<!-- layouts/admin-sidebar/admin-sidebar.component.html -->
+<aside class="admin-sidebar h-screen bg-gradient-to-b from-slate-50 to-blue-50 border-r border-white shadow-xl transition-all duration-300 ease-in-out"
+       [class.collapsed]="isCollapsed"
+       [style.width]="isCollapsed ? '80px' : '280px'">
+
+  <!-- Header con Logo y Toggle -->
+  <div class="sidebar-header flex items-center justify-between p-6 border-b border-white bg-white backdrop-blur-sm">
+    <div class="brand-section flex items-center space-x-3" [class.justify-center]="isCollapsed">
+      <div class="logo-container">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+          <span class="text-white font-black text-lg">C</span>
+        </div>
+      </div>
+
+      <div class="brand-text transition-all duration-300" [class.hidden]="isCollapsed">
+        <h1 class="text-xl font-black text-slate-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
+          compraME!
+        </h1>
+        <p class="text-xs text-slate-600 font-medium">Panel administrador</p>
+      </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <button class="toggle-btn p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200 cursor-pointer"
+            [class.hidden]="isCollapsed"
+            (click)="toggleSidebar()"
+            [attr.aria-label]="'Colapsar menú lateral'">
+      <i class="pi pi-angle-double-left text-slate-700 text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav flex-1 overflow-y-auto py-4">
+    <div class="space-y-2 px-3">
+
+      <!-- Menu Items -->
+      <div *ngFor="let item of menuItems" class="menu-item-container">
+
+        <!-- Main Menu Item -->
+        <button class="menu-item w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group"
+                [class.active]="item.isActive"
+                [class.px-3]="isCollapsed"
+                [class.justify-center]="isCollapsed"
+                (click)="onMenuItemClick(item)"
+                [attr.aria-label]="item.label"
+                #menuButton>
+
+          <div class="flex items-center space-x-3" [class.space-x-0]="isCollapsed">
+            <!-- Icon -->
+            <div class="menu-icon flex-shrink-0">
+              <i class="pi text-lg transition-colors duration-200"
+                 [class]="'pi ' + item.icon + ' text-lg transition-colors duration-200'"
+                 [class.text-blue-600]="item.isActive"
+                 [class.text-white]="!item.isActive"></i>
+            </div>
+
+            <!-- Label -->
+            <span class="menu-label font-medium text-sm transition-all duration-300 text-white"
+                  [class.hidden]="isCollapsed">
+              {{ item.label }}
+            </span>
+          </div>
+
+          <!-- Badge & Chevron -->
+          <div class="flex items-center space-x-2" [class.hidden]="isCollapsed">
+            <!-- Badge -->
+            <span *ngIf="item.badge && item.badge > 0"
+                  class="badge bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+              {{ item.badge > 99 ? '99+' : item.badge }}
+            </span>
+
+            <!-- Chevron for submenu -->
+            <i *ngIf="item.subItems && item.subItems.length > 0"
+               class="pi pi-angle-right text-slate-400 transition-transform duration-200 text-sm"
+               [class.rotate-90]="item.isActive && showSubMenu[item.id]"></i>
+          </div>
+        </button>
+
+        <!-- Submenu -->
+        <div *ngIf="item.subItems && item.subItems.length > 0 && showSubMenu[item.id] && !isCollapsed"
+             class="submenu ml-8 mt-2 space-y-1 transition-all duration-300 ease-in-out"
+             [@slideDown]>
+
+          <button *ngFor="let subItem of item.subItems"
+                  class="submenu-item w-full flex items-center space-x-3 p-2 rounded-lg text-left transition-all duration-200 hover:bg-slate-100"
+                  [class.active]="subItem.isActive"
+                  (click)="onSubMenuItemClick(item.id, subItem)"
+                  [attr.aria-label]="subItem.label">
+
+            <span class="text-sm transition-colors duration-200 text-white font-medium">
+              {{ subItem.label }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Footer Actions -->
+  <div class="sidebar-footer border-t border-slate-200 p-4 bg-white/50" [class.px-3]="isCollapsed">
+    <div class="space-y-2">
+
+      <!-- Settings -->
+      <button class="footer-action w-full flex items-center space-x-3 transition-all duration-300"
+              [class.justify-center]="isCollapsed"
+              [attr.aria-label]="'Configuración'">
+        <i class="pi pi-cog text-white text-lg"></i>
+        <span class="text-sm font-medium" [class.hidden]="isCollapsed">Configuración</span>
+      </button>
+
+      <!-- Logout -->
+      <button class="footer-action w-full flex items-center space-x-3 transition-all duration-300"
+              [class.justify-center]="isCollapsed"
+              (click)="onLogout()"
+              [attr.aria-label]="'Cerrar sesión'">
+        <i class="pi pi-sign-out text-white text-lg"></i>
+        <span class="text-sm font-medium" [class.hidden]="isCollapsed">Cerrar Sesión</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Expand Button (visible when collapsed) -->
+  <button *ngIf="isCollapsed"
+          class="expand-btn absolute top-6 -right-3 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-200 z-10"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="'Expandir menú lateral'">
+    <i class="pi pi-angle-double-right text-slate-600 text-xs"></i>
+  </button>
+</aside>

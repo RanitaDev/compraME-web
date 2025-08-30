@@ -3,11 +3,77 @@
 @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap');
 @import "tailwindcss";
 
-/* Estilos globales */
 body {
-  background: #000000 !important;
+  background-color: white;
 }
 
-ul li {
-  text-shadow: 1px 1px 10px rgba(18, 227, 255, 0.637);
+/* Estilos globales para modales - siempre fondo blanco con bordes redondeados */
+.p-dialog .p-dialog-content,
+.p-dialog .p-dialog-header,
+.p-dialog .p-dialog-footer,
+.p-dialog {
+  background: white !important;
+  color: #1f2937 !important;
+  border-radius: 12px !important;
+}
+
+.p-dialog .p-dialog-header {
+  border-bottom: 1px solid #e5e7eb !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.p-dialog .p-dialog-footer {
+  border-top: 1px solid #e5e7eb !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.p-dialog .p-dialog-content {
+  border-radius: 0 !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-title {
+  color: #1f2937 !important;
+  font-weight: 600;
+}
+
+/* Botones de cerrar modal */
+.p-dialog .p-dialog-header .p-dialog-header-icon {
+  color: #6b7280 !important;
+}
+
+.p-dialog .p-dialog-header .p-dialog-header-icon:hover {
+  color: #374151 !important;
+  background: #f3f4f6 !important;
+}
+
+/* Overlay del modal */
+.p-dialog-mask {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Asegurar que funcione independientemente del tema oscuro */
+[data-theme="dark"] .p-dialog .p-dialog-content,
+[data-theme="dark"] .p-dialog .p-dialog-header,
+[data-theme="dark"] .p-dialog .p-dialog-footer,
+[data-theme="dark"] .p-dialog {
+  background: white !important;
+  color: #1f2937 !important;
+}
+
+/* Estilos para inputs dentro de modales */
+.p-dialog input,
+.p-dialog textarea,
+.p-dialog select,
+.p-dialog .p-inputtext {
+  background: white !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+}
+
+.p-dialog input:focus,
+.p-dialog textarea:focus,
+.p-dialog select:focus,
+.p-dialog .p-inputtext:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
 }

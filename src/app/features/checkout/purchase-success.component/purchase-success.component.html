@@ -1,0 +1,99 @@
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
+  <div class="max-w-md w-full">
+
+    <!-- Card principal -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+
+      <!-- Icono de éxito animado -->
+      <div class="success-icon w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M9 12l2 2 4-4"/>
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+      </div>
+
+      <!-- Mensaje principal -->
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+        ¡Compra realizada!
+      </h1>
+
+      <p class="text-gray-600 mb-6">
+        Tu pedido ha sido procesado exitosamente. Pronto recibirás un correo con los detalles.
+      </p>
+
+      <!-- Información del pedido -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm text-gray-600">Número de pedido:</span>
+          <span class="font-semibold text-gray-900">#{{ orderId() }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-600">Total pagado:</span>
+          <span class="font-bold text-green-600">${{ totalAmount() }}</span>
+        </div>
+      </div>
+
+      <!-- Indicador de siguiente paso -->
+      <div class="flex items-center gap-3 bg-blue-50 rounded-xl p-4 mb-6">
+        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div class="text-left">
+          <p class="text-sm font-medium text-blue-900">Preparando tu pedido</p>
+          <p class="text-xs text-blue-700">Te notificaremos cuando esté listo para envío</p>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="space-y-3">
+        <button
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+          (click)="continueShopping()"
+          type="button"
+        >
+          Seguir comprando
+        </button>
+
+        <button
+          class="w-full border-2 border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 font-medium py-3 px-6 rounded-xl transition-all duration-300 hover:bg-gray-50"
+          (click)="viewOrderDetails()"
+          type="button"
+        >
+          Ver detalles del pedido
+        </button>
+      </div>
+
+      <!-- Enlaces adicionales -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="flex justify-center gap-6 text-sm">
+          <button
+            class="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+            (click)="goToSupport()"
+            type="button"
+          >
+            Soporte
+          </button>
+          <button
+            class="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+            (click)="downloadReceipt()"
+            type="button"
+          >
+            Descargar recibo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje adicional -->
+    <div class="mt-6 text-center">
+      <p class="text-sm text-gray-600">
+        ¿Tienes dudas? Contáctanos en
+        <a href="tel:477-123-4567" class="text-indigo-600 hover:text-indigo-700 font-medium">
+          477-123-4567
+        </a>
+      </p>
+    </div>
+  </div>
+</div>

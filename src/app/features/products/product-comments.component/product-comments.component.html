@@ -1,0 +1,219 @@
+<section class="py-16 px-4 bg-white">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header con estadísticas -->
+    <div class="mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 animate-fade-in">
+        Opiniones de Clientes
+      </h2>
+
+      @if (averageRating()) {
+        <div class="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 md:p-8 animate-fade-in-delay">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Calificación promedio -->
+            <div class="text-center md:text-left">
+              <div class="flex items-center justify-center md:justify-start gap-4 mb-4">
+                <span class="text-5xl font-bold text-gray-900">
+                  {{ averageRating()!.average.toFixed(1) }}
+                </span>
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-1 mb-1">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <svg
+                        class="w-5 h-5 transition-colors duration-200"
+                        [class.text-yellow-400]="star <= averageRating()!.average"
+                        [class.text-gray-300]="star > averageRating()!.average"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    }
+                  </div>
+                  <span class="text-sm text-gray-600">
+                    {{ averageRating()!.total }} opiniones
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distribución de calificaciones -->
+            <div class="space-y-2">
+              @if (ratingDistribution()) {
+                @for (rating of [5,4,3,2,1]; track rating) {
+                  <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-gray-700 w-8">{{ rating }}</span>
+                    <svg class="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                      <div
+                        class="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-700 ease-out"
+                        [style.width.%]="getRatingPercentage(rating)"
+                      ></div>
+                    </div>
+                    <span class="text-sm text-gray-600 w-8">{{ ratingDistribution()![rating] }}</span>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Lista de comentarios -->
+    @if (comments().length > 0) {
+      <div class="space-y-6">
+        @for (comment of comments(); track comment.idComentario; let i = $index) {
+          <div
+            class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
+            [class]="'animate-slide-up-' + (i % 4 + 1)"
+          >
+            <!-- Header del comentario -->
+            <div class="flex items-start gap-4 mb-4">
+              <div class="flex-shrink-0">
+                @if (comment.avatarUsuario) {
+                  <img
+                    [src]="comment.avatarUsuario"
+                    [alt]="comment.nombreUsuario"
+                    class="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100"
+                  >
+                } @else {
+                  <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                    {{ getInitials(comment.nombreUsuario) }}
+                  </div>
+                }
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-3">
+                    <h4 class="font-semibold text-gray-900">{{ comment.nombreUsuario }}</h4>
+                    @if (comment.verificado) {
+                      <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Compra verificada
+                      </span>
+                    }
+                  </div>
+                  <span class="text-sm text-gray-500">
+                    {{ formatDate(comment.fechaComentario) }}
+                  </span>
+                </div>
+
+                <!-- Calificación -->
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="flex items-center gap-0.5">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <svg
+                        class="w-4 h-4"
+                        [class.text-yellow-400]="star <= comment.calificacion"
+                        [class.text-gray-300]="star > comment.calificacion"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    }
+                  </div>
+                  <h5 class="font-medium text-gray-900">{{ comment.titulo }}</h5>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenido del comentario -->
+            <div class="mb-4">
+              <p class="text-gray-700 leading-relaxed">{{ comment.comentario }}</p>
+            </div>
+
+            <!-- Respuesta del equipo -->
+            @if (comment.respuesta) {
+              <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                  <span class="text-sm font-medium text-blue-700">{{ comment.respuesta.autor }}</span>
+                  <span class="text-xs text-blue-600">{{ formatDate(comment.respuesta.fecha) }}</span>
+                </div>
+                <p class="text-blue-800 text-sm">{{ comment.respuesta.texto }}</p>
+              </div>
+            }
+
+            <!-- Acciones -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+              <button
+                class="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                (click)="markAsUseful(comment.idComentario)"
+                type="button"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M7 10v12l4-4 4 4V10a1 1 0 0 1 1-1h2a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h2a1 1 0 0 1 1 1z"/>
+                </svg>
+                Útil ({{ comment.util }})
+              </button>
+
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <span>¿Te ayudó esta opinión?</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Botón ver más -->
+      @if (hasMoreComments()) {
+        <div class="text-center mt-8">
+          <button
+            class="inline-flex items-center gap-2 px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all duration-300 hover:shadow-lg"
+            (click)="loadMoreComments()"
+            type="button"
+          >
+            Ver más opiniones
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 14l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+      }
+    } @else if (!isLoading()) {
+      <!-- Estado vacío -->
+      <div class="text-center py-12">
+        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M8 12h8m-4-4v8"/>
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-700 mb-2">Aún no hay opiniones</h3>
+        <p class="text-gray-500">Sé el primero en compartir tu experiencia con este producto</p>
+      </div>
+    }
+
+    <!-- Loading state -->
+    @if (isLoading()) {
+      <div class="space-y-6">
+        @for (item of [1,2,3]; track item) {
+          <div class="bg-white border border-gray-200 rounded-2xl p-6 animate-pulse">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="w-12 h-12 bg-gray-200 rounded-full"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-4 bg-gray-200 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
