@@ -1,5 +1,5 @@
 // Componente de lista de productos para el panel de administración
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,6 +17,8 @@ import { Category } from '../../../../interfaces/categories.interface';
   styleUrls: ['./products-list.component.css']
 })
 export class ProductsListComponent implements OnInit, OnDestroy {
+  @Input() categoryId: string | null = null;
+
   // Inyección de dependencias usando inject()
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
@@ -65,6 +67,22 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   private loadProducts(): void {
+    if(this.categoryId) {
+      this.productService.getProductsByCategory(this.categoryId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (products) => {
+            this.allProducts = products.filter(p => p.activo);
+            this.updateFilteredProducts();
+            this.calculateStats();
+          },
+          error: (error) => {
+            console.error('Error loading products:', error);
+            this.showErrorMessage('Error al cargar los productos');
+          }
+        });
+      return;
+    }
     this.productService.getProducts()
       .pipe(takeUntil(this.destroy$))
       .subscribe({

@@ -13,12 +13,44 @@ export interface ToastOptions {
 })
 export class ToastService {
 
+  private recentMessages = new Set<string>();
+
   constructor(private messageService: MessageService) {}
+
+  /**
+   * Genera una clave única para el mensaje
+   */
+  private getMessageKey(summary: string, detail: string = ''): string {
+    return `${summary}|${detail}`;
+  }
+
+  /**
+   * Verifica si el mensaje es duplicado y lo previene
+   */
+  private preventDuplicate(summary: string, detail: string = ''): boolean {
+    const key = this.getMessageKey(summary, detail);
+
+    if (this.recentMessages.has(key)) {
+      return true; // Es duplicado
+    }
+
+    // Agregar a la lista de mensajes recientes
+    this.recentMessages.add(key);
+
+    // Remover después de 2 segundos para permitir mensajes similares más tarde
+    setTimeout(() => {
+      this.recentMessages.delete(key);
+    }, 2000);
+
+    return false; // No es duplicado
+  }
 
   /**
    * Muestra un toast de éxito
    */
   success(summary: string, detail?: string, options?: ToastOptions) {
+    if (this.preventDuplicate(summary, detail)) return;
+
     this.messageService.add({
       severity: 'success',
       summary: summary,
@@ -34,6 +66,8 @@ export class ToastService {
    * Muestra un toast de error
    */
   error(summary: string, detail?: string, options?: ToastOptions) {
+    if (this.preventDuplicate(summary, detail)) return;
+
     this.messageService.add({
       severity: 'error',
       summary: summary,
@@ -49,6 +83,8 @@ export class ToastService {
    * Muestra un toast de advertencia
    */
   warning(summary: string, detail?: string, options?: ToastOptions) {
+    if (this.preventDuplicate(summary, detail)) return;
+
     this.messageService.add({
       severity: 'warn',
       summary: summary,
@@ -64,6 +100,8 @@ export class ToastService {
    * Muestra un toast informativo
    */
   info(summary: string, detail?: string, options?: ToastOptions) {
+    if (this.preventDuplicate(summary, detail)) return;
+
     this.messageService.add({
       severity: 'info',
       summary: summary,

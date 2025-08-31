@@ -41,4 +41,14 @@ export class ProductService {
       );
   }
 
+  public getProductsByCategory(categoriaId: string): Observable<IProduct[]> {
+    return this.http.get<IProduct[]>(`${this.apiUrl}/categoria/${categoriaId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error obteniendo productos por categoría:', error);
+          return of([]);
+        })
+      );
+  }
+
 }
