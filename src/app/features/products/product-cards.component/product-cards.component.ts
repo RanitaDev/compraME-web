@@ -5,6 +5,7 @@ import { trigger, transition, style, animate, stagger, query } from '@angular/an
 import { ProductService } from '../../../services/products.service';
 import { IProduct } from '../../../interfaces/products.interface';
 import { PrimeNgModule } from '../../../primeng.module';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-cards',
@@ -61,12 +62,18 @@ export class ProductCardsComponent implements OnInit {
     this.displayedProducts().length < this.allProducts().length
   );
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
+  /**
+   * @description Obtiene los productos activos.
+   */
   private loadProducts(): void {
     this.productService.getProducts().subscribe(products => {
       const activeProducts = products.filter(product =>
@@ -84,7 +91,10 @@ export class ProductCardsComponent implements OnInit {
     this.displayedProducts.set(initialProducts);
   }
 
-  loadMoreProducts(): void {
+  /**
+   * @description Carga más productos en la vista.
+   */
+  public loadMoreProducts(): void {
     const currentProducts = this.displayedProducts();
     const allProducts = this.allProducts();
     const nextPage = this.currentPage() + 1;
@@ -96,20 +106,16 @@ export class ProductCardsComponent implements OnInit {
     this.currentPage.set(nextPage);
   }
 
-  viewProduct(product: IProduct): void {
-    console.log('Ver producto:', {
-      id: product.idProducto,
-      nombre: product.nombre,
-      precio: product.precio
-    });
-
-    // Aquí implementarías la navegación al detalle del producto
-    // Por ejemplo:
-    // this.router.navigate(['/product', product.idProducto]);
+  public viewProduct(product: IProduct): void {
+    console.log('Visualizando producto:', product);
+    if(!product) {
+      //SNACK TOAST
+    }
+    this.router.navigate(['/product', product._id]);
   }
 
   // Método para truncar texto si es necesario
-  truncateText(text: string, maxLength: number = 60): string {
+  public truncateText(text: string, maxLength: number = 60): string {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
   }

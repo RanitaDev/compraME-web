@@ -10,6 +10,7 @@ import { ToggleButtonModule } from 'primeng/togglebutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 // Interfaces locales para el componente
 interface LoginRequest {
@@ -18,10 +19,12 @@ interface LoginRequest {
 }
 
 interface RegisterRequest {
-  name: string;
   email: string;
   password: string;
-  confirmPassword?: string;
+  nombre: string;
+  direccion?: string;
+  telefono: string;
+  rolId?: string;
 }
 
 @Component({
@@ -51,7 +54,8 @@ export class AuthComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -63,7 +67,8 @@ export class AuthComponent {
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      telefono: ['', [Validators.required, Validators.pattern(/^[0-9]{8,15}$/)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(32)]],
       confirmPassword: ['', [Validators.required]],
       //acceptTerms: [false, [Validators.requiredTrue]]
     }, { validators: this.passwordMatchValidator });
@@ -73,7 +78,7 @@ export class AuthComponent {
   passwordMatchValidator(formGroup: FormGroup) {
     const password = formGroup.get('password');
     const confirmPassword = formGroup.get('confirmPassword');
-    
+
     if (password && confirmPassword && password.value !== confirmPassword.value) {
       confirmPassword.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
@@ -103,15 +108,19 @@ export class AuthComponent {
       this.authService.login(loginData).subscribe({
         next: (response: any) => {
           console.log('Usuario autenticado:', response.user);
+          this.toastService.success('¡Bienvenido!', 'Has iniciado sesión correctamente');
           this.router.navigate(['/home']);
         },
         error: (error: any) => {
-          console.error('Error en login:', error.message);
-          // Aquí puedes mostrar un mensaje de error al usuario
+          console.error('Error en login:', error);
+
+          // El mensaje ya viene procesado desde el AuthService handleError
+          const errorMessage = error.message || 'Error al iniciar sesión';
+          this.toastService.error('Error de autenticación', errorMessage);
         }
       });
     } else {
-      console.log('Formulario inválido');
+      this.toastService.validationError('Por favor completa todos los campos correctamente');
       // Marcar todos los campos como touched para mostrar errores
       Object.keys(this.loginForm.controls).forEach(key => {
         this.loginForm.get(key)?.markAsTouched();
@@ -120,27 +129,35 @@ export class AuthComponent {
   }
 
   onRegister() {
-    console.log('Llegué al registro:');
     if (this.registerForm.valid) {
       const registerData: RegisterRequest = {
-        name: `${this.registerForm.value.firstName} ${this.registerForm.value.lastName}`,
         email: this.registerForm.value.email,
         password: this.registerForm.value.password,
-        confirmPassword: this.registerForm.value.confirmPassword
+        nombre: `${this.registerForm.value.firstName} ${this.registerForm.value.lastName}`,
+        telefono: this.registerForm.value.telefono,
+        rolId: 'cliente'
       };
 
       this.authService.register(registerData).subscribe({
         next: (response: any) => {
           console.log('Usuario registrado:', response.user);
-          this.router.navigate(['/home']);
+          this.toastService.success('¡Cuenta creada!', 'Tu cuenta ha sido creada exitosamente. ¡Bienvenido a compraME!');
+
+          // Pequeño delay para que el usuario vea el toast antes de navegar
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 1500);
         },
         error: (error: any) => {
-          console.error('Error en registro:', error.message);
-          // Aquí puedes mostrar un mensaje de error al usuario
+          console.error('Error en registro:', error);
+
+          // El mensaje ya viene procesado desde el AuthService handleError
+          const errorMessage = error.message || 'Error al crear la cuenta';
+          this.toastService.error('Error en el registro', errorMessage);
         }
       });
     } else {
-      console.log('Formulario inválido');
+      this.toastService.validationError('Por favor completa todos los campos correctamente');
       // Marcar todos los campos como touched para mostrar errores
       Object.keys(this.registerForm.controls).forEach(key => {
         this.registerForm.get(key)?.markAsTouched();
@@ -158,7 +175,7 @@ export class AuthComponent {
   getFieldError(formName: 'loginForm' | 'registerForm', fieldName: string): string {
     const form = formName === 'loginForm' ? this.loginForm : this.registerForm;
     const field = form.get(fieldName);
-    
+
     if (field?.errors) {
       if (field.errors['required']) {
         return 'Este campo es requerido';
@@ -169,6 +186,13 @@ export class AuthComponent {
       if (field.errors['minlength']) {
         const minLength = field.errors['minlength'].requiredLength;
         return `Mínimo ${minLength} caracteres`;
+      }
+      if (field.errors['maxlength']) {
+        const maxLength = field.errors['maxlength'].requiredLength;
+        return `Máximo ${maxLength} caracteres`;
+      }
+      if (field.errors['pattern'] && fieldName === 'telefono') {
+        return 'El teléfono debe tener entre 8 y 15 dígitos';
       }
       if (field.errors['passwordMismatch']) {
         return 'Las contraseñas no coinciden';

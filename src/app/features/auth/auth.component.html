@@ -1,6 +1,6 @@
-<div class="flex align-items-center justify-center">
+<div class="flex align-items-center justify-center py-8">
   <div class="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md relative overflow-hidden auth-card">
-    <!-- HEADER -->
+    <!-- ENCABEZADO -->
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-[#243755] font-gabarito m-0 p-0">
         {{ isLoginMode() ? 'Bienvenido de nuevo' : 'Crear cuenta' }}
@@ -10,9 +10,9 @@
       </p>
     </div>
 
-    <!-- FORM LOGIN -->
+    <!-- FORMULARIO DE INICIO DE SESIÓN -->
     <form *ngIf="isLoginMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="flex flex-col gap-4">
-      <!-- INPUT DEL EMAIL -->
+      <!-- CAMPO DE EMAIL -->
       <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
         <label for="loginEmail" class="form-label">Correo electrónico o número de teléfono</label>
         <div class="input-wrapper"
@@ -32,10 +32,10 @@
         </div>
       </div>
 
-      <!-- INPUT DE LA CONTRASEÑA -->
+      <!-- CAMPO DE CONTRASEÑA -->
       <div class="form-group flex flex-col gap-0.5 min-h-[80px] mb-2">
         <label for="loginPassword" class="form-label">Contraseña</label>
-        <!-- INPUT DE LA CONTRASEÑ -->
+        <!-- CAMPO DE CONTRASEÑA -->
         <div class="input-wrapper"
           [pTooltip]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched ? 'La contraseña debe tener al menos 6 caracteres' : ''"
           tooltipPosition="top"
@@ -83,39 +83,37 @@
         <a href="#" class="forgot-password text-sm text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <!-- BOTÓN DE INICIO / REGISTRO -->
+      <!-- BOTÓN DE INICIO DE SESIÓN / REGISTRO -->
       <p-button
         type="submit"
         label="Iniciar Sesión"
         styleClass="auth-button primary"
         icon="pi pi-sign-in"
-        [disabled]="loginForm.invalid"
-        (onClick)="onLogin()"
-        >
+        [disabled]="loginForm.invalid">
       </p-button>
 
       <p-divider align="center" styleClass="auth-divider">
         <span class="divider-text text-[#585a5c] text-[0.95rem]">o continúa con</span>
       </p-divider>
 
-      <div class="social-buttons flex gap-2 w-[100%] justify-between">
+      <div class="social-buttons flex gap-2 w-full justify-center">
         <p-button
           type="button"
           label="Google"
           icon="pi pi-google"
-          styleClass="auth-button social google">
+          styleClass="auth-button social google flex-1">
         </p-button>
         <p-button
           type="button"
           label="Facebook"
           icon="pi pi-facebook"
-          styleClass="auth-button social facebook">
+          styleClass="auth-button social facebook flex-1">
         </p-button>
       </div>
     </form>
 
-    <!-- FORM REGISTRO -->
-    <form *ngIf="!isLoginMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form">
+    <!-- FORMULARIO DE REGISTRO -->
+    <form *ngIf="!isLoginMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="flex flex-col gap-4">
       <div class="form-row">
         <div class="form-group half">
           <label for="firstName" class="form-label">Nombre</label>
@@ -154,7 +152,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
         <label for="registerEmail" class="form-label">Correo electrónico</label>
         <input
           pInputText
@@ -172,7 +170,25 @@
         </small>
       </div>
 
-      <div class="form-group">
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
+        <label for="registerPhone" class="form-label">Teléfono</label>
+        <input
+          pInputText
+          id="registerPhone"
+          type="tel"
+          formControlName="telefono"
+          placeholder="12345678"
+          class="form-input"
+          [class.error]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
+        />
+        <small
+          *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
+          class="error-message">
+          El teléfono debe tener entre 8 y 15 dígitos
+        </small>
+      </div>
+
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
         <label for="registerPassword" class="form-label">Contraseña</label>
         <p-password
           formControlName="password"
@@ -185,11 +201,11 @@
         <small
           *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
           class="error-message">
-          La contraseña debe tener al menos 8 caracteres
+          La contraseña debe tener entre 6 y 32 caracteres
         </small>
       </div>
 
-      <div class="form-group">
+      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
         <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
         <p-password
           formControlName="confirmPassword"
@@ -221,31 +237,30 @@
       <p-button
         type="submit"
         label="Crear Cuenta"
-        styleClass="auth-button primary"
-        (onClick)="onRegister()">
+        styleClass="auth-button primary">
       </p-button>
 
-      <p-divider align="center">
-        <span class="divider-text">o regístrate con</span>
+      <p-divider align="center" styleClass="auth-divider">
+        <span class="divider-text text-[#585a5c] text-[0.95rem]">o regístrate con</span>
       </p-divider>
 
-      <div class="social-buttons">
+      <div class="social-buttons flex gap-2 w-full justify-center">
         <p-button
           type="button"
           label="Google"
           icon="pi pi-google"
-          styleClass="auth-button social google">
+          styleClass="auth-button social google flex-1">
         </p-button>
         <p-button
           type="button"
           label="Facebook"
           icon="pi pi-facebook"
-          styleClass="auth-button social facebook">
+          styleClass="auth-button social facebook flex-1">
         </p-button>
       </div>
     </form>
 
-    <!-- SWITCH A LOGIN/REGISTER -->
+    <!-- CAMBIO A INICIAR SESIÓN/REGISTRO -->
     <div class="auth-footer text-center mt-8 border-t border-gray-200 pt-4">
       <p class="toggle-text text-gray-400 text-s m-0 p-0">
         {{ isLoginMode() ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?' }}

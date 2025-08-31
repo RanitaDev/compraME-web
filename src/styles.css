@@ -77,3 +77,175 @@ body {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
 }
+
+
+/* Estilos personalizados para los toasts */
+/* Agregar en tu styles.css global o en el componente */
+
+/* Contenedor principal del toast */
+.p-toast {
+  opacity: 1 !important;
+}
+
+/* Mensajes individuales */
+.p-toast-message {
+  margin: 0 0 0.75rem 0 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px);
+  border-left: 4px solid transparent !important;
+}
+
+/* Toast de éxito */
+.p-toast-message-success {
+  background: rgba(16, 185, 129, 0.95) !important;
+  color: white !important;
+  border-left-color: #059669 !important;
+}
+
+.p-toast-message-success .p-toast-message-icon,
+.p-toast-message-success .p-toast-icon-close {
+  color: white !important;
+}
+
+/* Toast de error */
+.p-toast-message-error {
+  background: rgba(239, 68, 68, 0.95) !important;
+  color: white !important;
+  border-left-color: #dc2626 !important;
+}
+
+.p-toast-message-error .p-toast-message-icon,
+.p-toast-message-error .p-toast-icon-close {
+  color: white !important;
+}
+
+/* Toast de advertencia */
+.p-toast-message-warn {
+  background: rgba(245, 158, 11, 0.95) !important;
+  color: white !important;
+  border-left-color: #d97706 !important;
+}
+
+.p-toast-message-warn .p-toast-message-icon,
+.p-toast-message-warn .p-toast-icon-close {
+  color: white !important;
+}
+
+/* Toast informativo */
+.p-toast-message-info {
+  background: rgba(59, 130, 246, 0.95) !important;
+  color: white !important;
+  border-left-color: #2563eb !important;
+}
+
+.p-toast-message-info .p-toast-message-icon,
+.p-toast-message-info .p-toast-icon-close {
+  color: white !important;
+}
+
+/* Contenido del mensaje */
+.p-toast-message-content {
+  padding: 1rem 1.25rem !important;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* Icono del mensaje */
+.p-toast-message-icon {
+  font-size: 1.25rem !important;
+  margin-top: 0.125rem;
+}
+
+/* Texto del mensaje */
+.p-toast-message-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Título del mensaje */
+.p-toast-summary {
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  margin: 0 !important;
+}
+
+/* Detalle del mensaje */
+.p-toast-detail {
+  font-size: 0.875rem !important;
+  margin: 0 !important;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Botón de cerrar */
+.p-toast-icon-close {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: auto !important;
+  transition: background 0.2s ease !important;
+}
+
+.p-toast-icon-close:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.p-toast-icon-close:focus {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5) !important;
+  outline: none !important;
+}
+
+/* Animaciones de entrada y salida */
+.p-toast-message-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.p-toast-message-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.p-toast-message-exit {
+  max-height: 1000px;
+}
+
+.p-toast-message-exit-active {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive */
+@media (max-width: 920px) {
+  .p-toast-message {
+    margin: 0 0 0.5rem 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .p-toast-message-content {
+    padding: 0.875rem 1rem !important;
+  }
+
+  .p-toast-summary {
+    font-size: 0.9rem !important;
+  }
+
+  .p-toast-detail {
+    font-size: 0.8rem !important;
+  }
+}

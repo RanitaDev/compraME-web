@@ -4,13 +4,13 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
-import { IUser, IAuthResponse, ILoginRequest, IRegisterRequest } from '../interfaces/auth.interface';   
+import { IUser, IAuthResponse, ILoginRequest, IRegisterRequest } from '../interfaces/auth.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl || 'http://localhost:3010';
+  private apiUrl = `${environment.apiUrl}/auth`;
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
 
@@ -27,42 +27,23 @@ export class AuthService {
   ) {
     // Verificar si el token sigue siendo válido al inicializar el servicio
     this.checkTokenValidity();
-    console.log('🔧 AuthService configurado con URL:', this.apiUrl);
   }
 
   /**
    * Registro de nuevo usuario
    */
-  register(registerData: IRegisterRequest): Observable<IAuthResponse> {
+  public register(registerData: IRegisterRequest): Observable<IAuthResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-
-    // Remover confirmPassword antes de enviar (el backend no lo acepta)
     const { confirmPassword, ...dataToSend } = registerData;
-    
-    console.log('📤 AuthService - Datos enviados:', dataToSend);
-    console.log('🔗 AuthService - URL:', `${this.apiUrl}/auth/register`);
+    console.log('DATA TO SEND', dataToSend);
 
-    return this.http.post<any>(`${this.apiUrl}/auth/register`, dataToSend, { headers })
+    return this.http.post<any>(`${this.apiUrl}/register`, dataToSend, { headers })
       .pipe(
         map(response => {
-          console.log('✅ AuthService - Respuesta recibida:', response);
-          
-          // Crear respuesta compatible con IAuthResponse
-          const authResponse: IAuthResponse = {
-            token: this.generateTempToken(response),
-            user: {
-              id: response._id || response.id || 'temp-id',
-              email: response.email,
-              name: response.name,
-              role: response.role || 'user'
-            },
-            message: 'Usuario registrado exitosamente'
-          };
-          
-          this.setSession(authResponse.token, authResponse.user);
-          return authResponse;
+          this.setSession(response.token, response.user);
+          return response;
         }),
         catchError(this.handleError)
       );
@@ -131,7 +112,7 @@ export class AuthService {
   private setSession(token: string, user: IUser): void {
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
-    
+
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
   }
@@ -143,10 +124,10 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('refresh_token');
-    
+
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
-    
+
     // Redirigir al login
     this.router.navigate(['/auth']);
   }
@@ -164,12 +145,12 @@ export class AuthService {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Math.floor(Date.now() / 1000);
-      
+
       if (payload.exp && payload.exp < currentTime) {
         this.clearSession();
         return false;
       }
-      
+
       return true;
     } catch (error) {
       // Si no es un JWT válido, asumir que es válido por ahora
@@ -219,39 +200,55 @@ export class AuthService {
    */
   private handleError = (error: any): Observable<never> => {
     let errorMessage = 'Ha ocurrido un error inesperado';
-    
+
     console.error('🚨 Error en AuthService:', error);
     console.error('📊 Status:', error.status);
     console.error('📝 Error body:', error.error);
-    
+
     if (error.error instanceof ErrorEvent) {
       // Error del lado del cliente
       errorMessage = `Error: ${error.error.message}`;
     } else {
       // Error del lado del servidor
-      switch (error.status) {
-        case 400:
-          errorMessage = error.error?.message || 'Datos inválidos - Verifica los campos';
-          console.error('❌ Error 400 - Detalles:', error.error);
-          break;
-        case 401:
-          errorMessage = 'Credenciales inválidas';
-          this.forceLogout();
-          break;
-        case 403:
-          errorMessage = 'Acceso denegado';
-          break;
-        case 404:
-          errorMessage = 'Servicio no encontrado';
-          break;
-        case 409:
-          errorMessage = error.error?.message || 'El usuario ya existe';
-          break;
-        case 500:
-          errorMessage = 'Error interno del servidor';
-          break;
-        default:
-          errorMessage = error.error?.message || `Error: ${error.status}`;
+
+      // Priorizar el mensaje del backend si existe
+      if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error.error?.error) {
+        errorMessage = error.error.error;
+      } else {
+        // Fallback a mensajes por código de estado
+        switch (error.status) {
+          case 400:
+            errorMessage = 'Datos inválidos - Verifica los campos';
+            break;
+          case 401:
+            errorMessage = 'Credenciales inválidas';
+            this.forceLogout();
+            break;
+          case 403:
+            errorMessage = 'Acceso denegado';
+            break;
+          case 404:
+            errorMessage = 'Servicio no encontrado';
+            break;
+          case 409:
+            errorMessage = 'El usuario ya existe';
+            break;
+          case 422:
+            errorMessage = 'Error de validación - Verifica los datos ingresados';
+            break;
+          case 500:
+            errorMessage = 'Error interno del servidor';
+            break;
+          default:
+            errorMessage = `Error del servidor (${error.status})`;
+        }
+      }
+
+      // Si es un array de errores de validación (como de class-validator)
+      if (error.error?.message && Array.isArray(error.error.message)) {
+        errorMessage = error.error.message.join(', ');
       }
     }
 

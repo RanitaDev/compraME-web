@@ -5,6 +5,7 @@ import { FeaturedProductsComponent } from '../featured-products.component/featur
 import { finalize } from 'rxjs';
 import { SpinnerService } from '../../../../../core/services';
 import { ProductService } from '../../../../../services/products.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-product-detail',
@@ -15,8 +16,7 @@ import { ProductService } from '../../../../../services/products.service';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  @Input() productId: string = '';
-
+  public productId: string;
   product = signal<IProduct | null>(null);
   selectedImageIndex = signal(0);
   imageLoaded = signal(false);
@@ -33,8 +33,11 @@ export class ProductDetailComponent implements OnInit {
 
   constructor(
     private readonly productsService: ProductService,
-    private readonly spinnerService: SpinnerService
-  ){}
+    private readonly spinnerService: SpinnerService,
+    private route: ActivatedRoute
+  ){
+    this.productId = this.route.snapshot.paramMap.get('id') || '';
+  }
 
   /**
    * @description Carga los datos de un producto específico.
