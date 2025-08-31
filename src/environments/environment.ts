@@ -1,7 +1,7 @@
 export const environment = {
-  production: true,
-  apiUrl: '/api',         // <— usa el proxy de Vercel
+  production: false,
+  apiUrl: 'http://localhost:3010/api',
   apiTimeout: 30000,
-  enableLogging: false,
-  version: '1.0.0'
+  enableLogging: true,
+  version: '1.0.0',
 };
