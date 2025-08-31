@@ -1,7 +1,7 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3010/api',
+  production: true,
+  apiUrl: 'https://comprame-back-production.up.railway.app/api',
   apiTimeout: 30000,
-  enableLogging: true,
-  version: '1.0.0',
+  enableLogging: false,
+  version: '1.0.0'
 };
