@@ -2,7 +2,9 @@ export interface IUser {
   id: string;
   email: string;
   name: string;
-  lastName?: string; // Hacer opcional
+  lastName?: string;
+  telefono?: string;
+  direccion?: string;
   role?: string;
 }
 
@@ -15,6 +17,7 @@ export interface IAuthResponse {
 export interface ILoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface IRegisterRequest {

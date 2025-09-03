@@ -5,6 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { IUser, IAuthResponse, ILoginRequest, IRegisterRequest } from '../interfaces/auth.interface';
+import { SessionService } from '../core/services/session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,10 +24,16 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private sessionService: SessionService
   ) {
     // Verificar si el token sigue siendo válido al inicializar el servicio
     this.checkTokenValidity();
+
+    // Escuchar eventos de timeout de sesión
+    window.addEventListener('session-timeout', () => {
+      this.handleSessionTimeout();
+    });
   }
 
   /**
@@ -42,7 +49,7 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/register`, dataToSend, { headers })
       .pipe(
         map(response => {
-          this.setSession(response.token, response.user);
+          this.setSession(response.token, response.user, false); // No remember por defecto en registro
           return response;
         }),
         catchError(this.handleError)
@@ -57,11 +64,13 @@ export class AuthService {
       'Content-Type': 'application/json'
     });
 
-    return this.http.post<IAuthResponse>(`${this.apiUrl}/auth/login`, loginData, { headers })
+    const { rememberMe, ...loginPayload } = loginData;
+
+    return this.http.post<IAuthResponse>(`${this.apiUrl}/login`, loginPayload, { headers })
       .pipe(
         map(response => {
           if (response.token && response.user) {
-            this.setSession(response.token, response.user);
+            this.setSession(response.token, response.user, rememberMe);
           }
           return response;
         }),
@@ -109,9 +118,14 @@ export class AuthService {
   /**
    * Establecer la sesión del usuario
    */
-  private setSession(token: string, user: IUser): void {
+  private setSession(token: string, user: IUser, rememberMe?: boolean): void {
     localStorage.setItem(this.tokenKey, token);
     localStorage.setItem(this.userKey, JSON.stringify(user));
+
+    // Configurar sesión según preferencias del usuario
+    this.sessionService.configureSession({
+      rememberMe: rememberMe || false
+    });
 
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
@@ -125,11 +139,23 @@ export class AuthService {
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('refresh_token');
 
+    // Limpiar configuración de sesión
+    this.sessionService.clearSessionConfig();
+
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
 
     // Redirigir al login
     this.router.navigate(['/auth']);
+  }
+
+  /**
+   * Manejar timeout de sesión
+   */
+  private handleSessionTimeout(): void {
+    console.log('⏰ Sesión expirada por timeout');
+    this.clearSession();
+    // Aquí podrías mostrar un toast informando al usuario
   }
 
   /**

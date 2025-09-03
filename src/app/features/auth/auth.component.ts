@@ -16,6 +16,7 @@ import { ToastService } from '../../core/services/toast.service';
 interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 interface RegisterRequest {
@@ -102,7 +103,8 @@ export class AuthComponent {
     if (this.loginForm.valid) {
       const loginData: LoginRequest = {
         email: this.loginForm.value.email,
-        password: this.loginForm.value.password
+        password: this.loginForm.value.password,
+        rememberMe: this.loginForm.value.rememberMe || false
       };
 
       this.authService.login(loginData).subscribe({
