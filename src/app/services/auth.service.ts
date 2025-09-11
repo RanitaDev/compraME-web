@@ -34,6 +34,17 @@ export class AuthService {
     window.addEventListener('session-timeout', () => {
       this.handleSessionTimeout();
     });
+
+    // Exponer métodos de debug en desarrollo (solo para depuración)
+    if (typeof window !== 'undefined') {
+      (window as any).authDebug = {
+        sessionInfo: () => this.debugSessionInfo(),
+        sessionService: () => this.sessionService.debugSessionInfo(),
+        forceLogout: () => this.clearSession(),
+        getToken: () => this.getToken(),
+        isValid: () => this.hasValidToken()
+      };
+    }
   }
 
   /**
@@ -49,7 +60,11 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/register`, dataToSend, { headers })
       .pipe(
         map(response => {
-          this.setSession(response.token, response.user, false); // No remember por defecto en registro
+          this.setSession(response.access_token, response.user, true); // Recordarme por defecto en registro
+          // También guardar refresh_token si existe
+          if (response.refresh_token) {
+            localStorage.setItem('refresh_token', response.refresh_token);
+          }
           return response;
         }),
         catchError(this.handleError)
@@ -69,8 +84,12 @@ export class AuthService {
     return this.http.post<IAuthResponse>(`${this.apiUrl}/login`, loginPayload, { headers })
       .pipe(
         map(response => {
-          if (response.token && response.user) {
-            this.setSession(response.token, response.user, rememberMe);
+          if (response.access_token && response.user) {
+            this.setSession(response.access_token, response.user, rememberMe);
+            // También guardar refresh_token si existe
+            if (response.refresh_token) {
+              localStorage.setItem('refresh_token', response.refresh_token);
+            }
           }
           return response;
         }),
@@ -123,18 +142,60 @@ export class AuthService {
     localStorage.setItem(this.userKey, JSON.stringify(user));
 
     // Configurar sesión según preferencias del usuario
+    const rememberMeValue = rememberMe !== undefined ? rememberMe : true; // Por defecto true
     this.sessionService.configureSession({
-      rememberMe: rememberMe || false
+      rememberMe: rememberMeValue
+    });
+
+    console.log('✅ Sesión establecida:', {
+      usuario: user.email,
+      recordarme: rememberMeValue,
+      token: token.substring(0, 20) + '...'
     });
 
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
+
+    // Manejar redirección después del login
+    this.handlePostLoginRedirect();
+  }
+
+  /**
+   * Manejar redirección después del login
+   */
+  private handlePostLoginRedirect(): void {
+    const redirectUrl = localStorage.getItem('redirect_after_login');
+    const purchaseIntent = localStorage.getItem('purchase_intent');
+
+    // Limpiar storage
+    localStorage.removeItem('redirect_after_login');
+    localStorage.removeItem('purchase_intent');
+
+    if (purchaseIntent) {
+      try {
+        const intent = JSON.parse(purchaseIntent);
+        if (intent.action === 'buy_now' && intent.productId) {
+          // El usuario viene de una intención de compra
+          console.log('🛒 Redirigiendo a compra después del login');
+          // La redirección la manejará el componente que detecte el login
+          return;
+        }
+      } catch (error) {
+        console.error('Error procesando purchase_intent:', error);
+      }
+    }
+
+    if (redirectUrl && redirectUrl !== '/auth') {
+      this.router.navigate([redirectUrl]);
+    }
   }
 
   /**
    * Limpiar la sesión del usuario
    */
   private clearSession(): void {
+    console.log('🧹 Limpiando sesión...');
+
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('refresh_token');
@@ -167,19 +228,32 @@ export class AuthService {
       return false;
     }
 
+    // Si está configurado "Recordarme", no validar expiración
+    if (this.sessionService.shouldPersistSession()) {
+      return true;
+    }
+
     // Verificar si el token ha expirado (si está en formato JWT)
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        // No es un JWT válido, pero permitir por ahora
+        return true;
+      }
+
+      const payload = JSON.parse(atob(parts[1]));
       const currentTime = Math.floor(Date.now() / 1000);
 
       if (payload.exp && payload.exp < currentTime) {
+        console.log('🚨 Token expirado:', new Date(payload.exp * 1000));
         this.clearSession();
         return false;
       }
 
       return true;
     } catch (error) {
-      // Si no es un JWT válido, asumir que es válido por ahora
+      // Si hay error decodificando, asumir válido pero loggear el error
+      console.warn('Error validando token JWT:', error);
       return true;
     }
   }
@@ -201,12 +275,22 @@ export class AuthService {
   }
 
   /**
-   * Verificar validez del token al inicializar
+   * Verificar validez del token al inicializar (menos agresivo)
    */
   private checkTokenValidity(): void {
     const token = this.getToken();
-    if (token && !this.hasValidToken()) {
-      this.clearSession();
+    if (!token) {
+      return;
+    }
+
+    // Solo verificar si no está configurado "Recordarme"
+    if (!this.sessionService.shouldPersistSession()) {
+      if (!this.hasValidToken()) {
+        console.log('🔄 Token inválido, limpiando sesión...');
+        this.clearSession();
+      }
+    } else {
+      console.log('💾 Sesión persistente activa, saltando validación de token');
     }
   }
 
@@ -301,5 +385,39 @@ export class AuthService {
     const signature = 'temp-signature';
 
     return `${encodedHeader}.${encodedPayload}.${signature}`;
+  }
+
+  /**
+   * Método de diagnóstico - Solo para desarrollo
+   */
+  public debugSessionInfo(): void {
+    const token = this.getToken();
+    const user = this.getCurrentUser();
+    const sessionConfig = this.sessionService.getSessionConfig();
+
+    console.log('🔍 DEBUG - Estado de sesión:', {
+      hasToken: !!token,
+      tokenStart: token ? token.substring(0, 20) + '...' : 'No token',
+      user: user ? { email: user.email, nombre: user.nombre } : 'No user',
+      sessionConfig,
+      isAuthenticated: this.isAuthenticated(),
+      tokenValid: token ? this.hasValidToken() : false
+    });
+
+    if (token) {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          const exp = payload.exp ? new Date(payload.exp * 1000) : null;
+          console.log('🗂️ Token payload:', {
+            exp: exp ? exp.toLocaleString() : 'No expiry',
+            timeUntilExp: exp ? Math.floor((exp.getTime() - Date.now()) / 1000 / 60) + ' minutos' : 'N/A'
+          });
+        }
+      } catch (error) {
+        console.log('❌ Error decodificando token:', error);
+      }
+    }
   }
 }

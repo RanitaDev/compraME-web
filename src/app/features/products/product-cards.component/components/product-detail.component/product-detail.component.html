@@ -70,6 +70,7 @@
             class="btn-primary flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-lg font-semibold cursor-pointer transition-all duration-300 relative overflow-hidden"
             [disabled]="product()!.stock === 0"
             type="button"
+            (click)="comprarAhora()"
           >
             {{ product()!.stock === 0 ? 'Agotado' : 'Comprar Ahora' }}
           </button>
@@ -78,9 +79,10 @@
             class="btn-secondary flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-lg font-semibold cursor-pointer transition-all duration-300"
             [disabled]="product()!.stock === 0"
             type="button"
+            (click)="agregarAlCarrito()"
           >
             <i class="fas fa-shopping-cart"></i>
-            Agregar al Carrito
+            {{ product()!.stock === 0 ? 'Agotado' : 'Agregar al Carrito' }}
           </button>
         </div>
 

@@ -1,6 +1,7 @@
-import { Component, OnInit, Input, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
+import { OrderDataService } from '../../../services/order-data.service';
 
 @Component({
   selector: 'app-purchase-success',
@@ -11,60 +12,58 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./purchase-success.component.css']
 })
 export class PurchaseSuccessComponent implements OnInit {
-  @Input() orderNumber?: string;
-  @Input() amount?: number;
-
-  orderId = signal<string>('ORD-87654321');
-  totalAmount = signal<string>('1,159.96');
+  orderId = signal<string>('');
+  orderData = signal<any>(null);
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private orderDataService: OrderDataService
   ) {}
 
   ngOnInit() {
-    // Obtener parámetros de la ruta si existen
+    // Obtener parámetros de la ruta
     this.route.params.subscribe(params => {
       if (params['orderId']) {
         this.orderId.set(params['orderId']);
+
+        // Intentar cargar datos de la orden
+        const orderInfo = this.orderDataService.getOrderData(params['orderId']);
+        if (orderInfo) {
+          this.orderData.set(orderInfo);
+        }
       }
     });
+  }
 
-    // Obtener query params si existen
-    this.route.queryParams.subscribe(params => {
-      if (params['amount']) {
-        this.totalAmount.set(this.formatPrice(parseFloat(params['amount'])));
-      }
-    });
-
-    // Usar inputs si están disponibles
-    if (this.orderNumber) {
-      this.orderId.set(this.orderNumber);
+  getTotalAmount(): string {
+    const data = this.orderData();
+    if (data?.resumen?.total) {
+      return this.formatPrice(data.resumen.total);
     }
-    if (this.amount) {
-      this.totalAmount.set(this.formatPrice(this.amount));
-    }
+    return '0.00';
   }
 
   continueShopping() {
-    // Navegar a la página principal o catálogo
+    // Navegar a la página principal
     this.router.navigate(['/']);
   }
 
   viewOrderDetails() {
     // Navegar a detalles del pedido
-    this.router.navigate(['/my-orders', this.orderId()]);
+    this.router.navigate(['/orders/order-detail'], {
+      queryParams: { orderId: this.orderId() }
+    });
   }
 
   goToSupport() {
-    // Navegar a página de soporte o abrir chat
-    this.router.navigate(['/support']);
+    // Navegar a página de soporte
+    console.log('Ir a soporte para orden:', this.orderId());
   }
 
   downloadReceipt() {
     // Implementar descarga de recibo
     console.log('Descargando recibo para orden:', this.orderId());
-    // Aquí implementarías la lógica para generar/descargar el PDF del recibo
   }
 
   private formatPrice(price: number): string {

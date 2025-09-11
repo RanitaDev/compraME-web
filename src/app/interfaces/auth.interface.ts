@@ -1,15 +1,16 @@
 export interface IUser {
   id: string;
   email: string;
-  name: string;
-  lastName?: string;
+  nombre: string;
   telefono?: string;
   direccion?: string;
-  role?: string;
+  fechaRegistro?: string;
+  rolId?: string;
 }
 
 export interface IAuthResponse {
-  token: string;
+  access_token: string;
+  refresh_token?: string;
   user: IUser;
   message?: string;
 }

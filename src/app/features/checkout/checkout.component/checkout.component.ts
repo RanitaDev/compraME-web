@@ -1,8 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
 import { CheckoutService } from '../../../services/checkout.service';
+import { DirectPurchaseService } from '../../../services/direct-purchase.service';
 import { IPaymentMethod, IAddress, ICheckoutSummary, ICartProducts } from '../../../interfaces/checkout.interface';
 
 @Component({
@@ -13,8 +14,6 @@ import { IPaymentMethod, IAddress, ICheckoutSummary, ICartProducts } from '../..
   styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
-  @Input() fromCart: boolean = true; // true = desde carrito, false = compra directa
-
   addresses: IAddress[] = [];
   paymentMethods: IPaymentMethod[] = [];
   selectedAddress: IAddress | null = null;
@@ -22,6 +21,9 @@ export class CheckoutComponent implements OnInit {
   checkoutSummary: ICheckoutSummary | null = null;
   isProcessing: boolean = false;
   showAddressForm: boolean = false;
+
+  // Determinar el tipo de checkout (cart o direct)
+  isDirectPurchase: boolean = false;
 
   // Getter para verificar si se puede proceder
   get canProceed(): boolean {
@@ -33,10 +35,17 @@ export class CheckoutComponent implements OnInit {
   constructor(
     private checkoutService: CheckoutService,
     private cartService: CartService,
-    private router: Router
+    private directPurchaseService: DirectPurchaseService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    // Determinar tipo de checkout basado en query params
+    this.route.queryParams.subscribe(params => {
+      this.isDirectPurchase = params['type'] === 'direct';
+    });
+
     this.loadInitialData();
     this.buildCheckoutSummary();
   }
@@ -68,7 +77,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   private buildCheckoutSummary() {
-    if (this.fromCart) {
+    if (!this.isDirectPurchase) {
+      // Compra desde carrito
       const cartSummary = this.cartService.cartSummary();
       const checkoutItems: ICartProducts[] = cartSummary.items.map(item => ({
         idProducto: item.producto._id,
@@ -86,8 +96,15 @@ export class CheckoutComponent implements OnInit {
         total: cartSummary.total
       };
     } else {
-      // TODO: Construir desde producto individual
-      // Aquí manejarías la compra directa de un producto
+      // Compra directa
+      const directSummary = this.directPurchaseService.createDirectCheckoutSummary();
+      if (directSummary) {
+        this.checkoutSummary = directSummary;
+      } else {
+        // Si no hay producto de compra directa, redirigir al home
+        console.error('No hay producto configurado para compra directa');
+        this.router.navigate(['/']);
+      }
     }
   }
 
@@ -138,11 +155,14 @@ export class CheckoutComponent implements OnInit {
         this.isProcessing = false;
         if (result.success) {
           // Limpiar carrito si es compra desde carrito
-          if (this.fromCart) {
+          if (!this.isDirectPurchase) {
             this.cartService.clearCart();
+          } else {
+            // Limpiar producto de compra directa
+            this.directPurchaseService.clearDirectPurchase();
           }
           // Redirigir a página de confirmación
-          this.router.navigate(['/order-confirmation', result.orderId]);
+          this.router.navigate(['/checkout/order-confirmation', result.orderId]);
         } else {
           // Mostrar error
           alert(result.error || 'Error al procesar el pedido');

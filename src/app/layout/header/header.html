@@ -36,7 +36,7 @@
         <div class="user-section flex items-center gap-3">
           <!-- Saludo con nombre -->
           <span class="text-sm text-gray-600 hidden sm:inline">
-            ¡Hola, {{ currentUser.name }}!
+            ¡Hola, {{ currentUser.nombre }}!
           </span>
 
           <!-- Avatar con iniciales o menú desplegable -->
@@ -77,18 +77,15 @@
           </div>
         </div>
       }
-
       <!-- Usuario no autenticado -->
       @else {
         <div class="auth-section flex items-center gap-2">
-          <p-button
-            label="Iniciar Sesión"
-            (onClick)="goToLogin()"
-            text
-            size="small"
-            styleClass="text-blue-600 hover:text-blue-800">
-          </p-button>
-          <p-avatar icon="pi pi-user text-gray-400" class="w-12 h-12" shape="circle" />
+          <p-avatar
+            icon="pi pi-user text-gray-400"
+            class="w-12 h-12 cursor-pointer"
+            shape="circle"
+            (click)="goToLogin()"
+            />
         </div>
       }
     </div>

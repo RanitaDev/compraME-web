@@ -2,7 +2,9 @@
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Finalizar compra</h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        {{ isDirectPurchase ? 'Compra rápida' : 'Finalizar compra' }}
+      </h1>
       <div class="flex items-center gap-4 text-sm text-gray-600">
         <span class="flex items-center gap-1">
           <svg class="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="currentColor">
@@ -16,6 +18,14 @@
           </svg>
           Garantía incluida
         </span>
+        @if (isDirectPurchase) {
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4 text-purple-500" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z"/>
+            </svg>
+            Proceso simplificado
+          </span>
+        }
       </div>
     </div>
 
@@ -209,7 +219,9 @@
       <!-- Resumen de compra -->
       <div class="lg:col-span-1">
         <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-8">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen de compra</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            {{ isDirectPurchase ? 'Resumen de producto' : 'Resumen de compra' }}
+          </h2>
 
           <!-- Items -->
           @if (checkoutSummary) {

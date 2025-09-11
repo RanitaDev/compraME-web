@@ -111,25 +111,22 @@ export class Header implements OnInit, OnDestroy {
   public getUserDisplayName(): string {
     if (!this.currentUser) return '';
 
-    if (this.currentUser.name && this.currentUser.lastName) {
-      return `${this.currentUser.name} ${this.currentUser.lastName}`;
-    }
-
-    return this.currentUser.name || this.currentUser.email || '';
+    // Usar el campo 'nombre' que viene del backend
+    return this.currentUser.nombre || this.currentUser.email || '';
   }
 
   public getUserInitials(): string {
     if (!this.currentUser) return '';
 
-    const name = this.currentUser.name || '';
-    const lastName = this.currentUser.lastName || '';
+    const nombre = this.currentUser.nombre || '';
 
-    if (name && lastName) {
-      return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    }
-
-    if (name) {
-      return name.charAt(0).toUpperCase();
+    if (nombre) {
+      // Si el nombre tiene espacios, tomar las primeras letras de las primeras dos palabras
+      const palabras = nombre.split(' ');
+      if (palabras.length >= 2) {
+        return `${palabras[0].charAt(0)}${palabras[1].charAt(0)}`.toUpperCase();
+      }
+      return nombre.charAt(0).toUpperCase();
     }
 
     return this.currentUser.email?.charAt(0).toUpperCase() || 'U';

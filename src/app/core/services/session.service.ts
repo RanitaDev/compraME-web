@@ -10,7 +10,7 @@ export interface SessionConfig {
 })
 export class SessionService {
   private readonly SESSION_CONFIG_KEY = 'session_config';
-  private readonly DEFAULT_SESSION_TIMEOUT = 30; // 30 minutos
+  private readonly DEFAULT_SESSION_TIMEOUT = 480; // 8 horas (más tiempo por defecto)
   private sessionTimer: any;
 
   constructor() {
@@ -122,7 +122,7 @@ export class SessionService {
    */
   private getDefaultConfig(): SessionConfig {
     return {
-      rememberMe: false,
+      rememberMe: true, // Cambiar a true por defecto para mejor UX
       sessionTimeout: this.DEFAULT_SESSION_TIMEOUT
     };
   }
@@ -133,5 +133,17 @@ export class SessionService {
   getSessionTimeRemaining(): number {
     // Esta funcionalidad se puede implementar más adelante si es necesaria
     return 0;
+  }
+
+  /**
+   * Método de diagnóstico - Solo para desarrollo
+   */
+  public debugSessionInfo(): void {
+    const config = this.getSessionConfig();
+    console.log('🔧 DEBUG - SessionService estado:', {
+      config,
+      hasTimer: !!this.sessionTimer,
+      shouldPersist: this.shouldPersistSession()
+    });
   }
 }
