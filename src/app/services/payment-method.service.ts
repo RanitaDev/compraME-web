@@ -71,7 +71,7 @@ export class PaymentMethodService {
 
     // Filtrar métodos activos
     const activeMethods = availableMethods.filter(method => method.activo);
-    
+
     this.paymentMethodsSubject.next(activeMethods);
   }
 
@@ -127,7 +127,7 @@ export class PaymentMethodService {
     estimatedTime: string;
   } {
     const method = this.paymentMethodsSubject.value.find(m => m.id === methodId);
-    
+
     if (!method) {
       return {
         requiresAdditionalData: false,

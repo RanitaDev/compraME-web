@@ -36,7 +36,7 @@ export class OrderDataService {
    * Crear datos de orden a partir del resumen de checkout
    */
   async createOrderFromCheckout(
-    checkoutSummary: ICheckoutSummary, 
+    checkoutSummary: ICheckoutSummary,
     orderId: string
   ): Promise<IOrderConfirmation> {
     const currentUser = this.authService.getCurrentUser();
@@ -92,7 +92,7 @@ export class OrderDataService {
 
     // Almacenar temporalmente
     this.currentOrderData.set(orderData);
-    
+
     return orderData;
   }  /**
    * Obtener datos de orden por ID

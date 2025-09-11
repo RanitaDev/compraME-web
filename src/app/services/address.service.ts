@@ -138,7 +138,7 @@ export class AddressService {
     }
 
     const updatedAddress = { ...currentAddresses[addressIndex], ...address };
-    
+
     // Si es principal, quitar principal de las demás
     if (updatedAddress.esPrincipal) {
       currentAddresses.forEach(addr => {
@@ -158,7 +158,7 @@ export class AddressService {
   deleteAddress(id: number): Observable<boolean> {
     const currentAddresses = this.addressesSubject.value;
     const filteredAddresses = currentAddresses.filter(addr => addr.id !== id);
-    
+
     // Si se eliminó la dirección principal, hacer principal la primera
     const hadPrimary = currentAddresses.some(addr => addr.id === id && addr.esPrincipal);
     if (hadPrimary && filteredAddresses.length > 0) {
