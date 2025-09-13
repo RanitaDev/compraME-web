@@ -28,8 +28,8 @@ export const routes: Routes = [
   },
   {
     path: 'checkout',
-    loadComponent: () => import('./features/checkout/checkout.component/checkout.component').then(m => m.CheckoutComponent),
-    canActivate: [authGuard] // Requiere autenticación
+    loadComponent: () => import('./features/checkout/checkout.component/checkout.component').then(m => m.CheckoutComponent)
+    // Removido authGuard para permitir guest checkout
   },
   {
     path: 'checkout/order-confirmation/:orderId',

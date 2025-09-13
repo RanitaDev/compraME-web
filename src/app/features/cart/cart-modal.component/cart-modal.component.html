@@ -29,7 +29,7 @@
   <div class="flex-1 overflow-y-scroll p-6 pr-5">
           @if (!isEmpty()) {
             <div class="space-y-4">
-              @for (item of cartItems(); track item.producto.idProducto; let i = $index) {
+              @for (item of cartItems(); track item.producto._id; let i = $index) {
                 <div class="bg-gray-50 rounded-2xl p-4 transition-all duration-300 hover:shadow-md" [class]="'animate-slide-up-' + (i % 3 + 1)">
                   <div class="flex gap-4">
                     <!-- Product Image -->
@@ -50,40 +50,45 @@
                         ${{ formatPrice(item.producto.precio) }}
                       </p>
 
-                      <!-- Quantity Controls -->
+                      <!-- Controles de cantidad -->
                       <div class="flex items-center justify-between mt-3">
                         <div class="flex items-center gap-2">
+                          <!-- Botón decrementar: permite llegar a 0 para eliminar automáticamente -->
                           <button
                             class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                             (click)="decreaseQuantity(item.producto._id)"
-                            [disabled]="item.cantidad <= 1"
                             type="button"
-                            aria-label="Disminuir"
+                            aria-label="Disminuir cantidad (elimina si llega a 0)"
+                            title="Disminuir cantidad"
                           >
                             <i class="pi pi-minus text-sm text-gray-700"></i>
                           </button>
 
+                          <!-- Cantidad actual -->
                           <span class="w-8 text-center font-semibold text-gray-900">
                             {{ item.cantidad }}
                           </span>
 
+                          <!-- Botón incrementar: deshabilitado si no hay más stock -->
                           <button
-                            class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                            class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             (click)="increaseQuantity(item.producto._id)"
                             [disabled]="item.cantidad >= item.producto.stock"
                             type="button"
-                            aria-label="Aumentar"
+                            aria-label="Aumentar cantidad"
+                            title="Aumentar cantidad"
                           >
                             <i class="pi pi-plus text-sm text-gray-700"></i>
                           </button>
                         </div>
 
-                        <!-- Remove Button -->
+                        <!-- Botón eliminar producto individual -->
                         <button
                           class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
                           (click)="removeItem(item.producto._id)"
                           type="button"
-                          aria-label="Eliminar"
+                          aria-label="Eliminar producto del carrito"
+                          title="Eliminar {{ item.producto.nombre }} del carrito"
                         >
                           <i class="pi pi-trash text-sm text-red-600"></i>
                         </button>
@@ -183,11 +188,13 @@
                   Seguir Comprando
                 </button>
 
+                <!-- Botón vaciar carrito completo -->
                 <button
                   class="px-6 bg-red-50 border border-red-200 text-red-600 font-medium py-3 rounded-xl hover:bg-red-100 transition-colors duration-200 cursor-pointer"
                   (click)="clearCart()"
                   type="button"
-                  aria-label="Vaciar carrito"
+                  aria-label="Vaciar carrito completo"
+                  title="Eliminar todos los productos del carrito"
                 >
                   <i class="pi pi-trash text-red-600"></i>
                 </button>

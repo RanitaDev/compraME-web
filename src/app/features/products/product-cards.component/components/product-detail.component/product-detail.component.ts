@@ -137,11 +137,14 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  /**
+   * Agregar producto al carrito con feedback visual
+   */
   public agregarAlCarrito(): void {
     const product = this.product();
 
     if (!product) {
-      console.error('No hay producto seleccionado');
+      console.error('❌ No hay producto seleccionado');
       return;
     }
 
@@ -153,9 +156,18 @@ export class ProductDetailComponent implements OnInit {
     // Agregar al carrito
     const success = this.cartService.addToCart(product, 1);
     if (success) {
-      this.toastService.success('¡Agregado!', `${product.nombre} se agregó al carrito`);
+      const currentQuantity = this.cartService.getItemCount(product._id);
+      this.toastService.success(
+        '¡Agregado al carrito!',
+        `${product.nombre} - Cantidad en carrito: ${currentQuantity}`
+      );
+      console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
     } else {
-      this.toastService.warning('No se pudo agregar', 'El producto ya está en el carrito o no está disponible');
+      this.toastService.warning(
+        'No se pudo agregar',
+        'No hay suficiente stock disponible para agregar más unidades'
+      );
+      console.warn('⚠️ No se pudo agregar al carrito - Stock insuficiente:', product.nombre);
     }
   }
 }

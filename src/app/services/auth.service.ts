@@ -19,7 +19,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<IUser | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasValidToken());
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(
@@ -28,6 +28,7 @@ export class AuthService {
     private sessionService: SessionService
   ) {
     // Verificar si el token sigue siendo válido al inicializar el servicio
+    this.initializeAuthState();
     this.checkTokenValidity();
 
     // Escuchar eventos de timeout de sesión
@@ -39,12 +40,20 @@ export class AuthService {
     if (typeof window !== 'undefined') {
       (window as any).authDebug = {
         sessionInfo: () => this.debugSessionInfo(),
-        sessionService: () => this.sessionService.debugSessionInfo(),
+        sessionService: () => this.sessionService ? this.sessionService.debugSessionInfo() : 'SessionService not available',
         forceLogout: () => this.clearSession(),
         getToken: () => this.getToken(),
         isValid: () => this.hasValidToken()
       };
     }
+  }
+
+  /**
+   * Inicializar el estado de autenticación
+   */
+  private initializeAuthState(): void {
+    const hasToken = this.hasValidToken();
+    this.isAuthenticatedSubject.next(hasToken);
   }
 
   /**
@@ -166,11 +175,57 @@ export class AuthService {
   private handlePostLoginRedirect(): void {
     const redirectUrl = localStorage.getItem('redirect_after_login');
     const purchaseIntent = localStorage.getItem('purchase_intent');
+    const checkoutReturn = localStorage.getItem('return_to_checkout');
+    const checkoutPayment = localStorage.getItem('checkout_state_for_payment');
 
-    // Limpiar storage
+    // Limpiar storage (excepto checkout_state_for_payment que se limpia en el checkout)
     localStorage.removeItem('redirect_after_login');
     localStorage.removeItem('purchase_intent');
+    localStorage.removeItem('return_to_checkout');
 
+    // Prioridad 1: Pago pendiente en checkout (NUEVA FUNCIONALIDAD)
+    if (checkoutPayment) {
+      try {
+        const paymentData = JSON.parse(checkoutPayment);
+        const timeDiff = Date.now() - paymentData.timestamp;
+
+        // Solo si el pago pendiente es reciente (menos de 30 minutos)
+        if (timeDiff < 30 * 60 * 1000) {
+          console.log('💳 Retornando al checkout para completar el pago después del login');
+          this.router.navigate(['/checkout'], {
+            queryParams: { type: paymentData.type }
+          });
+          return;
+        } else {
+          // Limpiar si es muy viejo
+          localStorage.removeItem('checkout_state_for_payment');
+        }
+      } catch (error) {
+        console.error('Error procesando checkout_state_for_payment:', error);
+        localStorage.removeItem('checkout_state_for_payment');
+      }
+    }
+
+    // Prioridad 2: Retorno a checkout general
+    if (checkoutReturn) {
+      try {
+        const checkoutData = JSON.parse(checkoutReturn);
+        const timeDiff = Date.now() - checkoutData.timestamp;
+
+        // Solo si el checkout intent es reciente (menos de 30 minutos)
+        if (timeDiff < 30 * 60 * 1000) {
+          console.log('🛒 Retornando al checkout después del login');
+          this.router.navigate(['/checkout'], {
+            queryParams: { type: checkoutData.type }
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error procesando return_to_checkout:', error);
+      }
+    }
+
+    // Prioridad 3: Intención de compra
     if (purchaseIntent) {
       try {
         const intent = JSON.parse(purchaseIntent);
@@ -185,9 +240,14 @@ export class AuthService {
       }
     }
 
+    // Prioridad 4: URL de redirección personalizada
     if (redirectUrl && redirectUrl !== '/auth') {
       this.router.navigate([redirectUrl]);
+      return;
     }
+
+    // Por defecto: ir al home
+    this.router.navigate(['/home']);
   }
 
   /**
@@ -229,7 +289,7 @@ export class AuthService {
     }
 
     // Si está configurado "Recordarme", no validar expiración
-    if (this.sessionService.shouldPersistSession()) {
+    if (this.sessionService && this.sessionService.shouldPersistSession()) {
       return true;
     }
 
@@ -284,7 +344,7 @@ export class AuthService {
     }
 
     // Solo verificar si no está configurado "Recordarme"
-    if (!this.sessionService.shouldPersistSession()) {
+    if (this.sessionService && !this.sessionService.shouldPersistSession()) {
       if (!this.hasValidToken()) {
         console.log('🔄 Token inválido, limpiando sesión...');
         this.clearSession();
@@ -393,7 +453,7 @@ export class AuthService {
   public debugSessionInfo(): void {
     const token = this.getToken();
     const user = this.getCurrentUser();
-    const sessionConfig = this.sessionService.getSessionConfig();
+    const sessionConfig = this.sessionService ? this.sessionService.getSessionConfig() : null;
 
     console.log('🔍 DEBUG - Estado de sesión:', {
       hasToken: !!token,

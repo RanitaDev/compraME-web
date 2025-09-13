@@ -83,7 +83,26 @@ export class Header implements OnInit, OnDestroy {
   }
 
   onCheckout(): void {
-    this.modalCarrito.checkout();
+    console.log('🛒 Navegando al checkout desde header...');
+    console.log('🔐 Estado de autenticación actual:', this.isAuthenticated);
+    console.log('👤 Usuario actual:', this.currentUser);
+
+    // Verificar estado real del servicio de autenticación
+    const serviceAuth = this.authService.isAuthenticated();
+    const serviceUser = this.authService.getCurrentUser();
+    console.log('🔍 AuthService - isAuthenticated():', serviceAuth);
+    console.log('🔍 AuthService - getCurrentUser():', serviceUser);
+
+    if (!serviceAuth) {
+      console.warn('⚠️ Usuario no autenticado, el guard redirigirá al login');
+    }
+
+    // Navegar al checkout cuando se solicita desde el carrito
+    this.router.navigate(['/checkout'], {
+      queryParams: {
+        type: 'cart'
+      }
+    });
   }
 
   public modalCarritoCerrada(): void {
