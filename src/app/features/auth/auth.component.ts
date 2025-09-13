@@ -11,11 +11,13 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { IAuthResponse } from '../../interfaces/auth.interface';
 
 // Interfaces locales para el componente
 interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 interface RegisterRequest {
@@ -60,7 +62,7 @@ export class AuthComponent {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
+      rememberMe: [true] // Cambiar a true por defecto
     });
 
     this.registerForm = this.fb.group({
@@ -102,18 +104,42 @@ export class AuthComponent {
     if (this.loginForm.valid) {
       const loginData: LoginRequest = {
         email: this.loginForm.value.email,
-        password: this.loginForm.value.password
+        password: this.loginForm.value.password,
+        rememberMe: this.loginForm.value.rememberMe || false
       };
 
       this.authService.login(loginData).subscribe({
-        next: (response: any) => {
-          console.log('Usuario autenticado:', response.user);
+        next: (response: IAuthResponse) => {
           this.toastService.success('¡Bienvenido!', 'Has iniciado sesión correctamente');
-          this.router.navigate(['/home']);
-        },
-        error: (error: any) => {
-          console.error('Error en login:', error);
 
+          // Verificar si hay una intención de compra pendiente
+          const purchaseIntent = localStorage.getItem('purchase_intent');
+          if (purchaseIntent) {
+            try {
+              const intent = JSON.parse(purchaseIntent);
+              if (intent.action === 'buy_now' && intent.productId) {
+                // Redirigir de vuelta al producto para completar la compra
+                localStorage.removeItem('purchase_intent');
+                this.router.navigate(['/product', intent.productId], {
+                  queryParams: { continue_purchase: 'true' }
+                });
+                return;
+              }
+            } catch (error) {
+              console.error('Error procesando purchase_intent:', error);
+            }
+          }
+
+          // Redirección normal
+          const redirectUrl = localStorage.getItem('redirect_after_login');
+          if (redirectUrl && redirectUrl !== '/auth') {
+            localStorage.removeItem('redirect_after_login');
+            this.router.navigate([redirectUrl]);
+          } else {
+            this.router.navigate(['/home']);
+          }
+        },
+        error: (error) => {
           // El mensaje ya viene procesado desde el AuthService handleError
           const errorMessage = error.message || 'Error al iniciar sesión';
           this.toastService.error('Error de autenticación', errorMessage);

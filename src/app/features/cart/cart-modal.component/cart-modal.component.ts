@@ -42,34 +42,55 @@ export class CartModalComponent {
     }
   }
 
+  /**
+   * Incrementar la cantidad de un producto en el carrito
+   * @param productId ID del producto
+   */
   increaseQuantity(productId: string) {
-    const item = this.cartItems().find(item => item.producto.idProducto === productId);
+    const item = this.cartItems().find(item => item.producto._id === productId);
     if (item) {
       const success = this.cartService.updateQuantity(productId, item.cantidad + 1);
       if (!success) {
         console.warn('No hay suficiente stock disponible');
+        // Opcional: mostrar toast de error aquí
       }
     }
   }
 
+  /**
+   * Decrementar la cantidad de un producto en el carrito
+   * Si la cantidad llega a 0, el producto se elimina automáticamente
+   * @param productId ID del producto
+   */
   decreaseQuantity(productId: string) {
-    const item = this.cartItems().find(item => item.producto.idProducto === productId);
-    if (item && item.cantidad > 1) {
+    const item = this.cartItems().find(item => item.producto._id === productId);
+    if (item) {
+      // Permitir decrementar hasta 0 (el servicio se encarga de eliminar automáticamente)
       this.cartService.updateQuantity(productId, item.cantidad - 1);
     }
   }
 
+  /**
+   * Eliminar un producto completamente del carrito
+   * @param productId ID del producto a eliminar
+   */
   removeItem(productId: string) {
     this.cartService.removeFromCart(productId);
   }
 
+  /**
+   * Vaciar completamente el carrito después de confirmación del usuario
+   */
   clearCart() {
-    // Confirmar antes de limpiar
-    if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+    // Confirmar antes de limpiar el carrito completo
+    if (confirm('¿Estás seguro de que quieres vaciar el carrito? Esta acción no se puede deshacer.')) {
       this.cartService.clearCart();
     }
   }
 
+  /**
+   * Proceder al checkout - cierra el modal y emite evento
+   */
   checkout() {
     this.checkoutRequested.emit();
     this.closeModal();

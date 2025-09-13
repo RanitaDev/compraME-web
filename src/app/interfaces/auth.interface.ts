@@ -1,13 +1,16 @@
 export interface IUser {
   id: string;
   email: string;
-  name: string;
-  lastName?: string; // Hacer opcional
-  role?: string;
+  nombre: string;
+  telefono?: string;
+  direccion?: string;
+  fechaRegistro?: string;
+  rolId?: string;
 }
 
 export interface IAuthResponse {
-  token: string;
+  access_token: string;
+  refresh_token?: string;
   user: IUser;
   message?: string;
 }
@@ -15,6 +18,7 @@ export interface IAuthResponse {
 export interface ILoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface IRegisterRequest {

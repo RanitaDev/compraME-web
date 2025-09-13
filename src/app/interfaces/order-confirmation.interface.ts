@@ -14,7 +14,7 @@ export interface IOrderConfirmation {
     referencias?: string;
   };
   productos: Array<{
-    idProducto: number;
+    idProducto: string; // Cambio a string para consistencia con ICartProducts
     nombre: string;
     imagen: string;
     cantidad: number;

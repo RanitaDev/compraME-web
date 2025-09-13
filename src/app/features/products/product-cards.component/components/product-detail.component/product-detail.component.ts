@@ -5,7 +5,11 @@ import { FeaturedProductsComponent } from '../featured-products.component/featur
 import { finalize } from 'rxjs';
 import { SpinnerService } from '../../../../../core/services';
 import { ProductService } from '../../../../../services/products.service';
-import { ActivatedRoute } from '@angular/router';
+import { DirectPurchaseService } from '../../../../../services/direct-purchase.service';
+import { CartService } from '../../../../../services/cart.service';
+import { AuthService } from '../../../../../services/auth.service';
+import { ToastService } from '../../../../../core/services/toast.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-detail',
@@ -29,12 +33,32 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit() {
     this.loadProduct();
+    this.checkForContinuePurchase();
+  }
+
+  /**
+   * Verificar si el usuario viene de un login para continuar con la compra
+   */
+  private checkForContinuePurchase(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['continue_purchase'] === 'true' && this.authService.isAuthenticated()) {
+        // Usuario autenticado que viene de continuar compra
+        setTimeout(() => {
+          this.comprarAhora();
+        }, 500); // Pequeño delay para asegurar que el producto esté cargado
+      }
+    });
   }
 
   constructor(
     private readonly productsService: ProductService,
     private readonly spinnerService: SpinnerService,
-    private route: ActivatedRoute
+    private readonly directPurchaseService: DirectPurchaseService,
+    private readonly cartService: CartService,
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService,
+    private route: ActivatedRoute,
+    private router: Router
   ){
     this.productId = this.route.snapshot.paramMap.get('id') || '';
   }
@@ -77,5 +101,73 @@ export class ProductDetailComponent implements OnInit {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(price);
+  }
+
+  public comprarAhora(): void {
+    const product = this.product();
+
+    if (!product) {
+      console.error('No hay producto seleccionado');
+      return;
+    }
+
+    if (product.stock === 0) {
+      console.warn('Producto agotado');
+      return;
+    }
+
+    // Verificar si el usuario está autenticado
+    if (!this.authService.isAuthenticated()) {
+      // Redirigir al login y guardar la intención de compra
+      localStorage.setItem('redirect_after_login', `/product/${product._id}`);
+      localStorage.setItem('purchase_intent', JSON.stringify({ productId: product._id, action: 'buy_now' }));
+      this.router.navigate(['/auth']);
+      return;
+    }
+
+    // Configurar producto para compra directa
+    this.directPurchaseService.setDirectPurchaseProduct(product, 1);
+
+    // Navegar al checkout
+    this.router.navigate(['/checkout'], {
+      queryParams: {
+        type: 'direct',
+        productId: product._id
+      }
+    });
+  }
+
+  /**
+   * Agregar producto al carrito con feedback visual
+   */
+  public agregarAlCarrito(): void {
+    const product = this.product();
+
+    if (!product) {
+      console.error('❌ No hay producto seleccionado');
+      return;
+    }
+
+    if (product.stock === 0) {
+      this.toastService.warning('Producto agotado', 'Este producto no está disponible actualmente');
+      return;
+    }
+
+    // Agregar al carrito
+    const success = this.cartService.addToCart(product, 1);
+    if (success) {
+      const currentQuantity = this.cartService.getItemCount(product._id);
+      this.toastService.success(
+        '¡Agregado al carrito!',
+        `${product.nombre} - Cantidad en carrito: ${currentQuantity}`
+      );
+      console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
+    } else {
+      this.toastService.warning(
+        'No se pudo agregar',
+        'No hay suficiente stock disponible para agregar más unidades'
+      );
+      console.warn('⚠️ No se pudo agregar al carrito - Stock insuficiente:', product.nombre);
+    }
   }
 }

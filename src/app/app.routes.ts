@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { OrdersListComponent } from './features/admin/order-list.component/orders-list.component';
+import { authGuard, guestGuard, adminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // Rutas públicas existentes
@@ -10,7 +11,8 @@ export const routes: Routes = [
   },
   {
     path: 'auth',
-    loadComponent: () => import('./features/auth/auth.component').then(m => m.AuthComponent)
+    loadComponent: () => import('./features/auth/auth.component').then(m => m.AuthComponent),
+    canActivate: [guestGuard] // Solo usuarios no autenticados
   },
   {
     path: 'home',
@@ -27,28 +29,33 @@ export const routes: Routes = [
   {
     path: 'checkout',
     loadComponent: () => import('./features/checkout/checkout.component/checkout.component').then(m => m.CheckoutComponent)
+    // Removido authGuard para permitir guest checkout
   },
   {
     path: 'checkout/order-confirmation/:orderId',
-    loadComponent: () => import('./features/checkout/order-confirmation.component/order-confirmation.component').then(m => m.OrderConfirmationComponent)
+    loadComponent: () => import('./features/checkout/order-confirmation.component/order-confirmation.component').then(m => m.OrderConfirmationComponent),
+    canActivate: [authGuard] // Requiere autenticación
   },
   {
     path: 'checkout/purchase-success/:orderId',
-    loadComponent: () => import('./features/checkout/purchase-success.component/purchase-success.component').then(m => m.PurchaseSuccessComponent)
+    loadComponent: () => import('./features/checkout/purchase-success.component/purchase-success.component').then(m => m.PurchaseSuccessComponent),
+    canActivate: [authGuard] // Requiere autenticación
   },
   {
     path: 'orders/order-detail',
-    loadComponent: () => import('./features/orders/order-detail.component/order-detail.component').then(m => m.OrderDetailComponent)
+    loadComponent: () => import('./features/orders/order-detail.component/order-detail.component').then(m => m.OrderDetailComponent),
+    canActivate: [authGuard] // Requiere autenticación
   },
 
-  // Rutas de administración
+  // Rutas de administración - PROTEGIDAS
   {
     path: 'admin',
     loadComponent: () => import('./features/admin/admin-layout.component/admin-layout.component').then(m => m.AdminLayoutComponent),
+    canActivate: [adminGuard], // Requiere autenticación y rol admin
     children: [
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'product-list', // Cambié de dashboard a product-list ya que dashboard está comentado
         pathMatch: 'full'
       },
       // {

@@ -1,7 +1,14 @@
 /* Imports - SIEMPRE deben ir al principio del archivo */
 @import 'primeicons/primeicons.css';
 @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap');
-@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-muted { @apply text-gray-300; }
+}
 
 body {
   background-color: white;
