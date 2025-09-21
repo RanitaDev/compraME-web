@@ -22,6 +22,9 @@ export class CartModalComponent implements OnDestroy {
   private debounceTimers = new Map<string, number>();
   private readonly DEBOUNCE_TIME = environment.cartDebounceTime; // Tiempo configurable desde environment
 
+  // Set para trackear productos que se están eliminando
+  removingItems = new Set<string>();
+
   // Getters para el template
   get cartItems() { return this.cartService.items; }
   get cartSummary() { return this.cartService.cartSummary; }
@@ -122,8 +125,8 @@ export class CartModalComponent implements OnDestroy {
   }
 
   /**
-   * Eliminar un producto completamente del carrito
-   * @param {string} productId - ID del producto a eliminar
+   * Eliminar un producto completamente del carrito con feedback visual optimista
+   * @param {IProduct} producto - Producto a eliminar
    * @returns {Promise<void>} Promise que se resuelve cuando se elimina el producto
    */
   async removeItem(producto: IProduct): Promise<void> {
@@ -134,13 +137,45 @@ export class CartModalComponent implements OnDestroy {
       return;
     }
 
+    const productId = producto.productoID;
+
+    // Evitar doble click
+    if (this.removingItems.has(productId)) {
+      return;
+    }
+
     try {
-      const success = await this.cartService.eliminarDelCarrito(producto.productoID);
+      // 1. Marcar como eliminando (feedback visual inmediato)
+      this.removingItems.add(productId);
+
+      // 2. Eliminación optimista - remover de la UI inmediatamente
+      this.cartService.actualizarCantidadLocal(productId, 0);
+
+      // 3. Llamar al backend
+      const success = await this.cartService.eliminarDelCarrito(productId);
+
       if (!success) {
-        console.warn('⚠️ No se pudo eliminar el producto del carrito');
+        // Si falla, recargar desde backend para restaurar estado
+        this.cartService.cargarResumenCarritoDesdeBackend().subscribe({
+          error: () => {
+            this.toastService.error('Error al eliminar el producto. Por favor, recarga la página.');
+          }
+        });
+        this.toastService.error('No se pudo eliminar el producto. Inténtalo de nuevo.');
       }
+      // Éxito silencioso - no mostrar toast de confirmación
     } catch (error) {
       console.error('❌ Error eliminando producto del carrito:', error);
+      // Recargar desde backend para restaurar estado correcto
+      this.cartService.cargarResumenCarritoDesdeBackend().subscribe({
+        error: () => {
+          this.toastService.error('Error al eliminar el producto. Por favor, recarga la página.');
+        }
+      });
+      this.toastService.error('Error eliminando el producto');
+    } finally {
+      // Quitar el estado de "eliminando"
+      this.removingItems.delete(productId);
     }
   }
 
@@ -153,11 +188,15 @@ export class CartModalComponent implements OnDestroy {
     if (confirm('¿Estás seguro de que quieres vaciar el carrito? Esta acción no se puede deshacer.')) {
       try {
         const success = await this.cartService.clearCart();
-        if (!success) {
+        if (success) {
+          this.toastService.success('Carrito eliminado correctamente');
+        } else {
           console.warn('⚠️ No se pudo vaciar el carrito');
+          this.toastService.error('No se pudo vaciar el carrito. Inténtalo de nuevo.');
         }
       } catch (error) {
         console.error('❌ Error vaciando el carrito:', error);
+        this.toastService.error('Error vaciando el carrito');
       }
     }
   }

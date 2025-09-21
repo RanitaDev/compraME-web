@@ -172,10 +172,7 @@ export class ProductDetailComponent implements OnInit {
 
       if (success) {
         const currentQuantity = this.cartService.getItemCount(product._id);
-        this.toastService.success(
-          '¡Agregado al carrito!',
-          `${product.nombre} - Cantidad en carrito: ${currentQuantity}`
-        );
+        // Agregado silenciosamente - sin toast de confirmación
         console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
       } else {
         this.toastService.warning(
