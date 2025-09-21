@@ -140,7 +140,7 @@ export class ProductDetailComponent implements OnInit {
   /**
    * Agregar producto al carrito con feedback visual
    */
-  public agregarAlCarrito(): void {
+  public async agregarAlCarrito(): Promise<void> {
     const product = this.product();
 
     if (!product) {
@@ -153,21 +153,45 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    // Agregar al carrito
-    const success = this.cartService.addToCart(product, 1);
-    if (success) {
-      const currentQuantity = this.cartService.getItemCount(product._id);
-      this.toastService.success(
-        '¡Agregado al carrito!',
-        `${product.nombre} - Cantidad en carrito: ${currentQuantity}`
+    // Verificar autenticación antes de intentar agregar
+    if (!this.authService.isAuthenticated()) {
+      this.toastService.info('Inicia sesión', 'Debes iniciar sesión para agregar productos al carrito');
+      // Guardar la intención de agregar al carrito
+      localStorage.setItem('redirect_after_login', `/product/${product._id}`);
+      localStorage.setItem('cart_intent', JSON.stringify({ productId: product._id, action: 'add_to_cart' }));
+      this.router.navigate(['/auth']);
+      return;
+    }
+
+    try {
+      // Mostrar spinner mientras se procesa
+      this.spinnerService.show('Agregando al carrito...', 'default', 'add-to-cart');
+
+      // Agregar al carrito usando la nueva API
+      const success = await this.cartService.addToCart(product, 1);
+
+      if (success) {
+        const currentQuantity = this.cartService.getItemCount(product._id);
+        this.toastService.success(
+          '¡Agregado al carrito!',
+          `${product.nombre} - Cantidad en carrito: ${currentQuantity}`
+        );
+        console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
+      } else {
+        this.toastService.warning(
+          'No se pudo agregar',
+          'Ocurrió un error al agregar el producto al carrito'
+        );
+        console.warn('⚠️ No se pudo agregar al carrito:', product.nombre);
+      }
+    } catch (error) {
+      console.error('❌ Error agregando producto al carrito:', error);
+      this.toastService.error(
+        'Error',
+        'Hubo un problema al agregar el producto al carrito'
       );
-      console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
-    } else {
-      this.toastService.warning(
-        'No se pudo agregar',
-        'No hay suficiente stock disponible para agregar más unidades'
-      );
-      console.warn('⚠️ No se pudo agregar al carrito - Stock insuficiente:', product.nombre);
+    } finally {
+      this.spinnerService.hide('add-to-cart');
     }
   }
 }

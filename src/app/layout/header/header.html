@@ -22,14 +22,17 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <p-button
-        icon="pi pi-shopping-cart text-gray-700"
-        rounded
-        text
-        severity="info"
-        styleClass="w-12 h-12"
-        (onClick)="abrirCarrito()"
-      ></p-button>
+      <!-- Botón del carrito - Solo visible para usuarios autenticados -->
+      @if (isAuthenticated) {
+        <p-button
+          icon="pi pi-shopping-cart text-gray-700"
+          rounded
+          text
+          severity="info"
+          styleClass="w-12 h-12"
+          (onClick)="abrirCarrito()"
+        ></p-button>
+      }
 
       <!-- Usuario autenticado -->
       @if (isAuthenticated && currentUser) {

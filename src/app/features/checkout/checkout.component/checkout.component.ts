@@ -338,8 +338,16 @@ export class CheckoutComponent implements OnInit {
 
           // Limpiar datos según el tipo de compra
           if (!this.isDirectPurchase) {
-            this.cartService.clearCart();
-            console.log('🛒 Carrito limpiado después de compra exitosa');
+            // Limpiar carrito de forma asíncrona
+            this.cartService.clearCart().then(success => {
+              if (success) {
+                console.log('🛒 Carrito limpiado después de compra exitosa');
+              } else {
+                console.error('❌ Error limpiando carrito después de compra');
+              }
+            }).catch(error => {
+              console.error('❌ Error limpiando carrito después de compra:', error);
+            });
           } else {
             this.directPurchaseService.clearDirectPurchase();
             console.log('💰 Compra directa limpiada después de compra exitosa');

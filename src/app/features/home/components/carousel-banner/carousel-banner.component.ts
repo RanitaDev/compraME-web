@@ -79,7 +79,6 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
    * @param product - El producto a visualizar
    */
   public viewProduct(product: IProduct): void {
-    console.log('Visualizando producto:', product);
     if(!product) {
       //SNACK TOAST
     }
