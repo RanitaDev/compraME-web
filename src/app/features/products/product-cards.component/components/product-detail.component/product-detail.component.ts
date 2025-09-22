@@ -1,15 +1,16 @@
-import { Component, OnInit, Input, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Input, signal, computed, ChangeDetectionStrategy, effect, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IProduct } from '../../../../../interfaces/products.interface';
 import { FeaturedProductsComponent } from '../featured-products.component/featured-products.component';
-import { finalize } from 'rxjs';
+import { finalize, map } from 'rxjs';
 import { SpinnerService } from '../../../../../core/services';
 import { ProductService } from '../../../../../services/products.service';
 import { DirectPurchaseService } from '../../../../../services/direct-purchase.service';
 import { CartService } from '../../../../../services/cart.service';
 import { AuthService } from '../../../../../services/auth.service';
 import { ToastService } from '../../../../../core/services/toast.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, ParamMap } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-product-detail',
@@ -20,7 +21,9 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./product-detail.component.css']
 })
 export class ProductDetailComponent implements OnInit {
-  public productId: string;
+  // Signal para el ID del producto desde los parámetros de la ruta
+  productId!: Signal<string | undefined>;
+
   product = signal<IProduct | null>(null);
   selectedImageIndex = signal(0);
   imageLoaded = signal(false);
@@ -31,9 +34,42 @@ export class ProductDetailComponent implements OnInit {
     return prod.imagenes[this.selectedImageIndex()];
   });
 
+  constructor(
+    private readonly productsService: ProductService,
+    private readonly spinnerService: SpinnerService,
+    private readonly directPurchaseService: DirectPurchaseService,
+    private readonly cartService: CartService,
+    private readonly authService: AuthService,
+    private readonly toastService: ToastService,
+    private route: ActivatedRoute,
+    private router: Router
+  ){
+    // Inicializar el signal para el ID del producto
+    this.productId = toSignal(this.route.paramMap.pipe(
+      map((params: ParamMap) => params.get('id') || '')
+    ));
+
+    // Effect que reacciona a cambios en el productId
+    effect(() => {
+      const id = this.productId();
+      if (id) {
+        this.resetProductState();
+        this.loadProduct(id);
+      }
+    });
+  }
+
   ngOnInit() {
-    this.loadProduct();
     this.checkForContinuePurchase();
+  }
+
+  /**
+   * Resetea el estado visual del producto
+   */
+  private resetProductState(): void {
+    this.product.set(null);
+    this.selectedImageIndex.set(0);
+    this.imageLoaded.set(false);
   }
 
   /**
@@ -50,26 +86,13 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  constructor(
-    private readonly productsService: ProductService,
-    private readonly spinnerService: SpinnerService,
-    private readonly directPurchaseService: DirectPurchaseService,
-    private readonly cartService: CartService,
-    private readonly authService: AuthService,
-    private readonly toastService: ToastService,
-    private route: ActivatedRoute,
-    private router: Router
-  ){
-    this.productId = this.route.snapshot.paramMap.get('id') || '';
-  }
-
   /**
    * @description Carga los datos de un producto específico.
    */
-  private loadProduct(): void {
+  private loadProduct(productId: string): void {
     this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
 
-    this.productsService.getProduct(this.productId)
+    this.productsService.getProduct(productId)
       .pipe(
         finalize(() => {
           this.spinnerService.hide('product-load');
@@ -173,7 +196,6 @@ export class ProductDetailComponent implements OnInit {
       if (success) {
         const currentQuantity = this.cartService.getItemCount(product._id);
         // Agregado silenciosamente - sin toast de confirmación
-        console.log('🛒 Producto agregado al carrito:', product.nombre, '- Cantidad total:', currentQuantity);
       } else {
         this.toastService.warning(
           'No se pudo agregar',
