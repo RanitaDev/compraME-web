@@ -111,6 +111,7 @@ export class ProductCardsComponent implements OnInit {
     if(!product) {
       //SNACK TOAST
     }
+    console.log('Visualizando producto:', product);
     this.router.navigate(['/product', product._id]);
   }
 

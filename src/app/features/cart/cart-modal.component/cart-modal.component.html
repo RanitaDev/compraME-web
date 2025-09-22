@@ -1,6 +1,6 @@
 <!-- Modal Backdrop -->
 @if (isOpen()) {
-  <div class="fixed z-50 h-[90%] flex items-center justify-end animate-fade-in left-0 right-0 top-0 bottom-0 rounded-2xl" (click)="onBackdropClick($event)">
+  <div class="fixed z-50 h-[90%] flex items-center justify-end animate-fade-in left-0 right-0 top-0 bottom-0 rounded-2xl" (click)="closeModal()">
     <!-- Modal Panel -->
     <div class="w-full max-w-lg h-full bg-white shadow-2xl animate-slide-in-right" (click)="$event.stopPropagation()">
       <!-- Header -->
@@ -26,7 +26,7 @@
       <!-- Content -->
       <div class="flex flex-col h-full">
         <!-- Cart Items -->
-  <div class="flex-1 overflow-y-scroll p-6 pr-5">
+        <div class="flex-1 overflow-y-scroll p-6 pr-5">
           @if (!isEmpty()) {
             <div class="space-y-4">
               @for (item of cartItems(); track item.producto._id; let i = $index) {
@@ -56,7 +56,7 @@
                           <!-- Botón decrementar: permite llegar a 0 para eliminar automáticamente -->
                           <button
                             class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                            (click)="decreaseQuantity(item.producto._id)"
+                            (click)="actualizarCantidadProducto(item.producto, item.cantidad - 1)"
                             type="button"
                             aria-label="Disminuir cantidad (elimina si llega a 0)"
                             title="Disminuir cantidad"
@@ -72,7 +72,7 @@
                           <!-- Botón incrementar: deshabilitado si no hay más stock -->
                           <button
                             class="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            (click)="increaseQuantity(item.producto._id)"
+                            (click)="actualizarCantidadProducto(item.producto, item.cantidad + 1)"
                             [disabled]="item.cantidad >= item.producto.stock"
                             type="button"
                             aria-label="Aumentar cantidad"
@@ -85,7 +85,7 @@
                         <!-- Botón eliminar producto individual -->
                         <button
                           class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200 cursor-pointer"
-                          (click)="removeItem(item.producto._id)"
+                          (click)="removeItem(item.producto)"
                           type="button"
                           aria-label="Eliminar producto del carrito"
                           title="Eliminar {{ item.producto.nombre }} del carrito"
@@ -101,7 +101,7 @@
                         </div>
                       }
                     </div>
-                  </div>
+                </div>
 
                   <!-- Item Total -->
                   <div class="mt-3 pt-3 border-t border-gray-200">

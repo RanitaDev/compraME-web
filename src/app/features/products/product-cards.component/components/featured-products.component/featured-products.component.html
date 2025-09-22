@@ -78,7 +78,7 @@
                   [disabled]="product.stock === 0"
                   [class.opacity-50]="product.stock === 0"
                   [class.cursor-not-allowed]="product.stock === 0"
-                  (click)="$event.stopPropagation(); onQuickAction(product._id)"
+                  (click)="$event.stopPropagation(); viewProduct(product)"
                   type="button"
                 >
                   <i class="pi pi-arrow-right text-white text-base"></i>
