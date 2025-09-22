@@ -11,8 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
   template: `
     @if(spinnerState.show){
       <div
-         class="spinner-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center"
-         [@fadeInOut]>
+         class="spinner-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
 
       <!-- Contenedor del spinner -->
       <div class="spinner-container bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4 text-center">
@@ -68,7 +67,8 @@ import { Subject, takeUntil } from 'rxjs';
 
     /* Mejoras visuales */
     .spinner-overlay {
-      transition: opacity 0.3s ease-in-out;
+      opacity: 1;
+      animation: fadeInOut 0.3s ease-in-out;
     }
 
     .spinner-container {

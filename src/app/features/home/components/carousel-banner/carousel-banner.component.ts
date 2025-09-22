@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { IProduct } from '../../../../interfaces/products.interface';
 import { ProductService } from '../../../../services/products.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { interval, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -42,7 +43,8 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
 
   constructor(
     private productService: ProductService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -79,9 +81,9 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
    * @param product - El producto a visualizar
    */
   public viewProduct(product: IProduct): void {
-    console.log('Visualizando producto:', product);
-    if(!product) {
-      //SNACK TOAST
+    if(!product || !product._id) {
+      this.toastService.error('EL PRODUCTO NO FUE ENCONTRADO, INTENTA MÁS TARDE');
+      return;
     }
     this.router.navigate(['/product', product._id]);
   }
