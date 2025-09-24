@@ -24,14 +24,25 @@
     <div class="flex items-center gap-2">
       <!-- Botón del carrito - Solo visible para usuarios autenticados -->
       @if (isAuthenticated) {
-        <p-button
-          icon="pi pi-shopping-cart text-gray-700"
-          rounded
-          text
-          severity="info"
-          styleClass="w-12 h-12"
-          (onClick)="abrirCarrito()"
-        ></p-button>
+        <div class="relative">
+          <p-button
+            icon="pi pi-shopping-cart"
+            rounded
+            text
+            severity="info"
+            styleClass="w-12 h-12 cart-button"
+            [class.cart-animated]="cartAnimated"
+            [class.cart-has-items]="cartTotalItems > 0"
+            (onClick)="abrirCarrito()"
+          ></p-button>
+
+          <!-- Badge con cantidad de productos -->
+          @if (cartTotalItems > 0) {
+            <span class="cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {{ cartTotalItems }}
+            </span>
+          }
+        </div>
       }
 
       <!-- Usuario autenticado -->

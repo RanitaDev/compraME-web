@@ -5,6 +5,7 @@ import { trigger, transition, style, animate, stagger, query } from '@angular/an
 import { CategoryService } from '../../../../services/category.service';
 import { Category } from '../../../../interfaces/categories.interface';
 import { PrimeNgModule } from '../../../../primeng.module';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-category-cards',
@@ -45,7 +46,10 @@ export class CategoryCardsComponent implements OnInit {
   activeCategories = signal<Category[]>([]);
   hasMoreCategories = signal<boolean>(false);
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(
+    private categoryService: CategoryService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadActiveCategories();
@@ -55,29 +59,14 @@ export class CategoryCardsComponent implements OnInit {
     this.categoryService.getActiveCategories()
       .pipe().subscribe({
         next: (categorias) => {
-          console.log('CATEGORIAS', categorias);
           this.activeCategories.set(categorias);
         }
       });
-    // this.categoryService.getActiveCategories().subscribe(categories => {
-    //   this.activeCategories.set(categories);
-
-    //   // Simular si hay más categorías (puedes ajustar esta lógica)
-    //   this.hasMoreCategories.set(categories.length > 6);
-    // });
   }
 
   selectCategory(category: Category): void {
-    console.log('Categoría seleccionada:', {
-      id: category.idCateogria,
-      nombre: category.nombre,
-      descripcion: category.descripcion
-    });
-
-    // Aquí implementarías la navegación o filtrado por categoría
-    // Por ejemplo:
-    // this.router.navigate(['/products'], { queryParams: { category: category.idCateogria } });
-    // o emitir un evento al componente padre
+    console.log('Categoría seleccionada:', category);
+    this.router.navigate(['/category', category._id]);
   }
 
   loadMoreCategories(): void {

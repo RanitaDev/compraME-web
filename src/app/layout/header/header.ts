@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
@@ -9,6 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CartModalComponent } from '../../features/cart/cart-modal.component/cart-modal.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { IUser } from '../../interfaces/auth.interface';
 import { Subscription } from 'rxjs';
 
@@ -39,10 +40,28 @@ export class Header implements OnInit, OnDestroy {
   private userSubscription?: Subscription;
   private authSubscription?: Subscription;
 
+  // Propiedades para animación del carrito
+  cartAnimated = false;
+  cartTotalItems = 0;
+  private cartSubscription?: Subscription;
+
   constructor(
     private router: Router,
-    private authService: AuthService
-  ){}
+    private authService: AuthService,
+    private cartService: CartService
+  ){
+    // Effect para escuchar cambios en el carrito y activar animación
+    effect(() => {
+      const currentTotal = this.cartService.totalItems();
+      const prevTotal = this.cartTotalItems;
+      this.cartTotalItems = currentTotal;
+
+      // Activar animación solo cuando se agregue un producto (no cuando se quita)
+      if (currentTotal > prevTotal && prevTotal >= 0) {
+        this.triggerCartAnimation();
+      }
+    });
+  }
 
   ngOnInit() {
     // Obtener usuario actual inmediatamente
@@ -73,6 +92,17 @@ export class Header implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+  }
+
+  /**
+   * Activa la animación del carrito cuando se agrega un producto
+   */
+  private triggerCartAnimation(): void {
+    this.cartAnimated = true;
+    // Resetear la animación después de que termine
+    setTimeout(() => {
+      this.cartAnimated = false;
+    }, 600);
   }
 
   /**
