@@ -1,0 +1,161 @@
+<!-- Estado de carga -->
+<div *ngIf="cargandoHistorial" class="space-y-6">
+  <div class="flex items-center justify-center py-12">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-gray-600">Cargando historial completo...</span>
+    </div>
+  </div>
+
+  <!-- Skeleton loading -->
+  <div class="space-y-4">
+    <div *ngFor="let item of [1,2,3]" class="bg-white border border-gray-200 rounded-xl p-6 animate-pulse">
+      <div class="flex items-center justify-between mb-4">
+        <div class="space-y-2">
+          <div class="h-4 bg-gray-300 rounded w-32"></div>
+          <div class="h-3 bg-gray-200 rounded w-24"></div>
+        </div>
+        <div class="h-6 bg-gray-300 rounded w-20"></div>
+      </div>
+      <div class="space-y-3">
+        <div class="h-3 bg-gray-200 rounded w-full"></div>
+        <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historial completo -->
+<div *ngIf="!cargandoHistorial && historialCompleto && historialCompleto.length > 0">
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+      <i class="pi pi-history text-blue-600"></i>
+      Historial Completo
+    </h3>
+    <p class="text-sm text-gray-600">{{ historialCompleto.length }} pedido{{ historialCompleto.length !== 1 ? 's' : '' }} encontrado{{ historialCompleto.length !== 1 ? 's' : '' }}</p>
+  </div>
+
+  <div class="space-y-6">
+    <div
+      *ngFor="let pedido of historialCompleto; trackBy: trackByPedido"
+      class="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
+    >
+      <!-- Header del pedido -->
+      <div class="p-6 border-b border-gray-100 bg-gray-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900">{{ pedido.numero }}</h4>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ formatearFecha(pedido.fecha) }}
+            </p>
+          </div>
+          <div class="text-right">
+            <div class="flex items-center gap-3 mb-2">
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                [class]="getEstadoColor(pedido.estado)"
+              >
+                {{ getEstadoTexto(pedido.estado) }}
+              </span>
+            </div>
+            <p class="text-xl font-bold text-gray-900">{{ formatearPrecio(pedido.total) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles del pedido -->
+      <div class="p-6">
+        <!-- Información de envío y pago -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+          <div>
+            <h5 class="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <i class="pi pi-map-marker text-gray-500"></i>
+              Dirección de envío
+            </h5>
+            <p class="text-gray-600">{{ pedido.direccionEnvio }}</p>
+          </div>
+          <div>
+            <h5 class="font-medium text-gray-900 mb-2 flex items-center gap-2">
+              <i class="pi pi-credit-card text-gray-500"></i>
+              Método de pago
+            </h5>
+            <p class="text-gray-600">{{ pedido.metodoPago }}</p>
+          </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="mb-6">
+          <h5 class="font-medium text-gray-900 mb-4 flex items-center gap-2">
+            <i class="pi pi-box text-gray-500"></i>
+            Productos ({{ pedido.productos.length }})
+          </h5>
+
+          <div class="space-y-3">
+            <div
+              *ngFor="let producto of pedido.productos; trackBy: trackByProducto"
+              class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+            >
+              <!-- Imagen del producto -->
+              <div class="w-16 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
+                <img
+                  [src]="producto.imagen"
+                  [alt]="producto.nombre"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                >
+              </div>
+
+              <!-- Información del producto -->
+              <div class="flex-1 min-w-0">
+                <h6 class="font-medium text-gray-900 truncate">{{ producto.nombre }}</h6>
+                <p class="text-sm text-gray-600">
+                  Cantidad: {{ producto.cantidad }} × {{ formatearPrecio(producto.precio) }}
+                </p>
+              </div>
+
+              <!-- Total del producto -->
+              <div class="text-right">
+                <p class="font-semibold text-gray-900">
+                  {{ formatearPrecio(producto.cantidad * producto.precio) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
+          <button
+            *ngIf="pedido.estado === 'entregado'"
+            (click)="reordenarProductos(pedido)"
+            class="flex-1 sm:flex-initial bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            type="button"
+          >
+            <i class="pi pi-refresh"></i>
+            Reordenar
+          </button>
+
+          <button
+            (click)="descargarFactura(pedido)"
+            class="flex-1 sm:flex-initial border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-6 py-2 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            type="button"
+          >
+            <i class="pi pi-download"></i>
+            Descargar factura
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estado vacío -->
+<div *ngIf="!cargandoHistorial && (!historialCompleto || historialCompleto.length === 0)" class="text-center py-12">
+  <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+    <i class="pi pi-clock text-3xl text-gray-400"></i>
+  </div>
+  <h3 class="text-xl font-semibold text-gray-700 mb-3">No hay historial disponible</h3>
+  <p class="text-gray-500 max-w-md mx-auto leading-relaxed">
+    Cuando realices compras, tu historial completo aparecerá aquí con todos los detalles de tus pedidos.
+  </p>
+</div>

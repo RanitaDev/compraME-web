@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { IUser, IAuthResponse, ILoginRequest, IRegisterRequest } from '../interfaces/auth.interface';
@@ -19,7 +19,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<IUser | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private isAuthenticatedSubject = new BehaviorSubject<any>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
   constructor(
@@ -30,6 +30,7 @@ export class AuthService {
     // Verificar si el token sigue siendo válido al inicializar el servicio
     this.initializeAuthState();
     this.checkTokenValidity();
+    this.verificarUsuarioAlmacenado();
 
     // Escuchar eventos de timeout de sesión
     window.addEventListener('session-timeout', () => {
@@ -45,6 +46,23 @@ export class AuthService {
         getToken: () => this.getToken(),
         isValid: () => this.hasValidToken()
       };
+    }
+  }
+
+  /**
+   * Verifica si hay un usuario autenticado almacenado
+   */
+  private verificarUsuarioAlmacenado(): void {
+    try {
+      const usuarioAlmacenado = localStorage.getItem('usuario');
+      const tokenAlmacenado = localStorage.getItem('token');
+
+      if (usuarioAlmacenado && tokenAlmacenado) {
+        const usuario = JSON.parse(usuarioAlmacenado);
+        this.isAuthenticatedSubject.next(usuario);
+      }
+    } catch (error) {
+      console.error('Error verificando usuario almacenado:', error);
     }
   }
 
@@ -106,11 +124,30 @@ export class AuthService {
       );
   }
 
+
   /**
    * Cerrar sesión
    */
   logout(): void {
     this.clearSession();
+  }
+
+  /**
+   * Cierra la sesión del usuario
+   */
+  cerrarSesion(): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/logout`, {})
+      .pipe(
+        tap(() => {
+          this.clearSession();
+        }),
+        catchError(error => {
+          console.error('Error cerrando sesión en el servidor:', error);
+          // Aún así limpiamos los datos locales
+          this.clearSession();
+          return of(true);
+        })
+      );
   }
 
   /**
@@ -130,14 +167,14 @@ export class AuthService {
   /**
    * Obtener el usuario actual
    */
-  getCurrentUser(): IUser | null {
+  public getCurrentUser(): IUser | null {
     return this.currentUserSubject.value;
   }
 
   /**
    * Obtener el token actual
    */
-  getToken(): string | null {
+  public getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 
@@ -155,13 +192,6 @@ export class AuthService {
     this.sessionService.configureSession({
       rememberMe: rememberMeValue
     });
-
-    console.log('✅ Sesión establecida:', {
-      usuario: user.email,
-      recordarme: rememberMeValue,
-      token: token.substring(0, 20) + '...'
-    });
-
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
 
@@ -254,8 +284,6 @@ export class AuthService {
    * Limpiar la sesión del usuario
    */
   private clearSession(): void {
-    console.log('🧹 Limpiando sesión...');
-
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('refresh_token');
@@ -274,7 +302,6 @@ export class AuthService {
    * Manejar timeout de sesión
    */
   private handleSessionTimeout(): void {
-    console.log('⏰ Sesión expirada por timeout');
     this.clearSession();
     // Aquí podrías mostrar un toast informando al usuario
   }
@@ -346,11 +373,9 @@ export class AuthService {
     // Solo verificar si no está configurado "Recordarme"
     if (this.sessionService && !this.sessionService.shouldPersistSession()) {
       if (!this.hasValidToken()) {
-        console.log('🔄 Token inválido, limpiando sesión...');
         this.clearSession();
       }
     } else {
-      console.log('💾 Sesión persistente activa, saltando validación de token');
     }
   }
 
@@ -479,5 +504,18 @@ export class AuthService {
         console.log('❌ Error decodificando token:', error);
       }
     }
+  }
+
+  /**
+   * Solicita código para verificación en dos pasos
+   */
+  public configurarVerificacionDosPasos(activar: boolean): Observable<boolean> {
+    return this.http.put<any>(`${this.apiUrl}/dos-pasos`, { activar })
+      .pipe(
+        catchError(error => {
+          console.error('Error configurando verificación de dos pasos:', error);
+          return of(false);
+        })
+      );
   }
 }

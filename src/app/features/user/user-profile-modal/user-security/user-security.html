@@ -1,0 +1,197 @@
+<!-- Configuración de contraseña -->
+<div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+        <i class="pi pi-lock text-red-600 text-lg"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">Contraseña</h3>
+        <p class="text-sm text-gray-600">
+          Última actualización: {{ configuracion?.ultimoCambioPassword ? formatearFecha(configuracion?.ultimoCambioPassword) : 'No disponible' }}
+        </p>
+      </div>
+    </div>
+    <button
+      *ngIf="!mostrarCambioPassword"
+      (click)="mostrarFormularioCambioPassword()"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200"
+      type="button"
+    >
+      Cambiar contraseña
+    </button>
+  </div>
+
+  <!-- Formulario de cambio de contraseña -->
+  <div *ngIf="mostrarCambioPassword" class="mt-6 p-4 bg-gray-50 rounded-lg">
+    <form (ngSubmit)="cambiarPassword()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña actual</label>
+        <input
+          type="password"
+          [(ngModel)]="formPassword.passwordActual"
+          name="passwordActual"
+          required
+          placeholder="Ingresa tu contraseña actual"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="formPassword.passwordNuevo"
+          name="passwordNuevo"
+          required
+          minlength="6"
+          placeholder="Ingresa una nueva contraseña"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+        <p class="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar nueva contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="formPassword.confirmarPassword"
+          name="confirmarPassword"
+          required
+          placeholder="Confirma la nueva contraseña"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          [disabled]="cambiandoPassword"
+          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
+        >
+          <span *ngIf="cambiandoPassword" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          {{ cambiandoPassword ? 'Cambiando...' : 'Cambiar contraseña' }}
+        </button>
+        <button
+          type="button"
+          (click)="cancelarCambioPassword()"
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-2 rounded-lg transition-colors duration-200"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Configuración de seguridad -->
+<div class="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+  <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <i class="pi pi-shield text-blue-600"></i>
+    Configuración de Seguridad
+  </h3>
+
+  <div class="space-y-4">
+    <!-- Autenticación de dos factores -->
+    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+      <div>
+        <h4 class="font-medium text-gray-900">Autenticación de dos factores</h4>
+        <p class="text-sm text-gray-600">Agrega una capa extra de seguridad a tu cuenta</p>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          class="sr-only peer"
+          [checked]="configuracion?.autenticacionDosFactor"
+          (change)="toggleDosFactor()"
+        >
+        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+
+    <!-- Notificaciones de seguridad -->
+    <div class="flex items-center justify-between py-3">
+      <div>
+        <h4 class="font-medium text-gray-900">Notificaciones de seguridad</h4>
+        <p class="text-sm text-gray-600">Recibe alertas sobre actividad sospechosa</p>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          class="sr-only peer"
+          [checked]="configuracion?.notificacionesSeguridad"
+          (change)="toggleNotificaciones()"
+        >
+        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Sesiones activas -->
+<div class="bg-white border border-gray-200 rounded-xl p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <i class="pi pi-users text-green-600"></i>
+        Sesiones Activas
+      </h3>
+      <p class="text-sm text-gray-600">{{ configuracion?.sesionesActivas || 0 }} sesión{{ (configuracion?.sesionesActivas || 0) !== 1 ? 'es' : '' }} activa{{ (configuracion?.sesionesActivas || 0) !== 1 ? 's' : '' }}</p>
+    </div>
+    <button
+      *ngIf="(configuracion?.sesionesActivas || 0) > 1"
+      (click)="cerrarTodasLasSesiones()"
+      class="text-sm font-medium text-red-600 hover:text-red-700 transition-colors duration-200"
+      type="button"
+    >
+      Cerrar todas las sesiones
+    </button>
+  </div>
+
+  <div class="space-y-3">
+    <div
+      *ngFor="let dispositivo of configuracion?.sesionesDispositivos; trackBy: trackByDispositivo"
+      class="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+      [class.bg-blue-50]="dispositivo.esActual"
+      [class.border-blue-200]="dispositivo.esActual"
+    >
+      <!-- Icono del dispositivo -->
+      <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        <i [class]="'pi ' + getDispositivoIcono(dispositivo.dispositivo)" class="text-gray-600 text-lg"></i>
+      </div>
+
+      <!-- Información del dispositivo -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <h4 class="font-medium text-gray-900 truncate">{{ dispositivo.dispositivo }}</h4>
+          <span *ngIf="dispositivo.esActual" class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+            Actual
+          </span>
+        </div>
+        <p class="text-sm text-gray-600">{{ dispositivo.ubicacion }}</p>
+        <p class="text-xs text-gray-500">
+          Último acceso: {{ formatearFecha(dispositivo.fechaUltimoAcceso) }}
+        </p>
+      </div>
+
+      <!-- Botón cerrar sesión -->
+      <button
+        *ngIf="!dispositivo.esActual"
+        (click)="cerrarSesion(dispositivo.id)"
+        class="text-red-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all duration-200"
+        type="button"
+      >
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!configuracion?.sesionesDispositivos || configuracion?.sesionesDispositivos?.length === 0" class="text-center py-8">
+    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+      <i class="pi pi-desktop text-2xl text-gray-400"></i>
+    </div>
+    <h4 class="text-lg font-semibold text-gray-700 mb-2">No hay sesiones activas</h4>
+    <p class="text-gray-500">Tus sesiones aparecerán aquí cuando inicies sesión</p>
+  </div>
+</div>

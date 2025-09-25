@@ -1,0 +1,278 @@
+<!-- Modal Backdrop -->
+<div
+  *ngIf="isOpen"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+  (click)="onBackdropClick($event)"
+>
+  <!-- Modal Container -->
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] overflow-hidden lg:flex"
+    (click)="$event.stopPropagation()"
+  >
+
+    <!-- VISTA DESKTOP: Sidebar + Contenido -->
+    <div class="hidden lg:flex w-full">
+      <!-- Sidebar izquierdo - Desktop -->
+      <aside class="w-80 bg-gray-50 border-r border-gray-200 flex-shrink-0">
+        <!-- Header del usuario -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-center gap-4">
+            <img
+              [src]="datosUsuario?.usuario?.avatar || '/assets/default-avatar.png'"
+              [alt]="datosUsuario?.usuario?.nombre"
+              class="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+            >
+            <div class="flex-1 min-w-0">
+              <h2 class="text-lg font-semibold text-gray-900 truncate">
+                {{ datosUsuario?.usuario?.nombre }} {{ datosUsuario?.usuario?.apellidos }}
+              </h2>
+              <p class="text-sm text-gray-600 truncate">
+                {{ datosUsuario?.usuario?.email }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navegación - Desktop -->
+        <nav class="p-4">
+          <ul class="space-y-2">
+            <li *ngFor="let opcion of opcionesMenu">
+              <button
+                (click)="seleccionarOpcion(opcion.id)"
+                [class.bg-blue-50]="opcionActiva === opcion.id"
+                [class.text-blue-600]="opcionActiva === opcion.id"
+                [class.border-blue-200]="opcionActiva === opcion.id"
+                class="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-transparent"
+                type="button"
+              >
+                <i [class]="opcion.icono" class="text-lg w-5"></i>
+                <span class="font-medium">{{ opcion.label }}</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Contenido principal - Desktop -->
+      <main class="flex-1 flex flex-col">
+        <!-- Header con título y botón cerrar -->
+        <header class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h1 class="text-xl font-semibold text-gray-900">
+            {{ obtenerTituloOpcion(opcionActiva) }}
+          </h1>
+          <button
+            (click)="cerrarModal()"
+            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            type="button"
+          >
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </header>
+
+        <!-- Contenido dinámico -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <ng-container [ngSwitch]="opcionActiva">
+
+            <!-- Información Personal -->
+            <div *ngSwitchCase="'informacion'" class="space-y-6">
+              <app-user-info
+                [datosUsuario]="datosUsuario"
+                (datosActualizados)="onDatosActualizados($event)">
+              </app-user-info>
+            </div>
+
+            <!-- Mis Compras -->
+            <div *ngSwitchCase="'compras'" class="space-y-6">
+              <app-user-orders
+                [pedidos]="datosUsuario?.pedidosRecientes || []"
+                [estadisticas]="datosUsuario?.estadisticas || null"
+                (verHistorialCompleto)="onVerHistorialCompleto()">
+              </app-user-orders>
+            </div>
+
+            <!-- Direcciones -->
+            <div *ngSwitchCase="'direcciones'" class="space-y-6">
+              <app-user-addresses
+                [direcciones]="datosUsuario?.direcciones || []"
+                (direccionesActualizadas)="onDireccionesActualizadas($event)">
+              </app-user-addresses>
+            </div>
+
+            <!-- Seguridad -->
+            <div *ngSwitchCase="'seguridad'" class="space-y-6">
+              <app-user-security
+                [configuracion]="datosUsuario?.configuracionSeguridad"
+                (configuracionActualizada)="onConfiguracionActualizada($event)">
+              </app-user-security>
+            </div>
+
+            <!-- Historial Completo -->
+            <div *ngSwitchCase="'historial'" class="space-y-6">
+              <app-user-history
+                [cargandoHistorial]="cargandoHistorial"
+                [historialCompleto]="historialCompleto">
+              </app-user-history>
+            </div>
+
+          </ng-container>
+        </div>
+      </main>
+    </div>
+
+    <!-- VISTA MOBILE: Tabs + Contenido -->
+    <div class="lg:hidden w-full flex flex-col h-[90vh]">
+      <!-- Header móvil con avatar y nombre -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+        <div class="flex items-center gap-3">
+          <img
+            [src]="datosUsuario?.usuario?.avatar || '/assets/default-avatar.png'"
+            [alt]="datosUsuario?.usuario?.nombre || 'Usuario'"
+            class="w-10 h-10 rounded-full object-cover"
+          >
+          <div>
+            <h2 class="font-semibold text-gray-900">
+              {{ datosUsuario?.usuario?.nombre || 'Usuario' }}
+            </h2>
+            <p class="text-sm text-gray-600">Mi cuenta</p>
+          </div>
+        </div>
+        <button
+          (click)="cerrarModal()"
+          class="p-2 text-gray-400 hover:text-gray-600"
+          type="button"
+        >
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs móvil -->
+      <div class="flex bg-white border-b border-gray-200 overflow-x-auto">
+        <button
+          *ngFor="let opcion of opcionesMenu; trackBy: trackByOpcion"
+          (click)="seleccionarOpcion(opcion.id)"
+          [class.border-blue-500]="opcionActiva === opcion.id"
+          [class.text-blue-600]="opcionActiva === opcion.id"
+          [class.bg-blue-50]="opcionActiva === opcion.id"
+          class="flex-shrink-0 px-4 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors duration-200"
+          type="button"
+        >
+          <i [class]="opcion.icono" class="text-base mr-2"></i>
+          <span class="hidden sm:inline">{{ opcion.labelCorto || opcion.label }}</span>
+        </button>
+      </div>
+
+      <!-- Contenido móvil -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <ng-container [ngSwitch]="opcionActiva">
+
+          <!-- Información Personal -->
+          <div *ngSwitchCase="'informacion'">
+            <app-user-info
+              [datosUsuario]="datosUsuario"
+              [vistaMovil]="true"
+              (datosActualizados)="onDatosActualizados($event)">
+            </app-user-info>
+          </div>
+
+          <!-- Mis Compras -->
+          <div *ngSwitchCase="'compras'">
+            <app-user-orders
+              [pedidos]="datosUsuario?.pedidosRecientes || []"
+              [estadisticas]="datosUsuario?.estadisticas || null"
+              [vistaMovil]="true"
+              (verHistorialCompleto)="onVerHistorialCompleto()">
+            </app-user-orders>
+          </div>
+
+          <!-- Direcciones -->
+          <div *ngSwitchCase="'direcciones'">
+            <app-user-addresses
+              [direcciones]="datosUsuario?.direcciones || []"
+              [vistaMovil]="true"
+              (direccionesActualizadas)="onDireccionesActualizadas($event)">
+            </app-user-addresses>
+          </div>
+
+          <!-- Seguridad -->
+          <div *ngSwitchCase="'seguridad'">
+            <app-user-security
+              [configuracion]="datosUsuario?.configuracionSeguridad"
+              [vistaMovil]="true"
+              (configuracionActualizada)="onConfiguracionActualizada($event)">
+            </app-user-security>
+          </div>
+
+          <!-- Historial -->
+          <div *ngSwitchCase="'historial'">
+            <app-user-history
+              [cargandoHistorial]="cargandoHistorial"
+              [historialCompleto]="historialCompleto"
+              [vistaMovil]="true">
+            </app-user-history>
+          </div>
+
+          <!-- Cerrar Sesión -->
+          <div *ngSwitchCase="'cerrar-sesion'" class="text-center py-8">
+            <div class="max-w-sm mx-auto">
+              <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-sign-out text-2xl text-red-600"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Cerrar sesión?</h3>
+              <p class="text-gray-600 mb-6">¿Estás seguro de que quieres cerrar tu sesión?</p>
+
+              <div class="space-y-3">
+                <button
+                  (click)="confirmarCerrarSesion()"
+                  [disabled]="cerrandoSesion"
+                  class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                  type="button"
+                >
+                  <span *ngIf="cerrandoSesion" class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Cerrando sesión...
+                  </span>
+                  <span *ngIf="!cerrandoSesion">Sí, cerrar sesión</span>
+                </button>
+
+                <button
+                  (click)="seleccionarOpcion('informacion')"
+                  class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                  type="button"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </ng-container>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading inicial -->
+<div
+  *ngIf="isOpen && cargandoDatos"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+>
+  <div class="bg-white p-8 rounded-lg shadow-xl">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 animate-spin text-blue-600" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span class="text-gray-700">Cargando información...</span>
+    </div>
+  </div>
+</div>

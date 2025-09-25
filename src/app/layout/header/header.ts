@@ -5,8 +5,8 @@ import { DividerModule } from 'primeng/divider';
 import { ButtonModule } from "primeng/button";
 import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
-import { TooltipModule } from 'primeng/tooltip';
 import { CartModalComponent } from '../../features/cart/cart-modal.component/cart-modal.component';
+import { UserProfileModalComponent } from '../../features/user/user-profile-modal/user-profile-modal.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
@@ -24,15 +24,16 @@ import { Subscription } from 'rxjs';
     ButtonModule,
     InputTextModule,
     MenuModule,
-    TooltipModule,
     //COMPONENTES
-    CartModalComponent
+    CartModalComponent,
+    UserProfileModalComponent
 ],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
 export class Header implements OnInit, OnDestroy {
   @ViewChild(CartModalComponent) modalCarrito!: CartModalComponent;
+  @ViewChild(UserProfileModalComponent) modalPerfil!: UserProfileModalComponent;
 
   // Propiedades para manejo de usuario
   currentUser: IUser | null = null;
@@ -128,7 +129,16 @@ export class Header implements OnInit, OnDestroy {
   }
 
   public modalCarritoCerrada(): void {
-    console.log("Modal cerrada");
+    console.log("Modal carrito cerrada");
+  }
+
+  public modalPerfilCerrada(): void {
+    console.log("Modal perfil cerrada");
+  }
+
+  public usuarioCerroSesion(): void {
+    console.log("Usuario cerró sesión desde la modal");
+    // La modal ya manejó el logout, aquí podemos hacer acciones adicionales si es necesario
   }
 
   public goHome(): void {
@@ -145,8 +155,8 @@ export class Header implements OnInit, OnDestroy {
   }
 
   public goToProfile(): void {
-    // Aquí puedes navegar a una página de perfil si la tienes
-    console.log('Ir a perfil del usuario:', this.currentUser);
+    // Abrir la modal de perfil de usuario
+    this.modalPerfil.abrirModal();
   }
 
   public getUserDisplayName(): string {
