@@ -57,6 +57,11 @@
   transition: color 0.2s ease;
 }
 
+/* Tamaño del ícono del carrito */
+.cart-button .pi {
+  font-size: 1.5rem; /* 24px - más grande que el tamaño default */
+}
+
 /* Estado activo cuando hay items */
 .cart-has-items {
   color: #059669; /* emerald-600 */
