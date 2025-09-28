@@ -255,38 +255,39 @@ export class Header implements OnInit, OnDestroy {
   }
 
   public onProductSelect(product: IProduct): void {
-    // Limpiar búsqueda
+    console.log('🎯 Producto seleccionado:', product);
+    console.log('🔍 Término de búsqueda actual:', this.searchTerm);
+    console.log('📋 Resultados actuales:', this.searchResults.length);
+
+    // Guardar el término de búsqueda antes de limpiar
+    const currentSearchTerm = this.searchTerm;
+    const currentResults = [...this.searchResults];
+
+    // Crear el estado de navegación
+    const navigationState = {
+      products: currentResults,
+      selectedProduct: product
+    };
+
+    console.log('🚀 Estado de navegación:', navigationState);
+
     this.clearSearch();
 
     // Navegar a la vista de resultados con todos los productos encontrados
     this.router.navigate(['/search-results'], {
       queryParams: {
-        query: this.searchTerm || 'búsqueda',
+        query: currentSearchTerm || 'búsqueda',
         selectedId: product._id
       },
-      state: {
-        products: this.searchResults,
-        selectedProduct: product
+      state: navigationState
+    }).then(success => {
+      if (!success) {
+        console.error('❌ Error en navegación a search-results');
+      } else {
+        console.log('✅ Navegación exitosa a search-results');
       }
-    });
-  }
-
-  public onProductSelected(event: {product: IProduct, allProducts: IProduct[]}): void {
-    const { product, allProducts } = event;
-
-    // Limpiar búsqueda
-    this.clearSearch();
-
-    // Navegar a la vista de resultados de búsqueda con el producto seleccionado
-    this.router.navigate(['/search-results'], {
-      queryParams: {
-        query: this.searchTerm,
-        selectedId: product._id
-      },
-      state: {
-        products: allProducts,
-        selectedProduct: product
-      }
+    }).catch(error => {
+      console.error('❌ Error en navegación:', error);
     });
   }
 
@@ -299,9 +300,15 @@ export class Header implements OnInit, OnDestroy {
     this.showSearchDropdown = false;
     this.searchResults = [];
     this.isSearchLoading = false;
+
+    // Limpiar timeout si existe
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
-      this.searchInput.nativeElement.blur();
+      // No hacer blur aquí para evitar problemas de navegación
     }
   }
 

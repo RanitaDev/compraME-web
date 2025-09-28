@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IProduct } from '../../../interfaces/products.interface';
 import { CartService } from '../../../services/cart.service';
+import { ProductService } from '../../../services/products.service';
 
 // Interface para los filtros
 interface ProductFilters {
@@ -43,18 +44,25 @@ export class SearchResultsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private productService: ProductService
   ) {}
 
   ngOnInit() {
+    console.log('🔍 Inicializando SearchResultsComponent...');
+
     // Obtener los datos de la navegación
     this.route.queryParams.subscribe(params => {
       this.searchQuery = params['query'] || '';
       const selectedId = params['selectedId'];
 
-      // Obtener los productos del estado de navegación
+      console.log('📄 Parámetros recibidos:', { query: this.searchQuery, selectedId });
+
+      // Intentar obtener el estado de navegación
       const navigationState = this.router.getCurrentNavigation()?.extras.state;
+
       if (navigationState) {
+        console.log('✅ Estado de navegación encontrado:', navigationState);
         this.allProducts = navigationState['products'] || [];
         this.selectedProduct = navigationState['selectedProduct'] || null;
 
@@ -66,8 +74,45 @@ export class SearchResultsComponent implements OnInit {
         this.applyFilters();
         this.isLoading = false;
       } else {
-        // Si no hay estado, redirigir al inicio
-        this.router.navigate(['/']);
+        console.log('⚠️ No se encontró estado de navegación, realizando búsqueda...');
+        // Si no hay estado, hacer una búsqueda nueva con el término
+        if (this.searchQuery && this.searchQuery !== 'búsqueda') {
+          this.performSearchFromQuery(this.searchQuery, selectedId);
+        } else {
+          console.error('❌ Sin datos para mostrar, redirigiendo al inicio');
+          this.router.navigate(['/']);
+        }
+      }
+    });
+  }
+
+  /**
+   * Realiza una búsqueda usando el query parameter cuando no hay estado de navegación
+   */
+  private performSearchFromQuery(query: string, selectedId?: string): void {
+    this.isLoading = true;
+
+    this.productService.searchProducts(query).subscribe({
+      next: (products) => {
+        console.log('✅ Búsqueda completada:', products.length, 'productos encontrados');
+        this.allProducts = products;
+
+        // Si hay un selectedId, intentar encontrar ese producto
+        if (selectedId) {
+          this.selectedProduct = products.find(p => p._id === selectedId) || null;
+          if (this.selectedProduct) {
+            this.reorderProducts(selectedId);
+          }
+        }
+
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('❌ Error en búsqueda:', error);
+        this.allProducts = [];
+        this.filteredProducts = [];
+        this.isLoading = false;
       }
     });
   }
@@ -173,33 +218,53 @@ export class SearchResultsComponent implements OnInit {
   /**
    * Navega al detalle del producto
    */
-  goToProduct(product: IProduct) {
-    this.router.navigate(['/product', product._id]);
+  goToProduct(product: IProduct): void {
+    try {
+      if (product && product._id) {
+        this.router.navigate(['/product', product._id]);
+      } else {
+        console.error('Producto inválido:', product);
+      }
+    } catch (error) {
+      console.error('Error al navegar al producto:', error);
+    }
   }
 
   /**
    * Agrega un producto al carrito
    */
-  async addToCart(product: IProduct) {
-    if (product.stock > 0) {
-      try {
-        const success = await this.cartService.agregarAlCarrito(product, 1);
-        if (success) {
-          console.log('Producto agregado al carrito:', product.nombre);
-        } else {
-          console.warn('No hay suficiente stock disponible');
-        }
-      } catch (error) {
-        console.error('Error al agregar al carrito:', error);
+  async addToCart(product: IProduct): Promise<void> {
+    try {
+      if (!product) {
+        console.error('Producto inválido');
+        return;
       }
+
+      if (product.stock <= 0) {
+        console.warn('Producto sin stock:', product.nombre);
+        return;
+      }
+
+      const success = await this.cartService.agregarAlCarrito(product, 1);
+      if (success) {
+        console.log('Producto agregado al carrito:', product.nombre);
+      } else {
+        console.warn('No hay suficiente stock disponible');
+      }
+    } catch (error) {
+      console.error('Error al agregar al carrito:', error);
     }
   }
 
   /**
    * Navega de regreso
    */
-  goBack() {
-    this.router.navigate(['/']);
+  goBack(): void {
+    try {
+      this.router.navigate(['/']);
+    } catch (error) {
+      console.error('Error al navegar de regreso:', error);
+    }
   }
 
   /**
@@ -218,5 +283,15 @@ export class SearchResultsComponent implements OnInit {
   getStockPercentage(stock: number): number {
     const maxStock = 20;
     return Math.min((stock / maxStock) * 100, 100);
+  }
+
+  /**
+   * Maneja el error de carga de imágenes
+   */
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = '/assets/placeholderImage.webp';
+    }
   }
 }

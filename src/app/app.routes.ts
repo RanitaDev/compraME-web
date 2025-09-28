@@ -56,7 +56,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/orders/order-detail.component/order-detail.component').then(m => m.OrderDetailComponent),
     canActivate: [authGuard] // Requiere autenticación
   },
-
   // Rutas de administración - PROTEGIDAS
   {
     path: 'admin',

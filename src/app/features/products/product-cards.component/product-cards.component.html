@@ -12,9 +12,10 @@
 
   <!-- Products Grid -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" [@gridAnimation]>
-    <div *ngFor="let product of products(); let i = index"
-         class="product-card group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col"
-         [@cardAnimation]="i">
+    @for (product of products(); track product._id; let i = $index) {
+      <div
+           class="product-card group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col"
+           [@cardAnimation]="i">
 
       <!-- Image Container -->
       <div class="image-container relative overflow-hidden rounded-t-3xl bg-gray-50">
@@ -79,6 +80,7 @@
         </div>
       </div>
     </div>
+    }
   </div>
 
   <!-- <div class="text-center mt-12" *ngIf="hasMoreProducts()">
