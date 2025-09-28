@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, Observable, of, map } from 'rxjs';
 import { IProduct } from '../interfaces/products.interface';
 import { environment } from '../../environments/environment';
 
@@ -49,6 +49,39 @@ export class ProductService {
           return of([]);
         })
       );
+  }
+
+  /**
+   * Busca productos por término de búsqueda
+   */
+  public searchProducts(searchTerm: string): Observable<IProduct[]> {
+    if (!searchTerm.trim()) {
+      return of([]);
+    }
+
+    return this.http.get<IProduct[]>(`${this.apiUrl}/search?q=${encodeURIComponent(searchTerm.trim())}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error buscando productos:', error);
+          // Fallback: buscar localmente en todos los productos
+          return this.getProducts().pipe(
+            map(products => this.filterProductsLocally(products, searchTerm))
+          );
+        })
+      );
+  }
+
+  /**
+   * Filtrado local de productos (fallback)
+   */
+  private filterProductsLocally(products: IProduct[], searchTerm: string): IProduct[] {
+    const term = searchTerm.toLowerCase().trim();
+    return products.filter(product =>
+      product.activo && (
+        product.nombre.toLowerCase().includes(term) ||
+        product.descripcion.toLowerCase().includes(term)
+      )
+    ).slice(0, 10); // Limitar a 10 resultados
   }
 
 }

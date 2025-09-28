@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, effect, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { DividerModule } from 'primeng/divider';
@@ -10,7 +10,9 @@ import { UserProfileModalComponent } from '../../features/user/user-profile-moda
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { ProductService } from '../../services/products.service';
 import { IUser } from '../../interfaces/auth.interface';
+import { IProduct } from '../../interfaces/products.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,6 +36,7 @@ import { Subscription } from 'rxjs';
 export class Header implements OnInit, OnDestroy {
   @ViewChild(CartModalComponent) modalCarrito!: CartModalComponent;
   @ViewChild(UserProfileModalComponent) modalPerfil!: UserProfileModalComponent;
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   // Propiedades para manejo de usuario
   currentUser: IUser | null = null;
@@ -46,10 +49,19 @@ export class Header implements OnInit, OnDestroy {
   cartTotalItems = 0;
   private cartSubscription?: Subscription;
 
+  // Propiedades para búsqueda
+  public searchTerm = '';
+  public showSearchDropdown = false;
+  public searchResults: IProduct[] = [];
+  public isSearchLoading = false;
+  public searchFocused = false;
+  private searchTimeout?: number;
+
   constructor(
     private router: Router,
     private authService: AuthService,
-    private cartService: CartService
+    private cartService: CartService,
+    private productService: ProductService
   ){
     // Effect para escuchar cambios en el carrito y activar animación
     effect(() => {
@@ -181,5 +193,124 @@ export class Header implements OnInit, OnDestroy {
     }
 
     return this.currentUser.email?.charAt(0).toUpperCase() || 'U';
+  }
+
+  // Métodos de búsqueda
+  public onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.trim();
+
+    this.searchTerm = value;
+
+    // Limpiar timeout anterior
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+
+    if (value.length >= 2) {
+      this.showSearchDropdown = true;
+      this.isSearchLoading = true;
+
+      // Debounce la búsqueda
+      this.searchTimeout = setTimeout(() => {
+        this.performSearch(value);
+      }, 300);
+    } else {
+      this.showSearchDropdown = false;
+      this.searchResults = [];
+      this.isSearchLoading = false;
+    }
+  }
+
+  private performSearch(term: string): void {
+    this.productService.searchProducts(term).subscribe({
+      next: (products) => {
+        this.searchResults = products.slice(0, 8); // Limitar a 8 resultados
+        this.isSearchLoading = false;
+      },
+      error: (error) => {
+        console.error('Error en búsqueda:', error);
+        this.searchResults = [];
+        this.isSearchLoading = false;
+      }
+    });
+  }
+
+  public onSearchFocus(): void {
+    this.searchFocused = true;
+    if (this.searchTerm.length >= 2) {
+      this.showSearchDropdown = true;
+    }
+  }
+
+  public onSearchBlur(): void {
+    // Delay más largo para permitir clicks en el dropdown y evitar cerrar muy rápido
+    setTimeout(() => {
+      this.searchFocused = false;
+      // Solo cerrar dropdown si no hay texto de búsqueda
+      if (!this.searchTerm.trim()) {
+        this.showSearchDropdown = false;
+      }
+    }, 300); // Aumentado de 150ms a 300ms para mejor UX
+  }
+
+  public onProductSelect(product: IProduct): void {
+    // Limpiar búsqueda
+    this.clearSearch();
+
+    // Navegar a la vista de resultados con todos los productos encontrados
+    this.router.navigate(['/search-results'], {
+      queryParams: {
+        query: this.searchTerm || 'búsqueda',
+        selectedId: product._id
+      },
+      state: {
+        products: this.searchResults,
+        selectedProduct: product
+      }
+    });
+  }
+
+  public onProductSelected(event: {product: IProduct, allProducts: IProduct[]}): void {
+    const { product, allProducts } = event;
+
+    // Limpiar búsqueda
+    this.clearSearch();
+
+    // Navegar a la vista de resultados de búsqueda con el producto seleccionado
+    this.router.navigate(['/search-results'], {
+      queryParams: {
+        query: this.searchTerm,
+        selectedId: product._id
+      },
+      state: {
+        products: allProducts,
+        selectedProduct: product
+      }
+    });
+  }
+
+  public onSearchDropdownClose(): void {
+    this.showSearchDropdown = false;
+  }
+
+  public clearSearch(): void {
+    this.searchTerm = '';
+    this.showSearchDropdown = false;
+    this.searchResults = [];
+    this.isSearchLoading = false;
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+      this.searchInput.nativeElement.blur();
+    }
+  }
+
+  public trackByProductId(index: number, product: IProduct): string {
+    return product._id;
+  }
+
+  public onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/placeholderImage.webp';
   }
 }

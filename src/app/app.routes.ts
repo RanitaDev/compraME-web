@@ -32,6 +32,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/products/product-cards.component/components/product-detail.component/product-detail.component').then(m => m.ProductDetailComponent)
   },
   {
+    path: 'search-results',
+    loadComponent: () => import('./features/search/search-results.component/search-results.component').then(m => m.SearchResultsComponent),
+    title: 'Resultados de búsqueda'
+  },
+  {
     path: 'checkout',
     loadComponent: () => import('./features/checkout/checkout.component/checkout.component').then(m => m.CheckoutComponent)
     // Removido authGuard para permitir guest checkout
