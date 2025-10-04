@@ -82,7 +82,6 @@ export class AuthService {
       'Content-Type': 'application/json'
     });
     const { confirmPassword, ...dataToSend } = registerData;
-    console.log('DATA TO SEND', dataToSend);
 
     return this.http.post<any>(`${this.apiUrl}/register`, dataToSend, { headers })
       .pipe(
@@ -221,7 +220,6 @@ export class AuthService {
 
         // Solo si el pago pendiente es reciente (menos de 30 minutos)
         if (timeDiff < 30 * 60 * 1000) {
-          console.log('💳 Retornando al checkout para completar el pago después del login');
           this.router.navigate(['/checkout'], {
             queryParams: { type: paymentData.type }
           });
@@ -244,7 +242,6 @@ export class AuthService {
 
         // Solo si el checkout intent es reciente (menos de 30 minutos)
         if (timeDiff < 30 * 60 * 1000) {
-          console.log('🛒 Retornando al checkout después del login');
           this.router.navigate(['/checkout'], {
             queryParams: { type: checkoutData.type }
           });
@@ -261,7 +258,6 @@ export class AuthService {
         const intent = JSON.parse(purchaseIntent);
         if (intent.action === 'buy_now' && intent.productId) {
           // El usuario viene de una intención de compra
-          console.log('🛒 Redirigiendo a compra después del login');
           // La redirección la manejará el componente que detecte el login
           return;
         }

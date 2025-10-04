@@ -65,7 +65,6 @@ export class CategoryCardsComponent implements OnInit {
   }
 
   selectCategory(category: Category): void {
-    console.log('Categoría seleccionada:', category);
     this.router.navigate(['/category', category._id]);
   }
 

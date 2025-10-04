@@ -85,6 +85,7 @@ export class CategoryProductsComponent implements OnInit {
     this.categoryService.getCategory(categoryId).subscribe({
       next: (category) => {
         this.currentCategory = category || null;
+        console.log('Categoría cargada:', this.currentCategory);
       },
       error: (error) => {
         console.error('Error cargando datos de categoría:', error);
@@ -216,7 +217,6 @@ export class CategoryProductsComponent implements OnInit {
         const success = await this.cartService.agregarAlCarrito(product, 1);
         if (success) {
           // Aquí podrías mostrar un toast de éxito
-          console.log('Producto agregado al carrito:', product.nombre);
         } else {
           // Aquí podrías mostrar un toast de error (sin stock)
           console.warn('No hay suficiente stock disponible');

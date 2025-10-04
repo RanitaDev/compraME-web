@@ -85,7 +85,6 @@ export class Header implements OnInit, OnDestroy {
     this.userSubscription = this.authService.currentUser$.subscribe(
       user => {
         this.currentUser = user;
-        console.log('👤 Usuario en header:', user);
       }
     );
 
@@ -93,7 +92,6 @@ export class Header implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isAuthenticated$.subscribe(
       isAuth => {
         this.isAuthenticated = isAuth;
-        console.log('🔐 Estado de autenticación:', isAuth);
       }
     );
   }
@@ -141,15 +139,12 @@ export class Header implements OnInit, OnDestroy {
   }
 
   public modalCarritoCerrada(): void {
-    console.log("Modal carrito cerrada");
   }
 
   public modalPerfilCerrada(): void {
-    console.log("Modal perfil cerrada");
   }
 
   public usuarioCerroSesion(): void {
-    console.log("Usuario cerró sesión desde la modal");
     // La modal ya manejó el logout, aquí podemos hacer acciones adicionales si es necesario
   }
 
@@ -255,10 +250,6 @@ export class Header implements OnInit, OnDestroy {
   }
 
   public onProductSelect(product: IProduct): void {
-    console.log('🎯 Producto seleccionado:', product);
-    console.log('🔍 Término de búsqueda actual:', this.searchTerm);
-    console.log('📋 Resultados actuales:', this.searchResults.length);
-
     // Guardar el término de búsqueda antes de limpiar
     const currentSearchTerm = this.searchTerm;
     const currentResults = [...this.searchResults];
@@ -268,8 +259,6 @@ export class Header implements OnInit, OnDestroy {
       products: currentResults,
       selectedProduct: product
     };
-
-    console.log('🚀 Estado de navegación:', navigationState);
 
     this.clearSearch();
 
@@ -284,7 +273,7 @@ export class Header implements OnInit, OnDestroy {
       if (!success) {
         console.error('❌ Error en navegación a search-results');
       } else {
-        console.log('✅ Navegación exitosa a search-results');
+        // Navegación exitosa a search-results
       }
     }).catch(error => {
       console.error('❌ Error en navegación:', error);
