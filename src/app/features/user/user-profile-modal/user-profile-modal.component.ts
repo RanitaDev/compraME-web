@@ -15,6 +15,7 @@ import { UserOrders } from './user-orders/user-orders';
 import { UserAddresses } from './user-addresses/user-addresses';
 import { UserSecurity } from './user-security/user-security';
 import { UserHistory } from './user-history/user-history';
+import { ConfirmationService } from '../../../services/utils/confirmation.service';
 
 // Interfaces para las opciones del menú
 interface OpcionMenu {
@@ -91,27 +92,43 @@ export class UserProfileModalComponent implements OnInit, OnDestroy {
       label: 'Historial Completo',
       labelCorto: 'Historial',
       icono: 'pi pi-history'
-    },
-    {
-      id: 'cerrar-sesion',
-      label: 'Cerrar Sesión',
-      labelCorto: 'Salir',
-      icono: 'pi pi-sign-out'
     }
   ];
 
   constructor(
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private confirmacionService: ConfirmationService
   ) {}
 
-  ngOnInit() {
+  /**
+   * Inicializa el componente y carga datos si está abierto
+   */
+  ngOnInit(): void {
     if (this.isOpen) {
       this.cargarDatosUsuario();
     }
   }
 
-  ngOnDestroy() {
+  /**
+   * Maneja el proceso de cerrar sesión con confirmación
+   */
+  cerrarSesion(): void {
+    this.confirmacionService.confirmar({
+      titulo: 'Cerrar sesión',
+      descripcion: '¿Estás seguro de que deseas cerrar sesión?',
+      textoConfirmar: 'Sí, cerrar sesión',
+    }).subscribe((resultado) => {
+      if (resultado.confirmado) {
+        alert('Cerrar sesión');
+      }
+    });
+  }
+
+  /**
+   * Destruye el componente y limpia subscripciones
+   */
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -260,18 +277,18 @@ export class UserProfileModalComponent implements OnInit, OnDestroy {
   /**
    * Maneja cuando se actualizan las direcciones
    */
-  onDireccionesActualizadas(direccionesActualizadas: any[]): void {
+  onDireccionesActualizadas(direccionesActualizadas: IDireccionUsuario[]): void {
     if (this.datosUsuario) {
-      this.datosUsuario.direcciones = direccionesActualizadas as IDireccionUsuario[];
+      this.datosUsuario.direcciones = direccionesActualizadas;
     }
   }
 
   /**
    * Maneja cuando se actualiza la configuración de seguridad
    */
-  onConfiguracionActualizada(configActualizada: any): void {
+  onConfiguracionActualizada(configActualizada: IConfiguracionSeguridad): void {
     if (this.datosUsuario) {
-      this.datosUsuario.configuracionSeguridad = configActualizada as IConfiguracionSeguridad;
+      this.datosUsuario.configuracionSeguridad = configActualizada;
     }
   }
 

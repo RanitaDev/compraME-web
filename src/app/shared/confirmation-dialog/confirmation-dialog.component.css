@@ -1,0 +1,48 @@
+/* Animación del spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Transiciones suaves para botones */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Estados disabled */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button:disabled:hover {
+  transform: none;
+}
+
+/* Focus visible para accesibilidad */
+button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Bordes redondeados para la modal */
+:host {
+  display: block;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Asegurar que el contenido interno no tenga overflow que corte los bordes */
+:host > div {
+  border-radius: 0 0 12px 12px;
+}

@@ -11,11 +11,13 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { MessageService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimations(),
     MessageService,
+    DialogService,
     provideAnimationsAsync(),
     provideHttpClient(
       withInterceptors(
@@ -28,7 +30,7 @@ export const appConfig: ApplicationConfig = {
     ),
     providePrimeNG({
       theme: {
-        preset: Lara
+        preset: Aura
       }
     }),
     provideBrowserGlobalErrorListeners(),
