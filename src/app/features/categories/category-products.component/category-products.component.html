@@ -8,58 +8,49 @@
           class="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105"
           type="button"
         >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
+          <i class="pi pi-arrow-left w-5 h-5"></i>
         </button>
         <nav class="flex items-center gap-2 text-sm text-gray-500">
           <span class="hover:text-gray-700 transition-colors cursor-pointer">Inicio</span>
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
+          <i class="pi pi-chevron-right w-4 h-4"></i>
           <span class="hover:text-gray-700 transition-colors cursor-pointer">Categorías</span>
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
+          <i class="pi pi-chevron-right w-4 h-4"></i>
           <span class="text-gray-900 font-medium">{{ currentCategory?.nombre || 'Categoría' }}</span>
         </nav>
       </div>
 
       <!-- Información de la categoría -->
-      <div *ngIf="currentCategory" class="mb-6">
-        <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-3">
-          {{ currentCategory.nombre }}
-        </h1>
-        <p class="text-gray-600 max-w-3xl leading-relaxed">
-          {{ currentCategory.descripcion }}
-        </p>
-      </div>
+      @if (currentCategory) {
+        <div class="mb-6">
+          <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-3">
+            {{ currentCategory.nombre }}
+          </h1>
+          <p class="text-gray-600 max-w-3xl leading-relaxed">
+            {{ currentCategory.descripcion }}
+          </p>
+        </div>
+      }
 
       <!-- Barra de búsqueda -->
       <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div class="relative flex-1 max-w-md">
-          <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="M21 21l-4.35-4.35"/>
-          </svg>
           <input
             type="text"
             [(ngModel)]="searchTerm"
             (input)="onSearchChange()"
-            class="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl bg-white/70 backdrop-blur-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+            class="w-full pl-6 pr-12 py-3 border border-gray-200 rounded-xl bg-white/70 backdrop-blur-sm focus:ring-2
+                  focus:border-transparent transition-all duration-200 placeholder-gray-450"
             placeholder="Buscar productos..."
           >
-          <button
-            *ngIf="searchTerm"
-            (click)="clearSearch()"
-            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-            type="button"
-          >
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
+          @if (searchTerm) {
+            <button
+              (click)="clearSearch()"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              type="button"
+            >
+              <i class="pi pi-times w-5 h-5"></i>
+            </button>
+          }
         </div>
 
         <!-- Contador de resultados -->
@@ -78,9 +69,7 @@
       <aside class="w-full xl:w-80 flex-shrink-0">
         <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 p-6 sticky top-28 shadow-sm">
           <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
-            </svg>
+            <i class="pi pi-filter w-5 h-5 text-gray-600"></i>
             Filtros
           </h3>
 
@@ -99,7 +88,9 @@
                     type="number"
                     [(ngModel)]="filters.minPrice"
                     (input)="onFiltersChange()"
-                    class="w-full pl-8 pr-3 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all duration-200 placeholder-gray-400"
+                    class="w-full pl-8 pr-3 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-lg
+                          bg-gray-50 focus:ring-2 focus:border-transparent
+                          focus:bg-white transition-all duration-200 placeholder-gray-400 font-medium"
                     placeholder="Mín"
                     min="0"
                   >
@@ -110,7 +101,9 @@
                     type="number"
                     [(ngModel)]="filters.maxPrice"
                     (input)="onFiltersChange()"
-                    class="w-full pl-8 pr-3 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all duration-200 placeholder-gray-400"
+                    class="w-full pl-8 pr-3 py-2.5 text-sm text-gray-900 border border-gray-200 rounded-lg
+                          bg-gray-50 focus:ring-2 focus:border-transparent
+                          focus:bg-white transition-all duration-200 placeholder-gray-400 font-medium"
                     placeholder="Máx"
                     min="0"
                   >
@@ -119,17 +112,18 @@
 
               <!-- Precios sugeridos -->
               <div class="grid grid-cols-2 gap-2">
-                <button
-                  *ngFor="let range of priceRanges"
-                  (click)="setPriceRange(range.min, range.max)"
-                  class="px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200 text-gray-700 bg-white"
-                  [class.bg-indigo-100]="filters.minPrice === range.min && filters.maxPrice === range.max"
-                  [class.border-indigo-400]="filters.minPrice === range.min && filters.maxPrice === range.max"
-                  [class.text-indigo-700]="filters.minPrice === range.min && filters.maxPrice === range.max"
-                  type="button"
-                >
-                  {{ range.label }}
-                </button>
+                @for (range of priceRanges; track range.label) {
+                  <button
+                    (click)="setPriceRange(range.min, range.max)"
+                    class="px-3 py-2 text-xs font-medium border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200 text-gray-700 bg-white"
+                    [class.bg-indigo-100]="filters.minPrice === range.min && filters.maxPrice === range.max"
+                    [class.border-indigo-400]="filters.minPrice === range.min && filters.maxPrice === range.max"
+                    [class.text-indigo-700]="filters.minPrice === range.min && filters.maxPrice === range.max"
+                    type="button"
+                  >
+                    {{ range.label }}
+                  </button>
+                }
               </div>
             </div>
           </div>
@@ -145,7 +139,7 @@
                   type="checkbox"
                   [(ngModel)]="filters.inStock"
                   (change)="onFiltersChange()"
-                  class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors"
+                  class="h-4 w-4 rounded border border-gray-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 transition-colors cursor-pointer"
                 >
                 <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">En stock</span>
               </label>
@@ -154,7 +148,7 @@
                   type="checkbox"
                   [(ngModel)]="filters.featured"
                   (change)="onFiltersChange()"
-                  class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors"
+                  class="h-4 w-4 rounded border border-gray-300 bg-white checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 transition-colors cursor-pointer"
                 >
                 <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Productos destacados</span>
               </label>
@@ -164,12 +158,10 @@
           <!-- Botón limpiar filtros -->
           <button
             (click)="clearFilters()"
-            class="w-full px-4 py-3 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 bg-white"
+            class="w-full px-4 py-3 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 bg-white"
             type="button"
           >
-            <svg class="w-4 h-4 inline-block mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-            </svg>
+            <i class="pi pi-trash w-4 h-4 inline-block mr-2"></i>
             Limpiar filtros
           </button>
         </div>
@@ -178,153 +170,160 @@
       <!-- Grid de productos -->
       <main class="flex-1">
         <!-- Estado de carga -->
-        <div *ngIf="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-          <div *ngFor="let item of [1,2,3,4,5,6,7,8,9,10]" class="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 p-6 animate-pulse">
-            <div class="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl mb-4"></div>
-            <div class="space-y-3">
-              <div class="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
-              <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-full"></div>
-              <div class="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2"></div>
-            </div>
+        @if (isLoading) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            @for (item of [1,2,3,4,5,6,7,8,9,10]; track item) {
+              <div class="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 p-6 animate-pulse">
+                <div class="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded-xl mb-4"></div>
+                <div class="space-y-3">
+                  <div class="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-3/4"></div>
+                  <div class="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-full"></div>
+                  <div class="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/2"></div>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        }
 
         <!-- Productos -->
-        <div *ngIf="!isLoading && filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-          <div
-            *ngFor="let product of filteredProducts"
-            class="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:-translate-y-1"
-            (click)="goToProduct(product)"
-          >
-            <!-- Imagen del producto -->
-            <div class="relative aspect-square overflow-hidden rounded-t-2xl">
-              <img
-                [src]="product.imagenes[0]"
-                [alt]="product.nombre"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              >
+        @if(!isLoading && filteredProducts.length > 0) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            <div
+              *ngFor="let product of filteredProducts"
+              class="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200/50 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 cursor-pointer group hover:scale-[1.02] hover:-translate-y-1"
+              (click)="goToProduct(product)"
+            >
+              <!-- Imagen del producto -->
+              <div class="relative aspect-square overflow-hidden rounded-t-2xl">
+                <img
+                  [src]="product.imagenes[0]"
+                  [alt]="product.nombre"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                >
 
-              <!-- Overlay gradient -->
-              <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <!-- Overlay gradient -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-              <!-- Badges -->
-              <div class="absolute top-4 left-4 flex flex-col gap-2">
-                <span
-                  *ngIf="product.destacado"
-                  class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
+                <!-- Badges -->
+                <div class="absolute top-4 left-4 flex flex-col gap-2">
+                  @if (product.destacado) {
+                    <span
+                      class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
+                    >
+                      ⭐ Destacado
+                    </span>
+                  }
+                  @if (product.stock <= 5 && product.stock > 0) {
+                    <span
+                      class="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
+                    >
+                      ¡Últimos {{ product.stock }}!
+                    </span>
+                  }
+                  @if (product.stock === 0) {
+                    <span
+                      class="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
+                    >
+                      Agotado
+                    </span>
+                  }
+                </div>
+
+                <!-- Botón de acción flotante -->
+                <button
+                  class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md hover:bg-indigo-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 hover:scale-110"
+                  [disabled]="product.stock === 0"
+                  [class.opacity-50]="product.stock === 0"
+                  [class.cursor-not-allowed]="product.stock === 0"
+                  (click)="$event.stopPropagation(); addToCart(product)"
+                  type="button"
                 >
-                  ⭐ Destacado
-                </span>
-                <span
-                  *ngIf="product.stock <= 5 && product.stock > 0"
-                  class="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
-                >
-                  ¡Últimos {{ product.stock }}!
-                </span>
-                <span
-                  *ngIf="product.stock === 0"
-                  class="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm"
-                >
-                  Agotado
-                </span>
+                  <i class="pi pi-shopping-cart w-5 h-5"></i>
+                </button>
               </div>
 
-              <!-- Botón de acción flotante -->
-              <button
-                class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md hover:bg-indigo-600 text-gray-700 hover:text-white p-3 rounded-full transition-all duration-300 shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 hover:scale-110"
-                [disabled]="product.stock === 0"
-                [class.opacity-50]="product.stock === 0"
-                [class.cursor-not-allowed]="product.stock === 0"
-                (click)="$event.stopPropagation(); addToCart(product)"
-                type="button"
-              >
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="8" cy="21" r="1"/>
-                  <circle cx="19" cy="21" r="1"/>
-                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L23 6H6"/>
-                </svg>
-              </button>
-            </div>
+              <!-- Información del producto -->
+              <div class="p-6">
+                <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                  {{ product.nombre }}
+                </h3>
+                <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                  {{ product.descripcion }}
+                </p>
 
-            <!-- Información del producto -->
-            <div class="p-6">
-              <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
-                {{ product.nombre }}
-              </h3>
-              <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
-                {{ product.descripcion }}
-              </p>
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex flex-col">
+                    <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                      ${{ formatPrice(product.precio) }}
+                    </span>
+                    <span class="text-xs text-gray-500 font-medium">MXN</span>
+                  </div>
 
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex flex-col">
-                  <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    ${{ formatPrice(product.precio) }}
+                  <!-- Ver detalles -->
+                  <div class="text-xs text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Ver detalles →
+                  </div>
+                </div>
+
+                <!-- Stock indicator -->
+                <div class="flex items-center gap-3">
+                  <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      [class.bg-gradient-to-r]="true"
+                      [class.from-green-500]="product.stock > 10"
+                      [class.to-green-600]="product.stock > 10"
+                      [class.from-yellow-500]="product.stock > 5 && product.stock <= 10"
+                      [class.to-yellow-600]="product.stock > 5 && product.stock <= 10"
+                      [class.from-red-500]="product.stock <= 5 && product.stock > 0"
+                      [class.to-red-600]="product.stock <= 5 && product.stock > 0"
+                      [class.from-gray-400]="product.stock === 0"
+                      [class.to-gray-500]="product.stock === 0"
+                      [style.width.%]="getStockPercentage(product.stock)"
+                    ></div>
+                  </div>
+                  <span class="text-xs font-medium"
+                        [class.text-green-600]="product.stock > 10"
+                        [class.text-yellow-600]="product.stock > 5 && product.stock <= 10"
+                        [class.text-red-600]="product.stock <= 5 && product.stock > 0"
+                        [class.text-gray-500]="product.stock === 0">
+                    {{ product.stock > 0 ? product.stock + ' disponibles' : 'Sin stock' }}
                   </span>
-                  <span class="text-xs text-gray-500 font-medium">MXN</span>
                 </div>
-
-                <!-- Ver detalles -->
-                <div class="text-xs text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Ver detalles →
-                </div>
-              </div>
-
-              <!-- Stock indicator -->
-              <div class="flex items-center gap-3">
-                <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div
-                    class="h-full rounded-full transition-all duration-500"
-                    [class.bg-gradient-to-r]="true"
-                    [class.from-green-500]="product.stock > 10"
-                    [class.to-green-600]="product.stock > 10"
-                    [class.from-yellow-500]="product.stock > 5 && product.stock <= 10"
-                    [class.to-yellow-600]="product.stock > 5 && product.stock <= 10"
-                    [class.from-red-500]="product.stock <= 5 && product.stock > 0"
-                    [class.to-red-600]="product.stock <= 5 && product.stock > 0"
-                    [class.from-gray-400]="product.stock === 0"
-                    [class.to-gray-500]="product.stock === 0"
-                    [style.width.%]="getStockPercentage(product.stock)"
-                  ></div>
-                </div>
-                <span class="text-xs font-medium"
-                      [class.text-green-600]="product.stock > 10"
-                      [class.text-yellow-600]="product.stock > 5 && product.stock <= 10"
-                      [class.text-red-600]="product.stock <= 5 && product.stock > 0"
-                      [class.text-gray-500]="product.stock === 0">
-                  {{ product.stock > 0 ? product.stock + ' disponibles' : 'Sin stock' }}
-                </span>
               </div>
             </div>
           </div>
-        </div>
+        }
+
 
         <!-- Estado vacío -->
-        <div *ngIf="!isLoading && filteredProducts.length === 0" class="text-center py-20">
-          <div class="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-inner">
-            <svg class="w-16 h-16 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
-            </svg>
+         @if(!isLoading && filteredProducts.length === 0) {
+          <div class="text-center py-20">
+            <div class="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-inner">
+              <svg class="w-14 h-14 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-3">
+              {{ searchTerm ? 'No se encontraron productos' : 'No hay productos disponibles' }}
+            </h3>
+            <p class="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+              {{ searchTerm ? 'Intenta con otros términos de búsqueda o ajusta los filtros' : 'Esta categoría no tiene productos en este momento' }}
+            </p>
+            @if (searchTerm) {
+              <button
+                (click)="clearSearch()"
+                class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                type="button"
+              >
+                <i class="pi pi-trash w-5 h-5 inline-block mr-2"></i>
+                Limpiar búsqueda
+              </button>
+            }
           </div>
-          <h3 class="text-2xl font-bold text-gray-700 mb-3">
-            {{ searchTerm ? 'No se encontraron productos' : 'No hay productos disponibles' }}
-          </h3>
-          <p class="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
-            {{ searchTerm ? 'Intenta con otros términos de búsqueda o ajusta los filtros' : 'Esta categoría no tiene productos en este momento' }}
-          </p>
-          <button
-            *ngIf="searchTerm"
-            (click)="clearSearch()"
-            class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            type="button"
-          >
-            <svg class="w-5 h-5 inline-block mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-            </svg>
-            Limpiar búsqueda
-          </button>
-        </div>
+         }
+
       </main>
     </div>
   </div>
