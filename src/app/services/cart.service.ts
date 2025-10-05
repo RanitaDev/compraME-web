@@ -438,14 +438,6 @@ export class CartService {
   }
 
   /**
-   * @deprecated Usar agregarAlCarrito() en su lugar
-   */
-  public addToCart(product: IProduct, quantity: number = 1): Promise<boolean> {
-    console.warn('⚠️ addToCart() está deprecado, usar agregarAlCarrito()');
-    return this.agregarAlCarrito(product, quantity);
-  }
-
-  /**
    * @deprecated Usar eliminarDelCarrito() en su lugar
    */
   public removeFromCart(productId: string): Promise<boolean> {
@@ -461,10 +453,4 @@ export class CartService {
     return this.vaciarCarrito();
   }
 
-  /**
-   * @deprecated Usar obtenerCantidadProducto() en su lugar
-   */
-  public getItemCount(productId: string): number {
-    return this.obtenerCantidadProducto(productId);
-  }
 }

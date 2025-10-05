@@ -176,10 +176,9 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    // Verificar autenticación antes de intentar agregar
     if (!this.authService.isAuthenticated()) {
       this.toastService.info('Inicia sesión', 'Debes iniciar sesión para agregar productos al carrito');
-      // Guardar la intención de agregar al carrito
+
       localStorage.setItem('redirect_after_login', `/product/${product._id}`);
       localStorage.setItem('cart_intent', JSON.stringify({ productId: product._id, action: 'add_to_cart' }));
       this.router.navigate(['/auth']);
@@ -187,28 +186,19 @@ export class ProductDetailComponent implements OnInit {
     }
 
     try {
-      // Mostrar spinner mientras se procesa
       this.spinnerService.show('Agregando al carrito...', 'default', 'add-to-cart');
-
       // Agregar al carrito usando la nueva API
-      const success = await this.cartService.addToCart(product, 1);
+      const success = await this.cartService.agregarAlCarrito(product, 1);
 
       if (success) {
-        const currentQuantity = this.cartService.getItemCount(product._id);
-        // Agregado silenciosamente - sin toast de confirmación
+        this.toastService.success('Agregado al carrito', '', {
+          life: 400
+        });
       } else {
-        this.toastService.warning(
-          'No se pudo agregar',
-          'Ocurrió un error al agregar el producto al carrito'
-        );
-        console.warn('⚠️ No se pudo agregar al carrito:', product.nombre);
+        this.toastService.warning('No se pudo agregar','Ocurrió un error al agregar el producto al carrito');
       }
     } catch (error) {
-      console.error('❌ Error agregando producto al carrito:', error);
-      this.toastService.error(
-        'Error',
-        'Hubo un problema al agregar el producto al carrito'
-      );
+      this.toastService.error('Error','Hubo un problema al agregar el producto al carrito');
     } finally {
       this.spinnerService.hide('add-to-cart');
     }

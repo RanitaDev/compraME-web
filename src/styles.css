@@ -85,10 +85,6 @@ body {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
 }
 
-
-/* Estilos personalizados para los toasts */
-/* Agregar en tu styles.css global o en el componente */
-
 /* Contenedor principal del toast */
 .p-toast {
   opacity: 1 !important;
@@ -104,49 +100,44 @@ body {
   border-left: 4px solid transparent !important;
 }
 
-/* Toast de éxito */
+/* Toast de éxito - Verde oliva suave */
 .p-toast-message-success {
-  background: rgba(16, 185, 129, 0.95) !important;
+  background: #15803d !important;
+  border-left-color: #14532d !important;
+}
+
+/* Toast de error - Rojo coral sólido */
+.p-toast-message-error {
+  background: #dc2626 !important;
+  border-left-color: #b91c1c !important;
+}
+
+/* Toast de advertencia - Naranja ámbar sólido */
+.p-toast-message-warn {
+  background: #ea580c !important;
+  border-left-color: #c2410c !important;
+}
+
+/* Toast informativo - Azul cielo sólido */
+.p-toast-message-info {
+  background: #2563eb !important;
+  border-left-color: #1d4ed8 !important;
+}
+
+/* Estilos comunes para todos los toasts */
+.p-toast-message-success,
+.p-toast-message-error,
+.p-toast-message-warn,
+.p-toast-message-info {
   color: white !important;
-  border-left-color: #059669 !important;
 }
 
 .p-toast-message-success .p-toast-message-icon,
-.p-toast-message-success .p-toast-icon-close {
-  color: white !important;
-}
-
-/* Toast de error */
-.p-toast-message-error {
-  background: rgba(239, 68, 68, 0.95) !important;
-  color: white !important;
-  border-left-color: #dc2626 !important;
-}
-
+.p-toast-message-success .p-toast-icon-close,
 .p-toast-message-error .p-toast-message-icon,
-.p-toast-message-error .p-toast-icon-close {
-  color: white !important;
-}
-
-/* Toast de advertencia */
-.p-toast-message-warn {
-  background: rgba(245, 158, 11, 0.95) !important;
-  color: white !important;
-  border-left-color: #d97706 !important;
-}
-
+.p-toast-message-error .p-toast-icon-close,
 .p-toast-message-warn .p-toast-message-icon,
-.p-toast-message-warn .p-toast-icon-close {
-  color: white !important;
-}
-
-/* Toast informativo */
-.p-toast-message-info {
-  background: rgba(59, 130, 246, 0.95) !important;
-  color: white !important;
-  border-left-color: #2563eb !important;
-}
-
+.p-toast-message-warn .p-toast-icon-close,
 .p-toast-message-info .p-toast-message-icon,
 .p-toast-message-info .p-toast-icon-close {
   color: white !important;
@@ -243,15 +234,12 @@ body {
     margin: 0 0 0.5rem 0 !important;
     border-radius: 8px !important;
   }
-
   .p-toast-message-content {
     padding: 0.875rem 1rem !important;
   }
-
   .p-toast-summary {
     font-size: 0.9rem !important;
   }
-
   .p-toast-detail {
     font-size: 0.8rem !important;
   }

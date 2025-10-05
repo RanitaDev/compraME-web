@@ -32,8 +32,8 @@ export class CategoryService {
       );
   }
 
-  public getCategory(id: number): Observable<Category | undefined> {
-    return this.http.get<Category | undefined>(`${this.apiUrl}/${id}`)
+  public getCategory(idCategoria: string): Observable<Category | undefined> {
+    return this.http.get<Category | undefined>(`${this.apiUrl}/${idCategoria}`)
       .pipe(
         catchError(error => {
           console.error('Error obteniendo categoría:', error);

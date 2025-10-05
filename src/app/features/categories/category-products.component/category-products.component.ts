@@ -7,6 +7,7 @@ import { Category } from '../../../interfaces/categories.interface';
 import { ProductService } from '../../../services/products.service';
 import { CategoryService } from '../../../services/category.service';
 import { CartService } from '../../../services/cart.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 // Interface para los filtros
 interface ProductFilters {
@@ -62,15 +63,19 @@ export class CategoryProductsComponent implements OnInit {
     private router: Router,
     private productService: ProductService,
     private categoryService: CategoryService,
-    private cartService: CartService
+    private cartService: CartService,
+    private toastService: ToastService
   ) {}
 
-  ngOnInit() {
+  /**
+   * Método del ciclo de vida de Angular que se ejecuta al inicializar el componente
+   */
+  ngOnInit(): void {
     // Obtener el ID de categoría de la ruta
     this.route.params.subscribe(params => {
       const categoryId = params['id'];
       if (categoryId) {
-        this.loadCategoryData(parseInt(categoryId));
+        this.loadCategoryData(categoryId);
         this.loadProductsByCategory(categoryId);
       } else {
         console.error('ID de categoría no encontrado en la ruta');
@@ -80,8 +85,9 @@ export class CategoryProductsComponent implements OnInit {
 
   /**
    * Carga los datos de la categoría actual
+   * @param categoryId - ID numérico de la categoría a cargar
    */
-  private loadCategoryData(categoryId: number) {
+  private loadCategoryData(categoryId: string): void {
     this.categoryService.getCategory(categoryId).subscribe({
       next: (category) => {
         this.currentCategory = category || null;
@@ -94,14 +100,14 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Carga los productos de la categoría
+   * Carga los productos de la categoría especificada
+   * @param categoryId - ID de la categoría como string
    */
-  private loadProductsByCategory(categoryId: string) {
+  private loadProductsByCategory(categoryId: string): void {
     this.isLoading = true;
 
     this.productService.getProductsByCategory(categoryId).subscribe({
       next: (products) => {
-        // Filtrar solo productos activos
         this.allProducts = products.filter(product => product.activo);
         this.applyFilters();
         this.isLoading = false;
@@ -114,9 +120,9 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Aplica todos los filtros (búsqueda + filtros laterales)
+   * Aplica todos los filtros (búsqueda + filtros laterales) a la lista de productos
    */
-  private applyFilters() {
+  private applyFilters(): void {
     let filtered = [...this.allProducts];
 
     // Filtro de búsqueda
@@ -152,9 +158,9 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Maneja cambios en el campo de búsqueda
+   * Maneja cambios en el campo de búsqueda con debounce
    */
-  onSearchChange() {
+  onSearchChange(): void {
     // Debounce simple para evitar muchas llamadas
     setTimeout(() => {
       this.applyFilters();
@@ -164,14 +170,16 @@ export class CategoryProductsComponent implements OnInit {
   /**
    * Maneja cambios en los filtros laterales
    */
-  onFiltersChange() {
+  onFiltersChange(): void {
     this.applyFilters();
   }
 
   /**
    * Establece un rango de precio predefinido
+   * @param min - Precio mínimo del rango
+   * @param max - Precio máximo del rango
    */
-  setPriceRange(min: number, max: number) {
+  setPriceRange(min: number, max: number): void {
     this.filters.minPrice = min;
     this.filters.maxPrice = max === 999999 ? null : max;
     this.applyFilters();
@@ -180,15 +188,15 @@ export class CategoryProductsComponent implements OnInit {
   /**
    * Limpia el término de búsqueda
    */
-  clearSearch() {
+  clearSearch(): void {
     this.searchTerm = '';
     this.applyFilters();
   }
 
   /**
-   * Limpia todos los filtros
+   * Limpia todos los filtros aplicados
    */
-  clearFilters() {
+  clearFilters(): void {
     this.filters = {
       minPrice: null,
       maxPrice: null,
@@ -200,26 +208,32 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Navega al detalle del producto
+   * Navega al detalle del producto especificado
+   * @param product - Producto al que se desea navegar
    */
-  goToProduct(product: IProduct) {
+  goToProduct(product: IProduct): void {
     // Usar el _id de MongoDB o idProducto si existe
     const productId = product.idProducto || product._id;
     this.router.navigate(['/product', productId]);
   }
 
   /**
-   * Agrega un producto al carrito
+   * Agrega un producto al carrito de compras
+   * @param product - Producto a agregar al carrito
+   * @returns Promise que se resuelve cuando se completa la operación
    */
-  async addToCart(product: IProduct) {
+  async addToCart(product: IProduct): Promise<void> {
     if (product.stock > 0) {
       try {
         const success = await this.cartService.agregarAlCarrito(product, 1);
         if (success) {
-          // Aquí podrías mostrar un toast de éxito
+          this.toastService.success('Agregado al carrito', '', {
+            life: 400
+          });
         } else {
-          // Aquí podrías mostrar un toast de error (sin stock)
-          console.warn('No hay suficiente stock disponible');
+          this.toastService.warning('No hay suficiente stock disponible', '', {
+            life: 400
+          });
         }
       } catch (error) {
         console.error('Error al agregar al carrito:', error);
@@ -228,14 +242,16 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Navega de regreso
+   * Navega de regreso a la página de categorías
    */
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/categories']);
   }
 
   /**
-   * Formatea el precio para mostrar
+   * Formatea un precio numérico para mostrar en formato de moneda mexicana
+   * @param price - Precio a formatear
+   * @returns Precio formateado como string
    */
   formatPrice(price: number): string {
     return new Intl.NumberFormat('es-MX', {
@@ -245,7 +261,9 @@ export class CategoryProductsComponent implements OnInit {
   }
 
   /**
-   * Calcula el porcentaje de stock para la barra visual
+   * Calcula el porcentaje de stock para la barra visual basado en un máximo de 20 unidades
+   * @param stock - Cantidad actual de stock
+   * @returns Porcentaje de stock (máximo 100%)
    */
   getStockPercentage(stock: number): number {
     const maxStock = 20; // Valor máximo para el cálculo del porcentaje
