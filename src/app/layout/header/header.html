@@ -93,12 +93,11 @@
         <!-- Botón del carrito -->
         <div class="relative">
           <p-button
-            severity="primary"
             icon="pi pi-shopping-cart"
             size="large"
             rounded
             text
-            severity="info"
+            [severity]="'info'"
             [class.cart-animated]="cartAnimated"
             [class.cart-has-items]="cartTotalItems > 0"
             (onClick)="abrirCarrito()"
