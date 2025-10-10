@@ -31,7 +31,7 @@ export class UserOrders {
   @Input() vistaMovil: boolean = false;
   @Output() verHistorialCompleto = new EventEmitter<void>();
 
-  // Datos de ejemplo para la demostración
+
   pedidosEjemplo: PedidoReciente[] = [
     {
       id: '1',
@@ -70,7 +70,6 @@ export class UserOrders {
   };
 
   ngOnInit() {
-    // Usar datos de ejemplo si no se proporcionan datos reales
     if (!this.pedidos || this.pedidos.length === 0) {
       this.pedidos = this.pedidosEjemplo;
     }

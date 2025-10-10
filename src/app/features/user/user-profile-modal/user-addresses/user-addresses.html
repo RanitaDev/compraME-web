@@ -34,36 +34,34 @@
   </div>
 
   <form (ngSubmit)="guardarDireccion()" class="space-y-4">
-    <!-- Tipo y nombre -->
+    <!-- Alias y nombre completo -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de dirección</label>
-        <select
-          [(ngModel)]="nuevaDireccion.tipo"
-          name="tipo"
-          required
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="casa">🏠 Casa</option>
-          <option value="oficina">🏢 Oficina</option>
-          <option value="otro">📍 Otro</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre/Alias</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Alias</label>
         <input
           type="text"
-          [(ngModel)]="nuevaDireccion.nombre"
-          name="nombre"
+          [(ngModel)]="nuevaDireccion.alias"
+          name="alias"
           required
-          placeholder="Ej: Casa de mamá, Oficina principal..."
+          placeholder="Ej: Casa, Oficina, Casa de mamá..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre completo</label>
+        <input
+          type="text"
+          [(ngModel)]="nuevaDireccion.nombreCompleto"
+          name="nombreCompleto"
+          required
+          placeholder="Nombre de quien recibe"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
       </div>
     </div>
 
-    <!-- Calle y número -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Calle y números -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-700 mb-2">Calle</label>
         <input
@@ -76,13 +74,23 @@
         >
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Número</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Número exterior</label>
         <input
           type="text"
-          [(ngModel)]="nuevaDireccion.numero"
-          name="numero"
+          [(ngModel)]="nuevaDireccion.numeroExterior"
+          name="numeroExterior"
           required
           placeholder="123"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Número interior</label>
+        <input
+          type="text"
+          [(ngModel)]="nuevaDireccion.numeroInterior"
+          name="numeroInterior"
+          placeholder="A, 4B, etc."
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
       </div>
@@ -125,7 +133,7 @@
       </div>
     </div>
 
-    <!-- Código postal y teléfono -->
+    <!-- Código postal, teléfono y referencias -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Código postal</label>
@@ -139,18 +147,30 @@
         >
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono (opcional)</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
         <input
           type="tel"
           [(ngModel)]="nuevaDireccion.telefono"
           name="telefono"
-          placeholder="55-1234-5678"
+          required
+          placeholder="477-000-0000"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
       </div>
     </div>
 
-    <!-- Checkboxes -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Referencias (opcional)</label>
+      <textarea
+        [(ngModel)]="nuevaDireccion.referencias"
+        name="referencias"
+        rows="2"
+        placeholder="Casa de dos pisos, portón verde, etc."
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      ></textarea>
+    </div>
+
+    <!-- Checkbox principal -->
     <div class="space-y-3">
       <label class="flex items-center">
         <input
@@ -161,23 +181,21 @@
         >
         <span class="ml-3 text-sm text-gray-700">Establecer como dirección principal</span>
       </label>
-      <label class="flex items-center">
-        <input
-          type="checkbox"
-          [(ngModel)]="nuevaDireccion.esFacturacion"
-          name="esFacturacion"
-          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        >
-        <span class="ml-3 text-sm text-gray-700">Usar para facturación</span>
-      </label>
     </div>
 
     <!-- Botones -->
     <div class="flex gap-3 pt-4">
       <button
         type="submit"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200"
+        [disabled]="guardando"
+        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
       >
+        @if (guardando) {
+          <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        }
         {{ editandoDireccion ? 'Actualizar' : 'Guardar' }}
       </button>
       <button
@@ -204,19 +222,16 @@
     <div class="flex items-start justify-between mb-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <i [class]="'pi ' + getTipoIcono(direccion.tipo)" class="text-blue-600 text-lg"></i>
+          <i class="pi pi-map-marker text-blue-600 text-lg"></i>
         </div>
         <div>
           <h4 class="font-semibold text-gray-900 flex items-center gap-2">
-            {{ direccion.nombre }}
+            {{ direccion.alias }}
             <span *ngIf="direccion.esPrincipal" class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
               Principal
             </span>
-            <span *ngIf="direccion.esFacturacion" class="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-              Facturación
-            </span>
           </h4>
-          <p class="text-sm text-gray-600">{{ getTipoTexto(direccion.tipo) }}</p>
+          <p class="text-sm text-gray-600">{{ direccion.nombreCompleto }}</p>
         </div>
       </div>
 
@@ -249,11 +264,14 @@
 
     <!-- Detalles de la dirección -->
     <div class="text-gray-700 space-y-1">
-      <p class="font-medium">{{ direccion.calle }} {{ direccion.numero }}</p>
+      <p class="font-medium">{{ direccion.calle }} {{ direccion.numeroExterior }}<span *ngIf="direccion.numeroInterior"> Int. {{ direccion.numeroInterior }}</span></p>
       <p>{{ direccion.colonia }}, {{ direccion.ciudad }}</p>
       <p>{{ direccion.estado }}, CP: {{ direccion.codigoPostal }}</p>
       <p *ngIf="direccion.telefono" class="text-sm text-gray-600">
         <i class="pi pi-phone mr-2"></i>{{ direccion.telefono }}
+      </p>
+      <p *ngIf="direccion.referencias" class="text-sm text-gray-600">
+        <i class="pi pi-info-circle mr-2"></i>{{ direccion.referencias }}
       </p>
     </div>
   </div>

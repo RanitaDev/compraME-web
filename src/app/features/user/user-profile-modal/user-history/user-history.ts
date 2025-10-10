@@ -119,18 +119,8 @@ export class UserHistory {
   ];
 
   ngOnInit() {
-    // Usar datos de ejemplo si no se proporcionan datos reales
-    if (!this.historialCompleto || this.historialCompleto.length === 0) {
-      // Simular carga de datos
-      if (this.cargandoHistorial) {
-        setTimeout(() => {
-          this.historialCompleto = this.historialEjemplo;
-          this.cargandoHistorial = false;
-        }, 2000);
-      } else {
-        this.historialCompleto = this.historialEjemplo;
-      }
-    }
+    // No agregar datos de ejemplo automáticamente
+    // El historial debe venir de la base de datos real
   }
 
   getEstadoColor(estado: string): string {

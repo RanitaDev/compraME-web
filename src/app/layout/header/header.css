@@ -53,7 +53,7 @@
 
 /* Hover effect para el carrito */
 .cart-button:hover {
-  color: #374151; /* gray-700 */
+  color: #282d35; /* gray-700 */
   transition: color 0.2s ease;
 }
 
@@ -70,7 +70,6 @@
 /* Buscador expandido cuando hay contenido o está activo */
 .search-expanded {
   width: calc(75vw - 320px) !important;
-  background-color: #e4f6ff !important;
   border-color: rgba(82, 114, 128, 0.3) !important;
 }
 

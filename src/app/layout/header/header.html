@@ -6,10 +6,12 @@
   <div class="flex items-center flex-1 justify-end">
     <!-- Search Component -->
     <div class="search-container group relative flex items-center">
-      <div class="flex items-center h-9 bg-white group-hover:bg-[#e4f6ff] rounded-full transition-all duration-300
-                  ease-in-out overflow-hidden w-9 border border-white group-hover:border-[#527280]/30"
+      <div class="flex items-center h-9 bg-transparent rounded-full transition-all duration-300
+                  ease-in-out overflow-hidden w-9 border border-transparent group-hover:border-[#527280]/30"
                   [class.search-expanded]="searchTerm || showSearchDropdown"
-                  [class.group-hover:w-[calc(75vw-320px)]]="!searchTerm && !showSearchDropdown">
+                  [class.group-hover:w-[calc(75vw-320px)]]="!searchTerm && !showSearchDropdown"
+                  [class.bg-white]="searchTerm || showSearchDropdown || searchFocused"
+                  [class.border-gray-200]="searchTerm || showSearchDropdown || searchFocused">
         <div class="flex items-center justify-center w-8.5 h-9 flex-shrink-0">
           <i class="pi pi-search text-[#3f5963] text-lg pl-2 font-bold"></i>
         </div>

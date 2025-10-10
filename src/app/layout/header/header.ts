@@ -47,9 +47,7 @@ export class Header implements OnInit, OnDestroy {
   // Propiedades para animación del carrito
   cartAnimated = false;
   cartTotalItems = 0;
-  private cartSubscription?: Subscription;
 
-  // Propiedades para búsqueda
   public searchTerm = '';
   public showSearchDropdown = false;
   public searchResults: IProduct[] = [];
@@ -63,7 +61,6 @@ export class Header implements OnInit, OnDestroy {
     private cartService: CartService,
     private productService: ProductService
   ){
-    // Effect para escuchar cambios en el carrito y activar animación
     effect(() => {
       const currentTotal = this.cartService.totalItems();
       const prevTotal = this.cartTotalItems;

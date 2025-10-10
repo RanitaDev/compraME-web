@@ -18,22 +18,23 @@
           <div class="p-6 border-b border-gray-200">
             <div class="flex items-center gap-4">
               <img
-                [src]="datosUsuario?.usuario?.avatar || '/assets/default-avatar.png'"
-                [alt]="datosUsuario?.usuario?.nombre"
+                [src]="datosUsuario.usuario.avatar || '/assets/layout.png'"
+                [alt]="datosUsuario.usuario.nombre"
                 class="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-              >
+                (error)="onImageError($event)"
+              />
               <div class="flex-1 min-w-0">
                 <h2 class="text-lg font-semibold text-gray-900 truncate">
-                  {{ datosUsuario?.usuario?.nombre }} {{ datosUsuario?.usuario?.apellidos }}
+                  {{ datosUsuario.usuario.nombre }} {{ datosUsuario.usuario.apellidos }}
                 </h2>
                 <p class="text-sm text-gray-600 truncate">
-                  {{ datosUsuario?.usuario?.email }}
+                  {{ datosUsuario.usuario.email }}
                 </p>
               </div>
             </div>
           </div>
 
-          <!-- Navegación - Desktop -->
+
           <nav class="p-4">
             <ul class="space-y-2">
               @for (opcion of opcionesMenu; track opcion.id) {
@@ -98,40 +99,99 @@
               }
               @case ('compras') {
                 <!-- Mis Compras -->
-                <div class="space-y-6">
-                  <app-user-orders
-                    [pedidos]="datosUsuario?.pedidosRecientes || []"
-                    [estadisticas]="datosUsuario?.estadisticas || null"
-                    (verHistorialCompleto)="onVerHistorialCompleto()">
-                  </app-user-orders>
-                </div>
+                @if (!(datosUsuario.pedidosRecientes && datosUsuario.pedidosRecientes.length)) {
+                  <div class="space-y-6">
+                    <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-8 bg-gray-50">
+                      <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h18v4H3V3zM5 11h14l-1 9H6l-1-9z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold text-gray-800">Ups! Aún no hay nada por aquí</h3>
+                      <p class="text-sm text-gray-600 mt-2">Parece que todavía no has realizado compras.</p>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="space-y-6">
+                    <app-user-orders
+                      [pedidos]="datosUsuario.pedidosRecientes || []"
+                      [estadisticas]="datosUsuario.estadisticas || null"
+                      (verHistorialCompleto)="onVerHistorialCompleto()">
+                    </app-user-orders>
+                  </div>
+                }
               }
               @case ('direcciones') {
                 <!-- Direcciones -->
-                <div class="space-y-6">
-                  <app-user-addresses
-                    [direcciones]="datosUsuario?.direcciones || []"
-                    (direccionesActualizadas)="onDireccionesActualizadas($event)">
-                  </app-user-addresses>
-                </div>
+                @if (!(datosUsuario.direcciones && datosUsuario.direcciones.length)) {
+                  <div class="space-y-6">
+                    @if (!mostrandoFormularioDireccion) {
+                      <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-8 bg-gray-50">
+                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Agrega una dirección para recibir tus productos!</h3>
+                        <p class="text-sm text-gray-600 mb-6 text-center">Necesitas al menos una dirección de envío para realizar compras.</p>
+                        <button
+                          (click)="mostrarFormularioDireccion()"
+                          class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                          type="button"
+                        >
+                          <i class="pi pi-plus text-sm"></i>
+                          Agregar dirección
+                        </button>
+                      </div>
+                    } @else {
+                      <app-user-addresses
+                        [direcciones]="[]"
+                        (direccionesActualizadas)="onDireccionesActualizadas($event)">
+                      </app-user-addresses>
+                    }
+                  </div>
+                } @else {
+                  <div class="space-y-6">
+                    <app-user-addresses
+                      [direcciones]="getDireccionesComoIAddress()"
+                      (direccionesActualizadas)="onDireccionesActualizadas($event)">
+                    </app-user-addresses>
+                  </div>
+                }
               }
               @case ('seguridad') {
                 <!-- Seguridad -->
                 <div class="space-y-6">
                   <app-user-security
-                    [configuracion]="datosUsuario?.configuracionSeguridad"
+                    [configuracion]="datosUsuario.configuracionSeguridad"
                     (configuracionActualizada)="onConfiguracionActualizada($event)">
                   </app-user-security>
                 </div>
               }
               @case ('historial') {
-                <!-- Historial Completo -->
-                <div class="space-y-6">
-                  <app-user-history
-                    [cargandoHistorial]="cargandoHistorial"
-                    [historialCompleto]="historialCompleto">
-                  </app-user-history>
-                </div>
+                @if (!(historialCompleto && historialCompleto.length)) {
+                  <div class="space-y-6">
+                    <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-8 bg-gray-50">
+                      <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <h3 class="text-lg font-semibold text-gray-800">Ups! Aún no hay nada por aquí</h3>
+                      <p class="text-sm text-gray-600 mt-2 mb-6 text-center">No tienes historial de pedidos anteriores.</p>
+                      <button
+                        (click)="irAInicio()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                        type="button"
+                      >
+                        <i class="pi pi-home text-sm"></i>
+                        Ver productos
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="space-y-6">
+                    <app-user-history
+                      [cargandoHistorial]="cargandoHistorial"
+                      [historialCompleto]="historialCompleto">
+                    </app-user-history>
+                  </div>
+                }
               }
             }
           </div>
@@ -144,13 +204,14 @@
         <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
           <div class="flex items-center gap-3">
             <img
-              [src]="datosUsuario?.usuario?.avatar || '/assets/default-avatar.png'"
-              [alt]="datosUsuario?.usuario?.nombre || 'Usuario'"
+              [src]="datosUsuario.usuario.avatar || '/assets/layout.png'"
+              [alt]="datosUsuario.usuario.nombre || 'Usuario'"
               class="w-10 h-10 rounded-full object-cover"
-            >
+              (error)="onImageError($event)"
+            />
             <div>
               <h2 class="font-semibold text-gray-900">
-                {{ datosUsuario?.usuario?.nombre || 'Usuario' }}
+                {{ datosUsuario.usuario.nombre || 'Usuario' }}
               </h2>
               <p class="text-sm text-gray-600">Mi cuenta</p>
             </div>
@@ -199,44 +260,104 @@
             }
             @case ('compras') {
               <!-- Mis Compras -->
-              <div>
-                <app-user-orders
-                  [pedidos]="datosUsuario?.pedidosRecientes || []"
-                  [estadisticas]="datosUsuario?.estadisticas || null"
-                  [vistaMovil]="true"
-                  (verHistorialCompleto)="onVerHistorialCompleto()">
-                </app-user-orders>
-              </div>
+              @if (!(datosUsuario.pedidosRecientes && datosUsuario.pedidosRecientes.length)) {
+                <div>
+                  <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-6 bg-gray-50">
+                    <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h18v4H3V3zM5 11h14l-1 9H6l-1-9z" />
+                    </svg>
+                    <h3 class="text-base font-semibold text-gray-800">Ups! Aún no hay nada por aquí</h3>
+                    <p class="text-sm text-gray-600 mt-1">Parece que todavía no has realizado compras.</p>
+                  </div>
+                </div>
+              } @else {
+                <div>
+                  <app-user-orders
+                    [pedidos]="datosUsuario.pedidosRecientes || []"
+                    [estadisticas]="datosUsuario.estadisticas || null"
+                    [vistaMovil]="true"
+                    (verHistorialCompleto)="onVerHistorialCompleto()">
+                  </app-user-orders>
+                </div>
+              }
             }
             @case ('direcciones') {
               <!-- Direcciones -->
-              <div>
-                <app-user-addresses
-                  [direcciones]="datosUsuario?.direcciones || []"
-                  [vistaMovil]="true"
-                  (direccionesActualizadas)="onDireccionesActualizadas($event)">
-                </app-user-addresses>
-              </div>
+              @if (!(datosUsuario.direcciones && datosUsuario.direcciones.length)) {
+                <div>
+                  @if (!mostrandoFormularioDireccion) {
+                    <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-6 bg-gray-50">
+                      <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <h3 class="text-base font-semibold text-gray-800 mb-2">Agrega una dirección para recibir tus productos!</h3>
+                      <p class="text-sm text-gray-600 mb-4 text-center">Necesitas al menos una dirección de envío para realizar compras.</p>
+                      <button
+                        (click)="mostrarFormularioDireccion()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                        type="button"
+                      >
+                        <i class="pi pi-plus text-sm"></i>
+                        Agregar dirección
+                      </button>
+                    </div>
+                  } @else {
+                    <app-user-addresses
+                      [direcciones]="[]"
+                      [vistaMovil]="true"
+                      (direccionesActualizadas)="onDireccionesActualizadas($event)">
+                    </app-user-addresses>
+                  }
+                </div>
+              } @else {
+                <div>
+                  <app-user-addresses
+                    [direcciones]="getDireccionesComoIAddress()"
+                    [vistaMovil]="true"
+                    (direccionesActualizadas)="onDireccionesActualizadas($event)">
+                  </app-user-addresses>
+                </div>
+              }
             }
             @case ('seguridad') {
               <!-- Seguridad -->
               <div>
                 <app-user-security
-                  [configuracion]="datosUsuario?.configuracionSeguridad"
+                  [configuracion]="datosUsuario.configuracionSeguridad"
                   [vistaMovil]="true"
                   (configuracionActualizada)="onConfiguracionActualizada($event)">
                 </app-user-security>
               </div>
             }
             @case ('historial') {
-              <!-- Historial -->
-              <div>
-                <app-user-history
-                  [cargandoHistorial]="cargandoHistorial"
-                  [historialCompleto]="historialCompleto"
-                  [vistaMovil]="true">
-                </app-user-history>
-              </div>
+              @if (!(historialCompleto && historialCompleto.length)) {
+                <div>
+                  <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 p-6 bg-gray-50">
+                    <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <h3 class="text-base font-semibold text-gray-800">Ups! Aún no hay nada por aquí</h3>
+                    <p class="text-sm text-gray-600 mt-1 mb-4 text-center">No tienes historial de pedidos anteriores.</p>
+                    <button
+                      (click)="irAInicio()"
+                      class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                      type="button"
+                    >
+                      <i class="pi pi-home text-sm"></i>
+                      Ver productos
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div>
+                  <app-user-history
+                    [cargandoHistorial]="cargandoHistorial"
+                    [historialCompleto]="historialCompleto"
+                    [vistaMovil]="true">
+                  </app-user-history>
+                </div>
+              }
             }
           }
         </div>

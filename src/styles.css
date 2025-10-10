@@ -85,6 +85,19 @@ body {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
 }
 
+/* --- Global safeguard: force light backgrounds for inputs (including PrimeNG .p-inputtext)
+   Some PrimeNG themes use 'filled' variants or dark tokens that make inputs look dark.
+   This rule ensures native inputs and PrimeNG input components render with a
+   light background and dark text across the app unless explicitly overridden. */
+input,
+textarea,
+select,
+.p-inputtext {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-color: #d1d5db !important;
+}
+
 /* Contenedor principal del toast */
 .p-toast {
   opacity: 1 !important;
