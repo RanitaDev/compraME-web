@@ -1,13 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { IProduct } from '../interfaces/products.interface';
 import { ICartProducts, ICheckoutSummary } from '../interfaces/checkout.interface';
+import { TaxConfigService } from './tax-config.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DirectPurchaseService {
-  // Signal para mantener el producto de compra directa
   private directPurchaseProduct = signal<{ product: IProduct; quantity: number } | null>(null);
+  private taxConfigService = inject(TaxConfigService);
 
   constructor() {}
 
@@ -28,34 +30,41 @@ export class DirectPurchaseService {
   /**
    * Crear resumen de checkout para compra directa
    */
-  createDirectCheckoutSummary(): ICheckoutSummary | null {
-    const directPurchase = this.directPurchaseProduct();
+  createDirectCheckoutSummary(): Observable<ICheckoutSummary | null> {
+    return new Observable(observer => {
+      const directPurchase = this.directPurchaseProduct();
 
-    if (!directPurchase) {
-      return null;
-    }
+      if (!directPurchase) {
+        observer.next(null);
+        observer.complete();
+        return;
+      }
 
-    const { product, quantity } = directPurchase;
-    const subtotal = product.precio * quantity;
-    const impuestos = subtotal * 0.16; // IVA 16%
-    const envio = subtotal >= 1000 ? 0 : 99; // Envío gratis para compras > $1000
-    const total = subtotal + impuestos + envio;
+      const { product, quantity } = directPurchase;
+      const subtotal = product.precio * quantity;
 
-    const checkoutItem: ICartProducts = {
-      idProducto: product._id,
-      nombre: product.nombre,
-      cantidad: quantity,
-      precio: product.precio,
-      subtotal: subtotal
-    };
+      // Usar servicio centralizado para cálculos
+      this.taxConfigService.calculateTotals(subtotal).subscribe(totals => {
+        const checkoutItem: ICartProducts = {
+          idProducto: product._id,
+          nombre: product.nombre,
+          cantidad: quantity,
+          precio: product.precio,
+          subtotal: subtotal
+        };
 
-    return {
-      items: [checkoutItem],
-      subtotal,
-      impuestos,
-      envio,
-      total
-    };
+        const summary: ICheckoutSummary = {
+          items: [checkoutItem],
+          subtotal: totals.subtotal,
+          impuestos: totals.tax,
+          envio: totals.shipping,
+          total: totals.total
+        };
+
+        observer.next(summary);
+        observer.complete();
+      });
+    });
   }
 
   /**

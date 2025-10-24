@@ -7,12 +7,12 @@ import {
   CarritoBackend,
   ResumenCarritoBackend,
   AgregarProductoDto,
-  ActualizarCantidadDto,
   EliminarProductoDto
 } from '../interfaces/cart.interface';
 import { IProduct } from '../interfaces/products.interface';
 import { AuthService } from './auth.service';
 import { ToastService } from '../core/services/toast.service';
+import { TaxConfigService } from './tax-config.service';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -25,6 +25,7 @@ export class CartService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private taxConfigService = inject(TaxConfigService);
   private apiUrl = `${environment.apiUrl}/carritos`;
 
   private cartItems = signal<ICartItem[]>([]);
@@ -48,7 +49,6 @@ export class CartService {
   public isEmpty = computed(() => this.cartItems().length === 0);
 
   constructor() {
-    // Escuchar cambios de autenticación para manejar login/logout
     this.authService.isAuthenticated$.subscribe(isAuth => {
       if (isAuth) {
         this.manejarInicioSesion();
@@ -56,23 +56,10 @@ export class CartService {
         this.manejarCierreSesion();
       }
     });
-
-    // Métodos de debug en desarrollo
-    if (typeof window !== 'undefined') {
-      (window as any).carritoDebug = {
-        obtenerCarrito: () => this.cartItems(),
-        obtenerResumen: () => this.cartSummaryData(),
-        vaciarCarrito: () => this.vaciarCarrito(),
-        recargarDesdeBackend: () => this.cargarResumenCarritoDesdeBackend()
-      };
-    }
   }
 
   /**
    * Maneja cuando la sesión del usuario ha caducado
-   * Muestra toast y redirige al login
-   * @private
-   * @returns {boolean} Siempre retorna false
    */
   private manejarSesionCaducada(): boolean {
     this.toastService.error('Sesión caducada');
@@ -82,12 +69,8 @@ export class CartService {
 
   /**
    * Agregar un producto al carrito
-   * @param producto - Producto completo a agregar
-   * @param cantidad - Cantidad a agregar (por defecto 1)
-   * @returns Promise<boolean> - true si se agregó correctamente
    */
   public async agregarAlCarrito(producto: IProduct, cantidad: number = 1): Promise<boolean> {
-    // Verificar autenticación
     if (!this.authService.isAuthenticated()) {
       return this.manejarSesionCaducada();
     }
@@ -111,9 +94,6 @@ export class CartService {
 
   /**
    * Actualizar el carrito completo en el backend
-   * @param carrito - Array completo del carrito con las cantidades actualizadas
-   * @param idUsuario - ID del usuario
-   * @returns Promise<boolean> - true si se actualizó correctamente
    */
   public async actualizarCarritoCompleto(carrito: ICartItem[], idUsuario: string): Promise<boolean> {
     if (!this.authService.isAuthenticated()) {
@@ -124,27 +104,22 @@ export class CartService {
       const resultado = await this.http.put<CarritoBackend>(`${this.apiUrl}/${idUsuario}/actualizar-cantidad`, { carrito })
         .pipe(
           catchError(error => {
-            console.error('Error actualizando carrito completo:', error);
             throw error;
           })
         ).toPromise();
 
       if (resultado) {
-        // Recargar el resumen desde el backend después de la actualización
         await this.cargarResumenCarritoDesdeBackend().toPromise();
         return true;
       }
       return false;
     } catch (error) {
-      console.error('❌ Error actualizando carrito completo:', error);
       return false;
     }
   }
 
   /**
    * Eliminar un producto del carrito
-   * @param productoID - ID del producto a eliminar
-   * @returns Promise<boolean> - true si se eliminó correctamente
    */
   public async eliminarDelCarrito(productoID: string): Promise<boolean> {
     if (!this.authService.isAuthenticated()) {
@@ -171,7 +146,6 @@ export class CartService {
 
   /**
    * Vaciar completamente el carrito
-   * @returns Promise<boolean> - true si se vació correctamente
    */
   public async vaciarCarrito(): Promise<boolean> {
     if (!this.authService.isAuthenticated()) {
@@ -191,7 +165,6 @@ export class CartService {
       const carrito = await this.vaciarCarritoBackend().toPromise();
 
       if (carrito) {
-        // Limpiar estado local
         this.cartItems.set([]);
         this.cartSummaryData.set({
           items: [],
@@ -206,19 +179,15 @@ export class CartService {
 
       return false;
     } catch (error) {
-      console.error('❌ Error vaciando carrito:', error);
       return false;
     }
   }
 
   /**
-   * Actualizar la cantidad de un producto localmente (sin backend)
-   * Usado para actualizaciones optimistas antes del debounce
-   * @param productoID - ID del producto
-   * @param nuevaCantidad - Nueva cantidad (si es 0, se elimina el producto)
+   * Actualizar la cantidad de un producto localmente sin backend
    */
   public actualizarCantidadLocal(productoID: string, nuevaCantidad: number): ICartItem[] {
-    const items = [...this.cartItems()]; // Crear una copia del array
+    const items = [...this.cartItems()];
     const itemIndex = items.findIndex(item => item.producto?.productoID === productoID);
 
     if (itemIndex === -1) return [];
@@ -240,30 +209,28 @@ export class CartService {
 
   /**
    * Recalcular el resumen del carrito basado en los items locales
-   * @private
+   * TEMPORAL - Para UX inmediata. Backend tiene la autoridad final
    */
   private recalcularResumenLocal(): void {
     const items = this.cartItems();
     const totalItems = items.reduce((sum, item) => sum + item.cantidad, 0);
     const subtotal = items.reduce((sum, item) => sum + (item.producto.precio * item.cantidad), 0);
-    const impuestos = subtotal * 0.16; // IVA 16%
-    const envio = subtotal >= 1000 ? 0 : 150; // Envío gratis para compras mayores a $1000
-    const total = subtotal + impuestos + envio;
 
-    this.cartSummaryData.set({
-      items: items,
-      totalItems,
-      subtotal,
-      impuestos,
-      envio,
-      total
+    // Usar servicio centralizado para cálculos
+    this.taxConfigService.calculateTotals(subtotal).subscribe(totals => {
+      this.cartSummaryData.set({
+        items: items,
+        totalItems,
+        subtotal: totals.subtotal,
+        impuestos: totals.tax,
+        envio: totals.shipping,
+        total: totals.total
+      });
     });
   }
 
   /**
    * Obtener la cantidad de un producto específico en el carrito
-   * @param productoID - ID del producto
-   * @returns Cantidad del producto en el carrito (0 si no está)
    */
   public obtenerCantidadProducto(productoID: string): number {
     const item = this.cartItems().find(item => item.producto._id === productoID);
@@ -271,34 +238,29 @@ export class CartService {
   }
 
   /**
-   * Obtener resumen completo del carrito (con cálculos del backend)
-   * @param distanciaKm - Distancia en kilómetros para calcular envío (opcional)
-   * @returns Promise<ICartSummary> - Resumen completo del carrito
+   * Obtener resumen completo del carrito con cálculos del backend
    */
   public async obtenerResumenCompleto(distanciaKm?: number): Promise<ICartSummary> {
     try {
       const resumen = await this.obtenerResumenCarritoBackend(distanciaKm).toPromise();
       if (resumen) {
-        // Actualizar estado local con el resumen del backend
         this.cartItems.set(resumen.items);
         this.cartSummaryData.set(resumen);
         return resumen;
       }
       return this.cartSummaryData();
     } catch (error) {
-      console.error('❌ Error obteniendo resumen del carrito:', error);
       return this.cartSummaryData();
     }
   }
 
   /**
-   * Obtener resumen del carrito desde el backend (usando tu endpoint GET /carritos/resumen/:usuarioID)
+   * Obtener resumen del carrito desde el backend
    */
   private obtenerResumenCarritoBackend(distanciaKm?: number): Observable<ResumenCarritoBackend> {
     const usuarioActual = this.authService.getCurrentUser();
 
     if (!usuarioActual) {
-      console.error('❌ [CartService] Usuario no autenticado');
       return throwError(() => new Error('Usuario no autenticado'));
     }
 
@@ -320,14 +282,13 @@ export class CartService {
               total: 0
             });
           }
-          console.error('Error obteniendo resumen del carrito:', error);
           throw error;
         })
       );
   }
 
   /**
-   * Agregar producto al carrito en el backend (usando tu endpoint POST /carritos/:usuarioID/agregar)
+   * Agregar producto al carrito en el backend
    */
   private agregarProductoBackend(dto: AgregarProductoDto): Observable<CarritoBackend> {
     const usuarioActual = this.authService.getCurrentUser();
@@ -344,7 +305,7 @@ export class CartService {
   }
 
   /**
-   * Eliminar producto del carrito en el backend (usando tu endpoint DELETE /carritos/:usuarioID/producto)
+   * Eliminar producto del carrito en el backend
    */
   private eliminarProductoBackend(dto: EliminarProductoDto): Observable<CarritoBackend> {
     const usuarioActual = this.authService.getCurrentUser();
@@ -355,14 +316,13 @@ export class CartService {
     return this.http.delete<CarritoBackend>(`${this.apiUrl}/${usuarioActual.id}/producto`, { body: dto })
       .pipe(
         catchError(error => {
-          console.error('Error eliminando producto del carrito:', error);
           throw error;
         })
       );
   }
 
   /**
-   * Vaciar carrito en el backend (usando tu endpoint DELETE /carritos/:usuarioID/vaciar)
+   * Vaciar carrito en el backend
    */
   private vaciarCarritoBackend(): Observable<CarritoBackend> {
     const usuarioActual = this.authService.getCurrentUser();
@@ -373,7 +333,6 @@ export class CartService {
     return this.http.delete<CarritoBackend>(`${this.apiUrl}/${usuarioActual.id}/vaciar`)
       .pipe(
         catchError(error => {
-          console.error('Error vaciando carrito:', error);
           throw error;
         })
       );
@@ -383,10 +342,8 @@ export class CartService {
    * Cargar resumen del carrito desde el backend y sincronizar con el estado local
    */
   public cargarResumenCarritoDesdeBackend(distanciaKm?: number): Observable<void> {
-
     return this.obtenerResumenCarritoBackend(distanciaKm).pipe(
       tap(resumen => {
-        // Actualizar estado local con los datos del backend
         this.cartItems.set(resumen.items);
         this.cartSummaryData.set(resumen);
       }),
@@ -411,12 +368,8 @@ export class CartService {
    */
   private manejarInicioSesion(): void {
     this.cargarResumenCarritoDesdeBackend().subscribe({
-      next: () => {
-        // Carrito sincronizado desde backend
-      },
-      error: (error) => {
-        console.error('❌ Error cargando carrito desde backend:', error);
-      }
+      next: () => {},
+      error: (error) => {}
     });
   }
 
@@ -424,8 +377,6 @@ export class CartService {
    * Manejar cuando el usuario cierra sesión
    */
   private manejarCierreSesion(): void {
-
-    // Solo limpiar el estado local
     this.cartItems.set([]);
     this.cartSummaryData.set({
       items: [],
@@ -441,7 +392,6 @@ export class CartService {
    * @deprecated Usar eliminarDelCarrito() en su lugar
    */
   public removeFromCart(productId: string): Promise<boolean> {
-    console.warn('⚠️ removeFromCart() está deprecado, usar eliminarDelCarrito()');
     return this.eliminarDelCarrito(productId);
   }
 
@@ -449,7 +399,6 @@ export class CartService {
    * @deprecated Usar vaciarCarrito() en su lugar
    */
   public clearCart(): Promise<boolean> {
-    console.warn('⚠️ clearCart() está deprecado, usar vaciarCarrito()');
     return this.vaciarCarrito();
   }
 

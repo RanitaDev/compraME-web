@@ -127,35 +127,32 @@ export class ProductDetailComponent implements OnInit {
   }
 
   public comprarAhora(): void {
+    console.log('Iniciando compra directa...');
     const product = this.product();
 
     if (!product) {
-      console.error('No hay producto seleccionado');
       return;
     }
 
     if (product.stock === 0) {
-      console.warn('Producto agotado');
+      this.toastService.warning('Producto agotado', 'Este producto no está disponible para compra');
       return;
     }
 
-    // Verificar si el usuario está autenticado
     if (!this.authService.isAuthenticated()) {
-      // Redirigir al login y guardar la intención de compra
       localStorage.setItem('redirect_after_login', `/product/${product._id}`);
       localStorage.setItem('purchase_intent', JSON.stringify({ productId: product._id, action: 'buy_now' }));
       this.router.navigate(['/auth']);
       return;
     }
 
-    // Configurar producto para compra directa
     this.directPurchaseService.setDirectPurchaseProduct(product, 1);
 
-    // Navegar al checkout
     this.router.navigate(['/checkout'], {
       queryParams: {
         type: 'direct',
-        productId: product._id
+        productId: product._id,
+        action: 'buy_now'
       }
     });
   }

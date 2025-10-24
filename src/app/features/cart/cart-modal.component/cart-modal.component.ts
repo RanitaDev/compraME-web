@@ -1,8 +1,9 @@
-import { Component, Output, EventEmitter, signal, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, signal, ChangeDetectionStrategy, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../../services/cart.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../services/auth.service';
+import { TaxConfigService } from '../../../services/tax-config.service';
 import { IProduct } from '../../../interfaces/products.interface';
 import { environment } from '../../../../environments/environment';
 
@@ -20,21 +21,30 @@ export class CartModalComponent implements OnDestroy {
 
   isOpen = signal(false);
   private debounceTimers = new Map<string, number>();
-  private readonly DEBOUNCE_TIME = environment.cartDebounceTime; // Tiempo configurable desde environment
+  private readonly DEBOUNCE_TIME = environment.cartDebounceTime;
+  private freeShippingThreshold = signal<number>(0);
 
-  // Set para trackear productos que se están eliminando
   removingItems = new Set<string>();
 
-  // Getters para el template
   get cartItems() { return this.cartService.items; }
   get cartSummary() { return this.cartService.cartSummary; }
   get isEmpty() { return this.cartService.isEmpty; }
+  get freeShippingAmount() { return this.freeShippingThreshold; }
+
+  private taxRate = signal<number>(0.16);
+  get taxPercentage() { return Math.round(this.taxRate() * 100); }
 
   constructor(
     private cartService: CartService,
     private toastService: ToastService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private taxConfigService: TaxConfigService
+  ) {
+    this.taxConfigService.getTaxConfig().subscribe(config => {
+      this.freeShippingThreshold.set(config.freeShippingThreshold);
+      this.taxRate.set(config.ivaRate);
+    });
+  }
 
   /**
    * Cleanup de timers al destruir el componente
@@ -56,12 +66,10 @@ export class CartModalComponent implements OnDestroy {
     try {
       // LLAMAMOS AL BACK PARA CARGAR EL CARRITO
       this.cartService.cargarResumenCarritoDesdeBackend().subscribe({
-        next: () => console.log('Carrito cargado'),
-        error: (error) => console.error('Error:', error)
+        error: (error) => this.toastService.error('Error al cargar carrito: ' + error.message)
       });
     } catch (error) {
       this.toastService.error('Error cargando el carrito. Por favor, inténtalo de nuevo.');
-      console.error('❌ Error cargando el carrito:', error);
     }
   }
 
@@ -130,8 +138,6 @@ export class CartModalComponent implements OnDestroy {
    * @returns {Promise<void>} Promise que se resuelve cuando se elimina el producto
    */
   async removeItem(producto: IProduct): Promise<void> {
-    console.log('Eliminando producto del carrito:', producto);
-
     if(!producto || !producto.productoID) {
       this.toastService.error('No se pudo eliminar, intente más tarde.');
       return;
@@ -165,7 +171,7 @@ export class CartModalComponent implements OnDestroy {
       }
       // Éxito silencioso - no mostrar toast de confirmación
     } catch (error) {
-      console.error('❌ Error eliminando producto del carrito:', error);
+      // Error eliminando producto del carrito
       // Recargar desde backend para restaurar estado correcto
       this.cartService.cargarResumenCarritoDesdeBackend().subscribe({
         error: () => {
@@ -191,11 +197,11 @@ export class CartModalComponent implements OnDestroy {
         if (success) {
           this.toastService.success('Carrito eliminado correctamente');
         } else {
-          console.warn('⚠️ No se pudo vaciar el carrito');
+          // No se pudo vaciar el carrito
           this.toastService.error('No se pudo vaciar el carrito. Inténtalo de nuevo.');
         }
       } catch (error) {
-        console.error('❌ Error vaciando el carrito:', error);
+        // Error vaciando el carrito
         this.toastService.error('Error vaciando el carrito');
       }
     }

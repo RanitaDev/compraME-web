@@ -1,0 +1,16 @@
+// Exportaciones centralizadas de servicios
+export * from './auth.service';
+export * from './cart.service';
+export * from './category.service';
+export * from './checkout.service';
+export * from './comments.service';
+export * from './direct-purchase.service';
+export * from './order-data.service';
+export * from './order-detail.service';
+export * from './payment-method.service';
+export * from './product-image.service';
+export * from './products.service';
+export * from './search.service';
+export * from './tax-config.service';
+export * from './user.service';
+export * from './paypal.service';

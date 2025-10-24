@@ -328,7 +328,6 @@ export class AuthService {
       const currentTime = Math.floor(Date.now() / 1000);
 
       if (payload.exp && payload.exp < currentTime) {
-        console.log('🚨 Token expirado:', new Date(payload.exp * 1000));
         this.clearSession();
         return false;
       }
@@ -476,28 +475,15 @@ export class AuthService {
     const user = this.getCurrentUser();
     const sessionConfig = this.sessionService ? this.sessionService.getSessionConfig() : null;
 
-    console.log('🔍 DEBUG - Estado de sesión:', {
-      hasToken: !!token,
-      tokenStart: token ? token.substring(0, 20) + '...' : 'No token',
-      user: user ? { email: user.email, nombre: user.nombre } : 'No user',
-      sessionConfig,
-      isAuthenticated: this.isAuthenticated(),
-      tokenValid: token ? this.hasValidToken() : false
-    });
-
     if (token) {
       try {
         const parts = token.split('.');
         if (parts.length === 3) {
           const payload = JSON.parse(atob(parts[1]));
           const exp = payload.exp ? new Date(payload.exp * 1000) : null;
-          console.log('🗂️ Token payload:', {
-            exp: exp ? exp.toLocaleString() : 'No expiry',
-            timeUntilExp: exp ? Math.floor((exp.getTime() - Date.now()) / 1000 / 60) + ' minutos' : 'N/A'
-          });
         }
       } catch (error) {
-        console.log('❌ Error decodificando token:', error);
+        // Error procesando token
       }
     }
   }

@@ -5,4 +5,8 @@ export const environment = {
   enableLogging: false,
   version: '1.0.0',
   cartDebounceTime: 1650, // Tiempo de debounce para actualizaciones del carrito en ms
+  paypal: {
+    clientId: 'YOUR_PAYPAL_PRODUCTION_CLIENT_ID', // Se debe configurar con el client ID real de producción
+    environment: 'production' as 'sandbox' | 'production',
+  }
 };

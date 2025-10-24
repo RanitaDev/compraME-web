@@ -1,14 +1,16 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { IAddress, IPaymentMethod, ICheckoutSummary } from '../interfaces/checkout.interface';
 import { OrderDataService } from './order-data.service';
 import { AddressService } from './address.service';
 import { PaymentMethodService } from './payment-method.service';
+import { TaxConfigService } from './tax-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CheckoutService {
+  private taxConfigService = inject(TaxConfigService);
 
   constructor(
     private orderDataService: OrderDataService,
@@ -29,36 +31,18 @@ export class CheckoutService {
   }
 
   calculateShipping(address: IAddress, subtotal: number): Observable<number> {
-    // Simulación de cálculo de envío
-    const baseShipping = 99;
-    const freeShippingThreshold = 1000;
-
-    if (subtotal >= freeShippingThreshold) {
-      return of(0);
-    }
-
-    // Diferentes costos según la zona
-    let shippingCost = baseShipping;
-    if (address.codigoPostal.startsWith('37')) {
-      shippingCost = 99; // León y alrededores
-    } else {
-      shippingCost = 149; // Otras ciudades
-    }
-
-    return of(shippingCost);
+    return this.taxConfigService.calculateShipping(subtotal, address.codigoPostal);
   }
 
   processOrder(orderData: ICheckoutSummary): Observable<{ success: boolean; orderId?: string; error?: string }> {
-    // Simulación de procesamiento de orden
     return new Observable(observer => {
-      setTimeout(() => {
-        const success = Math.random() > 0.1; // 90% success rate
+      setTimeout(async () => {
+        const success = Math.random() > 0.1;
         if (success) {
           const orderId = 'ORD-' + Date.now().toString().slice(-8);
 
-          // Crear datos de orden usando el OrderDataService
           try {
-            this.orderDataService.createOrderFromCheckout(orderData, orderId);
+            await this.orderDataService.createOrderFromCheckout(orderData, orderId);
             observer.next({ success: true, orderId });
           } catch (error) {
             observer.next({ success: false, error: 'Error al crear la orden' });

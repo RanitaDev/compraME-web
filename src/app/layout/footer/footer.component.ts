@@ -107,13 +107,11 @@ export class FooterComponent implements OnInit {
 
   private loadFooterData(): void {
     // Aquí podrías cargar datos dinámicos del footer desde un servicio
-    console.log('Footer data loaded');
   }
 
   // Newsletter subscription
   onNewsletterSubmit(): void {
     if (this.isValidEmail(this.newsletterEmail)) {
-      console.log('Newsletter subscription:', this.newsletterEmail);
       // Aquí implementarías la lógica de suscripción
       // Por ejemplo: this.newsletterService.subscribe(this.newsletterEmail);
       this.showSuccessMessage();
@@ -131,27 +129,23 @@ export class FooterComponent implements OnInit {
 
   // Social media navigation
   onSocialClick(platform: string): void {
-    console.log(`Navigating to ${platform}`);
     // Implementar navegación a redes sociales
     // Por ejemplo: window.open(this.getSocialUrl(platform), '_blank');
   }
 
   // Footer link navigation
   onFooterLinkClick(linkName: string): void {
-    console.log(`Navigating to ${linkName}`);
     // Implementar navegación interna
     // Por ejemplo: this.router.navigate([this.getLinkRoute(linkName)]);
   }
 
   // Success/Error message handlers
   private showSuccessMessage(): void {
-    console.log('¡Gracias por suscribirte! Recibirás nuestras mejores ofertas.');
     // Implementar sistema de notificaciones
     // Por ejemplo: this.toastService.success('¡Suscripción exitosa!');
   }
 
   private showErrorMessage(message: string): void {
-    console.log('Error:', message);
     // Implementar sistema de notificaciones de error
     // Por ejemplo: this.toastService.error(message);
   }
@@ -170,7 +164,6 @@ export class FooterComponent implements OnInit {
   }
 
   public navegar(ruta: string): void {
-    console.log('Navegando a:', ruta);
     const orderId = 'ORD-87654321';
     this.router.navigate([`${ruta}/${orderId}`]);
   }

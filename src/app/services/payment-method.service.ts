@@ -12,16 +12,25 @@ export class PaymentMethodService {
 
   // Métodos de pago base disponibles para todos
   private basePaymentMethods: IPaymentMethod[] = [
+    // Temporalmente deshabilitados - tarjeta y PayPal
+    // {
+    //   id: 1,
+    //   tipo: 'tarjeta',
+    //   nombre: 'Tarjeta de Crédito/Débito',
+    //   descripcion: 'Visa, MasterCard, American Express',
+    //   activo: true,
+    //   tiempoEstimado: 'Inmediato'
+    // },
+    // {
+    //   id: 2,
+    //   tipo: 'paypal',
+    //   nombre: 'PayPal',
+    //   descripcion: 'Paga de forma segura con tu cuenta PayPal',
+    //   activo: true,
+    //   tiempoEstimado: 'Inmediato'
+    // },
     {
-      id: 1,
-      tipo: 'tarjeta',
-      nombre: 'Tarjeta de Crédito/Débito',
-      descripcion: 'Visa, MasterCard, American Express',
-      activo: true,
-      tiempoEstimado: 'Inmediato'
-    },
-    {
-      id: 2,
+      id: 3,
       tipo: 'oxxo',
       nombre: 'OXXO',
       descripcion: 'Paga en cualquier tienda OXXO',
@@ -29,12 +38,20 @@ export class PaymentMethodService {
       tiempoEstimado: '24-48 hrs'
     },
     {
-      id: 3,
+      id: 4,
       tipo: 'transferencia',
       nombre: 'Transferencia Bancaria',
       descripcion: 'SPEI, Banamex, BBVA, Santander',
       activo: true,
       tiempoEstimado: '2-4 hrs hábiles'
+    },
+    {
+      id: 5,
+      tipo: 'deposito',
+      nombre: 'Depósito Bancario',
+      descripcion: 'Depósito en sucursal bancaria',
+      activo: true,
+      tiempoEstimado: '24-48 hrs'
     }
   ];
 
@@ -95,12 +112,13 @@ export class PaymentMethodService {
   }
 
   /**
-   * Obtener método de pago por defecto (generalmente tarjeta)
+   * Obtener método de pago por defecto (primero disponible)
    */
   getDefaultPaymentMethod(): Observable<IPaymentMethod | null> {
     return new Observable(observer => {
       this.paymentMethods$.subscribe(methods => {
-        const defaultMethod = methods.find(m => m.tipo === 'tarjeta') || methods[0];
+        // Buscar transferencia como método preferido, sino el primero disponible
+        const defaultMethod = methods.find(m => m.tipo === 'transferencia') || methods[0];
         observer.next(defaultMethod || null);
       });
     });
