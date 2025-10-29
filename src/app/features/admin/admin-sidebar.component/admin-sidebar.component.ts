@@ -137,7 +137,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       item: subItem
     });
 
-    console.log('Submenu item clicked:', subItem);
     if(subItem.id.includes('add') || subItem.id.includes('modal')) {
       this.openModal(subItem, false);
       return;
@@ -149,7 +148,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
 
   public openModal(subMenuItem: AdminMenuSubItem, isEditMode: boolean): void {
     // ABRIMOS LA MODAL, DESDE AQUÍ SIEMPRE SERÁ SIN MODO EDICIÓN
-    console.log('ABRIENDO MODAL', subMenuItem);
     let componentToOpen: any;
     let titleModal: string = '';
 
@@ -195,7 +193,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     // Mostrar confirmación
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
       // Realizar logout
-      console.log('User logged out');
     }
   }
 

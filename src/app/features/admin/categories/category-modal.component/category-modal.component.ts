@@ -190,8 +190,6 @@ export class CategoryModalComponent implements OnInit {
       // Modo creación: datos por defecto
       this.resetForm();
     }
-
-    console.log('Modal configurada en modo:', this.isEditMode ? 'edición' : 'creación');
   }
 
   /**
@@ -254,8 +252,6 @@ export class CategoryModalComponent implements OnInit {
       activa: this.categoryData.activa
     };
 
-    console.log('Creando categoría:', newCategory);
-
     // TODO: Conectar con el backend
     // this.categoryService.createCategory(newCategory).subscribe({
     //   next: (createdCategory) => this.handleSuccess(createdCategory),
@@ -277,8 +273,6 @@ export class CategoryModalComponent implements OnInit {
       imagen: this.categoryData.imagen.trim(),
       activa: this.categoryData.activa
     };
-
-    console.log('Actualizando categoría:', updatedCategory);
 
     // TODO: Conectar con el backend
     // this.categoryService.updateCategory(updatedCategory).subscribe({

@@ -1,17 +1,26 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { IBankAccount, IBankPaymentData, IBankPaymentResult, IBankInstructions } from '../interfaces/bank-payment.interface';
+import { OrderService } from './order.service';
+import { ToastService } from '../core/services/toast.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BankService {
-  private readonly apiUrl = '/api/bank';
+  private readonly apiUrl = `${environment.apiUrl}/bank`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private orderService: OrderService,
+    private toastService: ToastService
+  ) {}
 
   getBankAccounts(): Observable<IBankAccount[]> {
+    // Datos mock de respaldo mientras el backend no esté implementado
     const mockAccounts: IBankAccount[] = [
       {
         id: 1,
@@ -42,58 +51,47 @@ export class BankService {
         descripcion: 'Pago en tiendas OXXO - Verificación en 24 hrs'
       }
     ];
-    return of(mockAccounts);
+
+    return this.http.get<IBankAccount[]>(`${this.apiUrl}/bank-accounts`).pipe(
+      catchError((error) => {
+        console.warn('Backend no disponible, usando datos mock:', error);
+        // Si el backend falla, usar datos mock
+        return of(mockAccounts);
+      })
+    );
   }
 
   generatePaymentInstructions(orderId: string, amount: number, paymentType: 'deposito' | 'transferencia' | 'oxxo'): Observable<IBankInstructions> {
+    // Generar número de referencia y fecha de expiración
     const referenceNumber = `CR${Date.now().toString().slice(-8)}${orderId.slice(-4)}`;
     const expiration = new Date();
     expiration.setHours(expiration.getHours() + 72);
 
-    const mockAccounts: IBankAccount[] = [
-      {
-        id: 1,
-        banco: 'BBVA México',
-        titular: 'CompraMe S.A. de C.V.',
-        numeroCuenta: '0123456789',
-        clabe: '012180001234567890',
-        tipo: 'transferencia',
-        activa: true,
-        descripcion: 'Transferencia SPEI - Procesamiento inmediato'
-      },
-      {
-        id: 2,
-        banco: 'Santander México',
-        titular: 'CompraMe S.A. de C.V.',
-        numeroCuenta: '9876543210',
-        tipo: 'deposito',
-        activa: true,
-        descripcion: 'Depósito en sucursal - Verificación en 24 hrs'
-      },
-      {
-        id: 3,
-        banco: 'OXXO',
-        titular: 'CompraMe S.A. de C.V.',
-        numeroCuenta: 'OXXO-PAY',
-        tipo: 'oxxo',
-        activa: true,
-        descripcion: 'Pago en tiendas OXXO - Verificación en 24 hrs'
-      }
-    ];
+    // Obtener las cuentas bancarias del backend y generar instrucciones
+    return this.getBankAccounts().pipe(
+      map((accounts) => {
+        const account = accounts.find(acc => acc.tipo === paymentType && acc.activa);
+        if (!account) {
+          throw new Error('No hay cuenta disponible para este método de pago');
+        }
 
-    const account = mockAccounts.find(acc => acc.tipo === paymentType && acc.activa);
-    if (!account) throw new Error('No hay cuenta disponible para este método');
+        const instructions: IBankInstructions = {
+          tipo: paymentType,
+          cuenta: account,
+          numeroReferencia: referenceNumber,
+          monto: amount,
+          fechaLimite: expiration,
+          instrucciones: this.getInstructionsByType(paymentType, account)
+        };
 
-    const instructions: IBankInstructions = {
-      tipo: paymentType,
-      cuenta: account,
-      numeroReferencia: referenceNumber,
-      monto: amount,
-      fechaLimite: expiration,
-      instrucciones: this.getInstructionsByType(paymentType, account)
-    };
-
-    return of(instructions);
+        return instructions;
+      }),
+      catchError((error) => {
+        console.error('Error generating payment instructions:', error);
+        this.toastService.error('Error', 'No se pudieron generar las instrucciones de pago');
+        return throwError(() => error);
+      })
+    );
   }
 
   private getInstructionsByType(type: 'deposito' | 'transferencia' | 'oxxo', account: IBankAccount): string[] {
@@ -126,24 +124,37 @@ export class BankService {
   }
 
   uploadPaymentProof(paymentData: IBankPaymentData): Observable<IBankPaymentResult> {
-    const formData = new FormData();
-    formData.append('orderId', paymentData.orderId);
-    formData.append('numeroReferencia', paymentData.numeroReferencia);
-    formData.append('monto', paymentData.monto.toString());
-    formData.append('comprobante', paymentData.comprobante.archivo);
-    formData.append('metodoPago', paymentData.comprobante.metodoPago);
-    formData.append('fechaTransaccion', paymentData.comprobante.fechaTransaccion.toISOString());
-
-    return new Observable<IBankPaymentResult>(observer => {
-      setTimeout(() => {
-        observer.next({
-          success: true,
-          message: 'Comprobante recibido correctamente',
-          paymentId: `PAY_${Date.now()}`
+    return this.orderService.uploadPaymentProof(
+      paymentData.orderId,
+      paymentData.comprobante.archivo,
+      {
+        referenceNumber: paymentData.numeroReferencia,
+        amount: paymentData.monto,
+        paymentMethod: paymentData.comprobante.metodoPago,
+        transactionDate: paymentData.comprobante.fechaTransaccion
+      }
+    ).pipe(
+      switchMap((uploadResponse: { success: boolean; proofUrl: string }) => {
+        return this.orderService.updateOrderStatus(paymentData.orderId, 'proof_uploaded', {
+          paymentProofUrl: uploadResponse.proofUrl,
+          numeroReferencia: paymentData.numeroReferencia
+        }).pipe(
+          map(() => ({
+            success: true,
+            message: 'Comprobante recibido correctamente. Tu pago será verificado en las próximas 24 horas.',
+            paymentId: `PAY_${Date.now()}`
+          }))
+        );
+      }),
+      catchError(error => {
+        console.error('Error uploading payment proof:', error);
+        return of({
+          success: false,
+          message: error.message || 'Error al subir el comprobante. Intenta nuevamente.',
+          paymentId: undefined
         });
-        observer.complete();
-      }, 2000);
-    });
+      })
+    );
   }
 
   validatePaymentProof(file: File): { valid: boolean; error?: string } {

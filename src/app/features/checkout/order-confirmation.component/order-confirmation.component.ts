@@ -1,7 +1,9 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { OrderDataService } from '../../../services/order-data.service';
+import { OrderService } from '../../../services/order.service';
+import { OrderMonitorService } from '../../../services/order-monitor.service';
 import { PayPalService } from '../../../services/paypal.service';
 import { BankService } from '../../../services/bank.service';
 import { CartService } from '../../../services/cart.service';
@@ -18,7 +20,7 @@ import { IOrderConfirmation } from '../../../interfaces/order-confirmation.inter
   templateUrl: './order-confirmation.component.html',
   styleUrls: ['./order-confirmation.component.css']
 })
-export class OrderConfirmationComponent implements OnInit {
+export class OrderConfirmationComponent implements OnInit, OnDestroy {
   orderId?: string;
 
   orderData = signal<IOrderConfirmation | null>(null);
@@ -30,6 +32,8 @@ export class OrderConfirmationComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private orderDataService: OrderDataService,
+    private orderService: OrderService,
+    private orderMonitorService: OrderMonitorService,
     private paypalService: PayPalService,
     private bankService: BankService,
     private cartService: CartService,
@@ -39,7 +43,8 @@ export class OrderConfirmationComponent implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      this.orderId = params.get('orderId') || undefined;
+      const orderIdParam = params.get('orderId');
+      this.orderId = orderIdParam || undefined;
     });
 
     this.route.queryParams.subscribe(params => {
@@ -49,24 +54,134 @@ export class OrderConfirmationComponent implements OnInit {
     this.loadOrderData();
   }
 
+  ngOnDestroy() {
+    // Detener monitoreo cuando el componente se destruye
+    if (this.orderId) {
+      this.orderMonitorService.stopMonitoring(this.orderId);
+    }
+  }
+
   private loadOrderData() {
     if (!this.orderId) {
-      console.error('No se proporcionó un ID de orden');
       this.router.navigate(['/checkout']);
       return;
     }
 
-    // Intentar cargar datos reales del servicio
-    const realOrderData = this.orderDataService.getOrderData(this.orderId);
+    const localOrderData = this.orderDataService.getOrderData(this.orderId);
 
-    if (realOrderData) {
-      this.orderData.set(realOrderData);
-      console.log('Datos de orden cargados exitosamente:', realOrderData);
+    if (localOrderData) {
+      this.orderData.set(localOrderData);
+      this.startOrderMonitoring();
     } else {
-      console.error('No se encontraron datos para la orden:', this.orderId);
-      // Redirigir al checkout si no hay datos de orden
-      this.router.navigate(['/checkout']);
+      console.log('No hay datos locales, buscando en backend para orden:', this.orderId);
+
+      this.orderService.getOrderById(this.orderId).subscribe({
+        next: (backendOrder) => {
+          console.log('Respuesta RAW del backend:', backendOrder);
+          console.log('Tipo de respuesta:', typeof backendOrder);
+          console.log('¿Es objeto?:', backendOrder && typeof backendOrder === 'object');
+
+          if (!backendOrder) {
+            console.error('Backend retornó undefined o null');
+            this.toastService.error('Error', 'No se encontraron datos de la orden.');
+            this.router.navigate(['/checkout']);
+            return;
+          }
+
+          // Convertir datos del backend al formato IOrderConfirmation
+          const orderConfirmation = this.convertBackendOrderToConfirmation(backendOrder);
+          console.log('Orden convertida:', orderConfirmation);
+          this.orderData.set(orderConfirmation);
+          this.startOrderMonitoring();
+        },
+        error: (error) => {
+          console.error('Error al obtener orden del backend:', error);
+          console.error('Error completo:', JSON.stringify(error, null, 2));
+          this.toastService.error('Error', 'No se pudo cargar la información de la orden.');
+          this.router.navigate(['/checkout']);
+        }
+      });
     }
+  }
+
+  /**
+   * Iniciar monitoreo de la orden para detectar cambios de estado
+   */
+  private startOrderMonitoring() {
+    if (!this.orderId) return;
+
+    // Solo monitorear si la orden viene de carrito (no compra directa)
+    const isFromCart = !this.isDirectPurchase();
+    this.orderMonitorService.startMonitoring(this.orderId, isFromCart);
+  }
+
+  /**
+   * Convertir orden del backend al formato IOrderConfirmation
+   */
+  private convertBackendOrderToConfirmation(backendOrder: any): IOrderConfirmation {
+    console.log('Convirtiendo orden del backend:', backendOrder);
+
+    // Esta función convierte los datos del backend al formato que espera el frontend
+    // Usando la estructura real que recibimos del backend
+    return {
+      ordenId: backendOrder._id || backendOrder.id,
+      fecha: new Date(backendOrder.fechaPedido || backendOrder.createdAt || Date.now()),
+      estado: backendOrder.estado === 'pending' ? 'pendiente' : backendOrder.estado,
+      cliente: {
+        nombre: backendOrder.direccionEnvio?.nombreCompleto || 'Usuario',
+        email: 'usuario@email.com', // Esto debería venir del backend
+        telefono: backendOrder.direccionEnvio?.telefono || ''
+      },
+      direccionEntrega: {
+        nombreCompleto: backendOrder.direccionEnvio?.nombreCompleto || '',
+        telefono: backendOrder.direccionEnvio?.telefono || '',
+        direccionCompleta: this.buildFullAddressFromBackend(backendOrder.direccionEnvio),
+        referencias: backendOrder.direccionEnvio?.referencias || ''
+      },
+      productos: backendOrder.productos?.map((item: any) => ({
+        idProducto: item.productoId,
+        nombre: item.nombre,
+        imagen: item.imagen || '/assets/placeholder.jpg',
+        cantidad: item.cantidad,
+        precio: item.precioUnitario,
+        subtotal: item.subtotal
+      })) || [],
+      resumen: {
+        subtotal: backendOrder.subtotal || 0,
+        impuestos: backendOrder.impuestos || 0,
+        envio: backendOrder.costoEnvio || 0,
+        total: backendOrder.total || 0
+      },
+      metodoPago: {
+        tipo: backendOrder.tipoMetodoPago,
+        nombre: backendOrder.metodoPago,
+        ultimosDigitos: undefined
+      },
+      entregaEstimada: {
+        fechaMinima: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        fechaMaxima: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+        diasHabiles: 3
+      }
+    };
+  }
+
+  /**
+   * Construir dirección completa desde los datos del backend
+   */
+  private buildFullAddressFromBackend(direccionEnvio: any): string {
+    if (!direccionEnvio) return 'Dirección no especificada';
+
+    const parts = [
+      direccionEnvio.calle,
+      direccionEnvio.numeroExterior,
+      direccionEnvio.numeroInterior,
+      direccionEnvio.colonia,
+      direccionEnvio.ciudad,
+      direccionEnvio.estado,
+      direccionEnvio.codigoPostal
+    ].filter(Boolean);
+
+    return parts.length > 0 ? parts.join(', ') : 'Dirección no especificada';
   }
 
   async processPurchase() {
@@ -123,7 +238,6 @@ export class OrderConfirmationComponent implements OnInit {
 
   onBankPaymentCompleted(success: boolean) {
     if (success) {
-      this.clearCartAfterPayment();
       this.isSuccess.set(true);
       const orderData = this.orderData();
       if (orderData?.ordenId) {

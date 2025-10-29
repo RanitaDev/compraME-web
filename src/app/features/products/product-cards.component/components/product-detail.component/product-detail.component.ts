@@ -127,7 +127,6 @@ export class ProductDetailComponent implements OnInit {
   }
 
   public comprarAhora(): void {
-    console.log('Iniciando compra directa...');
     const product = this.product();
 
     if (!product) {

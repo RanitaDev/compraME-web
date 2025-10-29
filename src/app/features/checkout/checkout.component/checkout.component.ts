@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CartService } from '../../../services/cart.service';
 import { CheckoutService } from '../../../services/checkout.service';
+import { OrderService } from '../../../services/order.service';
 import { DirectPurchaseService } from '../../../services/direct-purchase.service';
 import { AuthService } from '../../../services/auth.service';
 import { TaxConfigService } from '../../../services/tax-config.service';
@@ -43,6 +44,7 @@ export class CheckoutComponent implements OnInit {
 
   constructor(
     private checkoutService: CheckoutService,
+    private orderService: OrderService,
     private cartService: CartService,
     private directPurchaseService: DirectPurchaseService,
     private authService: AuthService,
@@ -62,9 +64,48 @@ export class CheckoutComponent implements OnInit {
       this.isDirectPurchase = params['type'] === 'direct';
     });
 
+    this.checkPendingOrder();
+
     this.loadInitialData();
     this.buildCheckoutSummary();
     this.checkForPendingPayment();
+  }
+
+  /**
+   * Verificar si el usuario tiene una orden pendiente
+   */
+  private checkPendingOrder() {
+    if (!this.isAuthenticated) return;
+
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    this.orderService.getUserPendingOrder(currentUser.id).subscribe({
+      next: (pendingOrder) => {
+        if (pendingOrder) {
+          console.log('🔍 Orden pendiente detectada, eliminando automáticamente');
+          console.log('- ID orden pendiente:', pendingOrder._id || pendingOrder.id);
+          console.log('- Tipo de compra actual:', this.isDirectPurchase ? 'COMPRA DIRECTA' : 'CARRITO');
+
+          // SIEMPRE eliminar la orden pendiente anterior (carrito o compra directa)
+          this.orderService.deleteOrder(pendingOrder._id || pendingOrder.id).subscribe({
+            next: () => {},
+            error: (error) => {
+              console.error('❌ Error eliminando orden anterior:', error);
+              this.toastService.warning('Orden pendiente', 'Tienes una orden pendiente. Complétala primero o cancélala.');
+              // Si falla eliminar, redirigir a la orden pendiente como fallback
+              setTimeout(() => {
+                this.router.navigate(['/checkout/order-confirmation', pendingOrder._id || pendingOrder.id]);
+              }, 2000);
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error checking pending order:', error);
+        // No hacer nada, continuar con el flujo normal
+      }
+    });
   }
 
   /**
@@ -204,8 +245,8 @@ export class CheckoutComponent implements OnInit {
         return;
       }
 
-      const checkoutItems: ICartProducts[] = cartSummary.items.map(item => ({
-        idProducto: item.producto._id,
+      const checkoutItems: ICartProducts[] | any = cartSummary.items.map(item => ({
+        idProducto: item.producto._id || item.producto.productoID,
         nombre: item.producto.nombre,
         cantidad: item.cantidad,
         precio: item.producto.precio,
@@ -217,7 +258,8 @@ export class CheckoutComponent implements OnInit {
         subtotal: cartSummary.subtotal,
         impuestos: cartSummary.impuestos,
         envio: cartSummary.envio,
-        total: cartSummary.total
+        total: cartSummary.total,
+        isDirectPurchase: false // Es compra desde carrito
       };
     } else {
       this.directPurchaseService.createDirectCheckoutSummary().subscribe({
@@ -310,24 +352,37 @@ export class CheckoutComponent implements OnInit {
     const orderData: ICheckoutSummary = {
       ...summary,
       direccionSeleccionada: address,
-      metodoPagoSeleccionado: paymentMethod
+      metodoPagoSeleccionado: paymentMethod,
+      // Agregar información del tipo de compra
+      isDirectPurchase: this.isDirectPurchase
     };
-
-    console.log('Procesando pedido con datos:', orderData);
 
     this.checkoutService.processOrder(orderData).subscribe({
       next: (result) => {
         this.isProcessing = false;
         if (result.success) {
-          // NO vaciamos el carrito aquí - se hace después del pago exitoso
+          if (result.isUpdate) {
+            this.toastService.success('Método actualizado', 'El método de pago ha sido actualizado correctamente.');
+          } else {
+            this.toastService.success('Orden creada', 'Tu orden ha sido creada exitosamente.');
+          }
+
           localStorage.removeItem('checkout_state_for_payment');
 
-          // Pasar el tipo de compra como query param
           const queryParams = this.isDirectPurchase ? { type: 'direct' } : {};
           this.router.navigate(['/checkout/order-confirmation', result.orderId], { queryParams });
         } else {
           const errorMessage = result.error || 'Error desconocido al procesar el pedido';
-          this.toastService.error('Error al procesar pedido', errorMessage);
+
+          // Si hay un orderId en el error, significa que tiene una orden pendiente
+          if (result.orderId) {
+            this.toastService.warning('Orden pendiente encontrada', errorMessage);
+            setTimeout(() => {
+              this.router.navigate(['/checkout/order-confirmation', result.orderId]);
+            }, 2000);
+          } else {
+            this.toastService.error('Error al procesar pedido', errorMessage);
+          }
         }
       },
       error: (error) => {

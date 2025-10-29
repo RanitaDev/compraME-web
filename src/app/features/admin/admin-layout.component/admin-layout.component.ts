@@ -93,17 +93,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     if (this.showMobileSidebar) {
       this.closeMobileSidebar();
     }
-
-    // Aquí implementarías la navegación real
-    // Por ejemplo: this.router.navigate([event.route]);
-
-    // Por ahora solo log para demostración
-    // console.log('Navigating to:', event.route);
   }
 
   onSidebarToggled(collapsed: boolean): void {
     this.sidebarCollapsed = collapsed;
-    console.log('Sidebar toggled:', collapsed ? 'collapsed' : 'expanded');
   }
 
   toggleMobileSidebar(): void {
@@ -137,25 +130,21 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   // Quick action methods for the dashboard stats
   onQuickActionProducts(): void {
-    console.log('Quick action: Navigate to products');
     this.adminNavService.setActiveMenuItem('products');
     this.updatePageTitle('products');
   }
 
   onQuickActionCategories(): void {
-    console.log('Quick action: Navigate to categories');
     this.adminNavService.setActiveMenuItem('categories');
     this.updatePageTitle('categories');
   }
 
   onQuickActionUsers(): void {
-    console.log('Quick action: Navigate to users');
     this.adminNavService.setActiveMenuItem('users');
     this.updatePageTitle('users');
   }
 
   onQuickActionSales(): void {
-    console.log('Quick action: Navigate to sales');
     this.adminNavService.setActiveMenuItem('sales');
     this.updatePageTitle('sales');
   }

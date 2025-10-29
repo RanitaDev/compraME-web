@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BankService } from '../../../services/bank.service';
+import { OrderMonitorService } from '../../../services/order-monitor.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IBankInstructions, IBankPaymentData, IPaymentProof } from '../../../interfaces/bank-payment.interface';
 
@@ -16,6 +17,7 @@ export class BankPaymentComponent {
   @Input() orderId: string = '';
   @Input() amount: number = 0;
   @Input() paymentType: 'deposito' | 'transferencia' | 'oxxo' = 'transferencia';
+  @Input() isFromCart: boolean = false; // Para saber si debe limpiar el carrito
   @Output() paymentCompleted = new EventEmitter<boolean>();
   @Output() goBack = new EventEmitter<void>();
 
@@ -27,6 +29,7 @@ export class BankPaymentComponent {
 
   constructor(
     private bankService: BankService,
+    private orderMonitorService: OrderMonitorService,
     private toastService: ToastService
   ) {}
 
@@ -93,6 +96,9 @@ export class BankPaymentComponent {
       comprobante: paymentProof
     };
 
+    console.log('📤 Subiendo comprobante de pago para la orden', this.orderId);
+    console.log('Datos de pago:', paymentData);
+    console.log('Datos del comprobante:', paymentProof);
     this.simulateUploadProgress();
 
     this.bankService.uploadPaymentProof(paymentData).subscribe({
@@ -101,6 +107,7 @@ export class BankPaymentComponent {
         if (result.success) {
           this.showSuccess.set(true);
           this.toastService.success('¡Comprobante enviado!', 'Tu pago está siendo verificado');
+          this.orderMonitorService.startMonitoring(this.orderId, this.isFromCart);
 
           setTimeout(() => {
             this.paymentCompleted.emit(true);

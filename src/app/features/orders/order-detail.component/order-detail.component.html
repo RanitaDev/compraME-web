@@ -20,8 +20,8 @@
               class="px-4 py-2 rounded-full text-sm font-medium"
               [class.bg-yellow-100]="orderDetail()!.order.status === 'pending'"
               [class.text-yellow-800]="orderDetail()!.order.status === 'pending'"
-              [class.bg-green-100]="orderDetail()!.order.status === 'completed'"
-              [class.text-green-800]="orderDetail()!.order.status === 'completed'"
+              [class.bg-green-100]="orderDetail()!.order.status === 'delivered'"
+              [class.text-green-800]="orderDetail()!.order.status === 'delivered'"
               [class.bg-red-100]="orderDetail()!.order.status === 'canceled'"
               [class.text-red-800]="orderDetail()!.order.status === 'canceled'"
             >

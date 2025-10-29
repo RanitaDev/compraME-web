@@ -6,16 +6,22 @@ export interface IOrders {
   userId: string;
   items: IOrderItem[];
   totalAmount: number;
-  status: 'pending' | 'completed' | 'canceled';
+  status: 'pending' | 'proof_uploaded' | 'paid' | 'shipped' | 'delivered' | 'canceled' | 'expired';
   // Campos adicionales para el detalle
   orderNumber?: string;
   createdAt?: Date;
   updatedAt?: Date;
   paymentMethod?: string;
+  paymentMethodType?: 'transferencia' | 'deposito' | 'oxxo' | 'tarjeta' | 'paypal';
   subtotal?: number;
   taxes?: number;
   shippingCost?: number;
   discounts?: number;
+  // Nuevos campos para lógica de negocio
+  paymentProofUrl?: string;
+  paymentDeadline?: Date;
+  lastPaymentMethodUpdate?: Date;
+  referenceNumber?: string;
 }
 
 export interface IOrderItem {

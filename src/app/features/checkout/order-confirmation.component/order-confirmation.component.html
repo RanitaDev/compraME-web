@@ -283,6 +283,7 @@
               [orderId]="orderData()!.ordenId"
               [amount]="orderData()!.resumen.total"
               [paymentType]="getBankPaymentType()"
+              [isFromCart]="!isDirectPurchase()"
               (paymentCompleted)="onBankPaymentCompleted($event)"
               (goBack)="goBackToCheckout()"
             />

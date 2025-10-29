@@ -14,6 +14,7 @@ import { ProductService } from '../../services/products.service';
 import { IUser } from '../../interfaces/auth.interface';
 import { IProduct } from '../../interfaces/products.interface';
 import { Subscription } from 'rxjs';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-header',
@@ -59,7 +60,8 @@ export class Header implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private cartService: CartService,
-    private productService: ProductService
+    private productService: ProductService,
+    private toastService: ToastService
   ){
     effect(() => {
       const currentTotal = this.cartService.totalItems();
@@ -121,11 +123,11 @@ export class Header implements OnInit, OnDestroy {
   }
 
   onCheckout(): void {
-    // Verificar estado real del servicio de autenticación
     const serviceAuth = this.authService.isAuthenticated();
     const serviceUser = this.authService.getCurrentUser();
     if (!serviceAuth) {
-      console.warn('⚠️ Usuario no autenticado, el guard redirigirá al login');
+      this.toastService.warning('Acceso requerido', 'Por favor inicia sesión para proceder al checkout.');
+      return;
     }
     // Navegar al checkout cuando se solicita desde el carrito
     this.router.navigate(['/checkout'], {

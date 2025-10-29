@@ -58,7 +58,8 @@ export class DirectPurchaseService {
           subtotal: totals.subtotal,
           impuestos: totals.tax,
           envio: totals.shipping,
-          total: totals.total
+          total: totals.total,
+          isDirectPurchase: true // Marcar como compra directa
         };
 
         observer.next(summary);

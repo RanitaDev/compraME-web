@@ -35,66 +35,74 @@ export class OrderDataService {
   /**
    * Crear datos de orden a partir del resumen de checkout
    */
-  async createOrderFromCheckout(
+  createOrderFromCheckout(
     checkoutSummary: ICheckoutSummary,
     orderId: string
   ): Promise<IOrderConfirmation> {
-    const currentUser = this.authService.getCurrentUser();
-    const selectedAddress = checkoutSummary.direccionSeleccionada;
-    const selectedPayment = checkoutSummary.metodoPagoSeleccionado;
+    return new Promise(async (resolve, reject) => {
+      try {
+        const currentUser = this.authService.getCurrentUser();
+        const selectedAddress = checkoutSummary.direccionSeleccionada;
+        const selectedPayment = checkoutSummary.metodoPagoSeleccionado;
 
-    if (!currentUser || !selectedAddress || !selectedPayment) {
-      throw new Error('Datos incompletos para crear la orden');
-    }
+        if (!currentUser || !selectedAddress || !selectedPayment) {
+          reject(new Error('Datos incompletos para crear la orden'));
+          return;
+        }
 
-    // Obtener imágenes reales de los productos
-    const productIds = checkoutSummary.items.map(item => item.idProducto);
-    const productImages = await this.productImageService.getMultipleProductImages(productIds);
+        // Obtener imágenes reales de los productos
+        const productIds = checkoutSummary.items.map(item => item.idProducto);
+        const productImages = await this.productImageService.getMultipleProductImages(productIds);
 
-    const orderData: IOrderConfirmation = {
-      ordenId: orderId,
-      fecha: new Date(),
-      estado: 'pendiente',
-      cliente: {
-        nombre: currentUser.nombre,
-        email: currentUser.email,
-        telefono: currentUser.telefono || selectedAddress.telefono
-      },
-      direccionEntrega: {
-        nombreCompleto: selectedAddress.nombreCompleto,
-        telefono: selectedAddress.telefono,
-        direccionCompleta: `${selectedAddress.calle} ${selectedAddress.numeroExterior}${
-          selectedAddress.numeroInterior ? ` ${selectedAddress.numeroInterior}` : ''
-        }, ${selectedAddress.colonia}, ${selectedAddress.ciudad}, ${selectedAddress.estado} ${selectedAddress.codigoPostal}`,
-        referencias: selectedAddress.referencias || ''
-      },
-      productos: checkoutSummary.items.map(item => ({
-        idProducto: item.idProducto,
-        nombre: item.nombre,
-        imagen: productImages.get(item.idProducto) || this.productImageService.generatePlaceholderImage(item.nombre),
-        cantidad: item.cantidad,
-        precio: item.precio,
-        subtotal: item.subtotal
-      })),
-      resumen: {
-        subtotal: checkoutSummary.subtotal,
-        impuestos: checkoutSummary.impuestos,
-        envio: checkoutSummary.envio,
-        total: checkoutSummary.total
-      },
-      metodoPago: {
-        tipo: selectedPayment.tipo,
-        nombre: selectedPayment.nombre,
-        ultimosDigitos: selectedPayment.tipo === 'tarjeta' ? '****' : undefined
-      },
-      entregaEstimada: this.calculateDeliveryEstimate(selectedAddress.codigoPostal)
-    };
+        const orderData: IOrderConfirmation = {
+          ordenId: orderId,
+          fecha: new Date(),
+          estado: 'pendiente',
+          cliente: {
+            nombre: currentUser.nombre,
+            email: currentUser.email,
+            telefono: currentUser.telefono || selectedAddress.telefono
+          },
+          direccionEntrega: {
+            nombreCompleto: selectedAddress.nombreCompleto,
+            telefono: selectedAddress.telefono,
+            direccionCompleta: `${selectedAddress.calle} ${selectedAddress.numeroExterior}${
+              selectedAddress.numeroInterior ? ` ${selectedAddress.numeroInterior}` : ''
+            }, ${selectedAddress.colonia}, ${selectedAddress.ciudad}, ${selectedAddress.estado} ${selectedAddress.codigoPostal}`,
+            referencias: selectedAddress.referencias || ''
+          },
+          productos: checkoutSummary.items.map(item => ({
+            idProducto: item.idProducto,
+            nombre: item.nombre,
+            imagen: productImages.get(item.idProducto) || this.productImageService.generatePlaceholderImage(item.nombre),
+            cantidad: item.cantidad,
+            precio: item.precio,
+            subtotal: item.subtotal
+          })),
+          resumen: {
+            subtotal: checkoutSummary.subtotal,
+            impuestos: checkoutSummary.impuestos,
+            envio: checkoutSummary.envio,
+            total: checkoutSummary.total
+          },
+          metodoPago: {
+            tipo: selectedPayment.tipo,
+            nombre: selectedPayment.nombre,
+            ultimosDigitos: selectedPayment.tipo === 'tarjeta' ? '****' : undefined
+          },
+          entregaEstimada: this.calculateDeliveryEstimate(selectedAddress.codigoPostal)
+        };
 
-    // Almacenar temporalmente
-    this.currentOrderData.set(orderData);
-
-    return orderData;
-  }  /**
+        // Almacenar temporalmente
+        this.currentOrderData.set(orderData);
+        resolve(orderData);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }  
+  
+  /**
    * Obtener datos de orden por ID
    */
   getOrderData(orderId: string): IOrderConfirmation | null {

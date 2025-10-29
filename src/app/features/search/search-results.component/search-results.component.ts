@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IProduct } from '../../../interfaces/products.interface';
 import { CartService } from '../../../services/cart.service';
 import { ProductService } from '../../../services/products.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 // Interface para los filtros
 interface ProductFilters {
@@ -45,24 +46,21 @@ export class SearchResultsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cartService: CartService,
-    private productService: ProductService
+    private productService: ProductService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
-    console.log('🔍 Inicializando SearchResultsComponent...');
 
     // Obtener los datos de la navegación
     this.route.queryParams.subscribe(params => {
       this.searchQuery = params['query'] || '';
       const selectedId = params['selectedId'];
 
-      console.log('📄 Parámetros recibidos:', { query: this.searchQuery, selectedId });
-
       // Intentar obtener el estado de navegación
       const navigationState = this.router.getCurrentNavigation()?.extras.state;
 
       if (navigationState) {
-        console.log('✅ Estado de navegación encontrado:', navigationState);
         this.allProducts = navigationState['products'] || [];
         this.selectedProduct = navigationState['selectedProduct'] || null;
 
@@ -74,7 +72,6 @@ export class SearchResultsComponent implements OnInit {
         this.applyFilters();
         this.isLoading = false;
       } else {
-        console.log('⚠️ No se encontró estado de navegación, realizando búsqueda...');
         // Si no hay estado, hacer una búsqueda nueva con el término
         if (this.searchQuery && this.searchQuery !== 'búsqueda') {
           this.performSearchFromQuery(this.searchQuery, selectedId);
@@ -94,7 +91,6 @@ export class SearchResultsComponent implements OnInit {
 
     this.productService.searchProducts(query).subscribe({
       next: (products) => {
-        console.log('✅ Búsqueda completada:', products.length, 'productos encontrados');
         this.allProducts = products;
 
         // Si hay un selectedId, intentar encontrar ese producto
@@ -241,16 +237,13 @@ export class SearchResultsComponent implements OnInit {
       }
 
       if (product.stock <= 0) {
-        console.warn('Producto sin stock:', product.nombre);
+        this.toastService.warning('No hay suficiente stock disponible');
         return;
       }
 
       const success = await this.cartService.agregarAlCarrito(product, 1);
-      if (success) {
-        console.log('Producto agregado al carrito:', product.nombre);
-      } else {
-        console.warn('No hay suficiente stock disponible');
-      }
+      if (!success) this.toastService.warning('No se pudo agregar el producto al carrito.');
+
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
     }

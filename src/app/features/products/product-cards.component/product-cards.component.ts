@@ -1,3 +1,4 @@
+import { ToastService } from './../../../core/services/toast.service';
 // product-cards.component.ts
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -64,7 +65,8 @@ export class ProductCardsComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -107,11 +109,10 @@ export class ProductCardsComponent implements OnInit {
   }
 
   public viewProduct(product: IProduct): void {
-    console.log('Visualizando producto:', product);
     if(!product) {
-      //SNACK TOAST
+      this.toastService.warning('Producto no encontrado.');
+      return;
     }
-    console.log('Visualizando producto:', product);
     this.router.navigate(['/product', product._id]);
   }
 

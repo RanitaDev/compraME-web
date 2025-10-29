@@ -32,6 +32,7 @@ export interface ICheckoutSummary {
   total: number;
   direccionSeleccionada?: IAddress;
   metodoPagoSeleccionado?: IPaymentMethod;
+  isDirectPurchase?: boolean; // Para identificar tipo de compra
 }
 
 

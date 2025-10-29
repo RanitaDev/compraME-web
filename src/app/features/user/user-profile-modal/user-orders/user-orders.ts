@@ -116,7 +116,6 @@ export class UserOrders {
   }
 
   verDetallesPedido(pedido: PedidoReciente): void {
-    console.log('Ver detalles del pedido:', pedido);
     // Aquí se implementaría la navegación a los detalles del pedido
   }
 

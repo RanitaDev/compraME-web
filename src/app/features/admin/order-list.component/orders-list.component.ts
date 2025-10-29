@@ -69,85 +69,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    */
   private loadOrders(): void {
     // Datos hardcodeados de órdenes para demostración
-    this.allOrders = [
-      {
-        id: 'ORD-001',
-        orderNumber: '2024-0001',
-        userId: 'USER-123',
-        items: [
-          { productId: 'PROD-001', quantity: 2, price: 299.99, productName: 'Auriculares Bluetooth', subtotal: 599.98 },
-          { productId: 'PROD-002', quantity: 1, price: 199.99, productName: 'Mouse Gaming', subtotal: 199.99 }
-        ],
-        totalAmount: 899.97,
-        subtotal: 799.97,
-        shippingCost: 100.00,
-        status: 'pending',
-        paymentMethod: 'Tarjeta de Crédito',
-        createdAt: new Date('2024-08-20'),
-        updatedAt: new Date('2024-08-20')
-      },
-      {
-        id: 'ORD-002',
-        orderNumber: '2024-0002',
-        userId: 'USER-456',
-        items: [
-          { productId: 'PROD-003', quantity: 1, price: 1499.99, productName: 'Laptop Gaming', subtotal: 1499.99 }
-        ],
-        totalAmount: 1649.99,
-        subtotal: 1499.99,
-        shippingCost: 150.00,
-        status: 'completed',
-        paymentMethod: 'PayPal',
-        createdAt: new Date('2024-08-19'),
-        updatedAt: new Date('2024-08-21')
-      },
-      {
-        id: 'ORD-003',
-        orderNumber: '2024-0003',
-        userId: 'USER-789',
-        items: [
-          { productId: 'PROD-004', quantity: 3, price: 99.99, productName: 'Teclado Mecánico', subtotal: 299.97 },
-          { productId: 'PROD-005', quantity: 1, price: 399.99, productName: 'Monitor 4K', subtotal: 399.99 }
-        ],
-        totalAmount: 799.96,
-        subtotal: 699.96,
-        shippingCost: 100.00,
-        status: 'pending',
-        paymentMethod: 'Transferencia Bancaria',
-        createdAt: new Date('2024-08-18'),
-        updatedAt: new Date('2024-08-18')
-      },
-      {
-        id: 'ORD-004',
-        orderNumber: '2024-0004',
-        userId: 'USER-101',
-        items: [
-          { productId: 'PROD-006', quantity: 2, price: 249.99, productName: 'Smartwatch', subtotal: 499.98 }
-        ],
-        totalAmount: 599.98,
-        subtotal: 499.98,
-        shippingCost: 100.00,
-        status: 'completed',
-        paymentMethod: 'Tarjeta de Débito',
-        createdAt: new Date('2024-08-17'),
-        updatedAt: new Date('2024-08-19')
-      },
-      {
-        id: 'ORD-005',
-        orderNumber: '2024-0005',
-        userId: 'USER-202',
-        items: [
-          { productId: 'PROD-007', quantity: 1, price: 899.99, productName: 'Cámara Digital', subtotal: 899.99 }
-        ],
-        totalAmount: 999.99,
-        subtotal: 899.99,
-        shippingCost: 100.00,
-        status: 'canceled',
-        paymentMethod: 'Tarjeta de Crédito',
-        createdAt: new Date('2024-08-16'),
-        updatedAt: new Date('2024-08-17')
-      }
-    ];
+    this.allOrders = [];
 
     this.updateFilteredOrders();
     this.calculateStats();
@@ -206,7 +128,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     }).length;
 
     this.totalActive = this.allOrders.filter(order => order.status === 'pending').length;
-    this.totalDelivered = this.allOrders.filter(order => order.status === 'completed').length;
+    this.totalDelivered = this.allOrders.filter(order => order.status === 'delivered').length;
     // Para este ejemplo, "en envío" será igual a pending (puedes ajustarlo según tu lógica)
     this.totalInShipping = this.allOrders.filter(order => order.status === 'pending').length;
   }
@@ -260,29 +182,25 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Cambiar estado de una orden
    */
   onChangeStatus(order: IOrders): void {
-    console.log('Cambiando estado de orden:', order.orderNumber);
-
     // Lógica para cambiar estado (puedes implementar un modal o dropdown)
     const currentStatus = order.status;
-    let newStatus: 'pending' | 'completed' | 'canceled';
+    let newStatus;
 
     // Lógica simple para demostración
     if (currentStatus === 'pending') {
       newStatus = 'completed';
-    } else if (currentStatus === 'completed') {
+    } else if (currentStatus === 'delivered') {
       newStatus = 'pending';
     } else {
       newStatus = 'pending';
     }
 
     // Actualizar estado
-    order.status = newStatus;
+    //order.status = newStatus;
     order.updatedAt = new Date();
 
     // Recalcular estadísticas
     this.calculateStats();
-
-    console.log(`Estado cambiado de ${currentStatus} a ${newStatus}`);
     this.showSuccessMessage(`Estado de orden #${order.orderNumber} actualizado`);
   }
 
@@ -290,7 +208,6 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Exportar órdenes
    */
   onExportOrders(): void {
-    console.log('Exportando órdenes...');
     // Implementar lógica de exportación
     this.showSuccessMessage('Exportación iniciada');
   }
