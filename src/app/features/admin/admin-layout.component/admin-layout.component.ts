@@ -8,17 +8,20 @@ import { AdminMenuItem, AdminMenuSubItem } from '../../../interfaces/admin/admin
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../services';
 import { IUser } from '../../../interfaces/auth.interface';
+import { ConfirmationService } from '../../../services/utils/confirmation.service';
+import { DialogService } from 'primeng/dynamicdialog';
 
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
   imports: [CommonModule, AdminSidebarComponent, RouterOutlet],
+  providers: [DialogService],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.css']
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
-  currentPageTitle = 'Dashboard';
+  currentPageTitle = 'Lista de Productos';
   sidebarCollapsed = false;
   showMobileSidebar = false;
   showUserMenu = false;
@@ -34,7 +37,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   // Page title mapping
   private pageTitleMap: { [key: string]: string } = {
-    'dashboard': 'Dashboard',
     'products': 'Gestión de Productos',
     'products-list': 'Lista de Productos',
     'products-add': 'Agregar Producto',
@@ -55,7 +57,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   constructor(
     private adminNavService: AdminNavigationService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private confirmacionService: ConfirmationService
   ) {}
   ngOnInit() {
     // Obtener usuario actual inmediatamente
@@ -214,12 +217,18 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   onLogoutClick(): void {
-    console.log('Logout clicked');
-    // Implementar lógica de logout
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-      // this.authService.logout();
-      // this.router.navigate(['/login']);
-    }
+    this.confirmacionService.confirmar({
+      titulo: 'Cerrar sesión',
+      descripcion: '¿Estás seguro de que deseas cerrar sesión?',
+      textoConfirmar: 'Sí, cerrar sesión',
+      textoCancelar: 'Cancelar',
+      tipoConfirmacion: 'warning'
+    }).subscribe((resultado) => {
+      if (resultado.confirmado) {
+        this.authService.logout();
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   // Utility methods

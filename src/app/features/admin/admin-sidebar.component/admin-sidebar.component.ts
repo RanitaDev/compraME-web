@@ -183,19 +183,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     this.adminNavService.toggleSidebar();
   }
 
-  onLogout(): void {
-    console.log('Logout clicked');
-    // Implementar lógica de logout
-    // Por ejemplo:
-    // this.authService.logout();
-    // this.router.navigate(['/login']);
-
-    // Mostrar confirmación
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-      // Realizar logout
-    }
-  }
-
   // Método para tracking en ngFor (optimización)
   trackByMenuId(index: number, item: AdminMenuItem): string {
     return item.id;

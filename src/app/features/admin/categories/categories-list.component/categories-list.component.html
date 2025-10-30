@@ -1,14 +1,14 @@
 <!-- pages/admin/categories/categories-list/categories-list.component.html -->
-<div class="categories-list-container h-full overflow-y-auto bg-slate-50">
+<div class="categories-list-container min-h-full bg-gray-50">
   <!-- Header Section -->
-  <div class="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
+  <div class="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">Gestión de Categorías</h1>
-        <p class="text-slate-600 mt-1">Organiza y administra las categorías de tu tienda</p>
+        <h1 class="text-xl font-semibold text-gray-800">Gestión de Categorías</h1>
+        <p class="text-gray-600 mt-1">Organiza y administra las categorías de tu tienda</p>
       </div>
 
-      <button class="add-category-btn flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 font-medium"
+      <button class="add-category-btn flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium text-sm"
               (click)="onAddCategory()">
         <i class="pi pi-plus text-sm"></i>
         Nueva Categoría
@@ -17,15 +17,15 @@
 
     <!-- Stats Card -->
     <div class="stats-section mb-6">
-      <div class="stat-card bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200 max-w-sm">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200 max-w-sm">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-purple-600 text-sm font-medium">Total de Categorías</p>
-            <p class="text-2xl font-bold text-purple-800">{{ totalCategories }}</p>
-            <p class="text-purple-500 text-xs mt-1">{{ activeCategories }} activas</p>
+            <p class="text-gray-600 text-sm font-medium">Total de Categorías</p>
+            <p class="text-2xl font-bold text-gray-900">{{ totalCategories }}</p>
+            <p class="text-gray-500 text-xs mt-1">{{ activeCategories }} activas</p>
           </div>
-          <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-tags text-white text-lg"></i>
+          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-tags text-gray-600 text-lg"></i>
           </div>
         </div>
       </div>
@@ -34,11 +34,11 @@
     <!-- Search Bar -->
     <div class="search-section">
       <div class="relative">
-        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
         <input
           type="text"
           placeholder="Buscar categorías por nombre o descripción..."
-          class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200"
           [(ngModel)]="searchTerm"
           (input)="onSearch()">
       </div>
@@ -50,10 +50,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
       <div *ngFor="let category of filteredCategories; trackBy: trackByCategoryId"
-           class="category-card bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+           class="category-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
 
         <!-- Category Image -->
-        <div class="category-image-container relative h-40 bg-slate-100 overflow-hidden">
+        <div class="category-image-container relative h-40 bg-gray-100 overflow-hidden">
           <img
             [src]="category.imagen"
             [alt]="category.nombre"
@@ -63,7 +63,7 @@
 
           <!-- Status Badge -->
           <div class="absolute top-2 right-2">
-            <span class="status-badge px-2 py-1 rounded-full text-xs font-medium"
+            <span class="status-badge px-2 py-1 rounded text-xs font-medium"
                   [class]="getStatusBadgeClass(category.activa)">
               {{ category.activa ? 'Activa' : 'Inactiva' }}
             </span>
@@ -73,20 +73,20 @@
         <!-- Category Info -->
         <div class="category-info p-4">
           <!-- Category Name -->
-          <h3 class="category-name font-semibold text-lg text-slate-800 mb-2 line-clamp-1">
+          <h3 class="category-name font-semibold text-lg text-gray-800 mb-2 line-clamp-1">
             {{ category.nombre }}
           </h3>
 
           <!-- Description -->
-          <p class="category-description text-slate-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
+          <p class="category-description text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
             {{ category.descripcion }}
           </p>
 
           <!-- Category ID -->
           <div class="category-meta mb-4">
             <div class="flex items-center gap-2">
-              <i class="pi pi-hashtag text-slate-400 text-sm"></i>
-              <span class="category-id text-sm text-slate-500">
+              <i class="pi pi-hashtag text-gray-400 text-sm"></i>
+              <span class="category-id text-sm text-gray-500">
                 ID: {{ category.idCateogria }}
               </span>
             </div>
@@ -94,20 +94,20 @@
 
           <!-- Actions -->
           <div class="actions-section flex gap-2">
-            <button class="edit-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200 font-medium"
+            <button class="edit-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
                     (click)="onEditCategory(category)">
               <i class="pi pi-pencil text-sm"></i>
               Editar
             </button>
 
             <button class="toggle-btn p-2 rounded-lg transition-colors duration-200"
-                    [class]="category.activa ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'"
+                    [class]="category.activa ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
                     (click)="toggleCategoryStatus(category)"
                     [title]="category.activa ? 'Desactivar categoría' : 'Activar categoría'">
               <i [class]="category.activa ? 'pi pi-eye text-sm' : 'pi pi-eye-slash text-sm'"></i>
             </button>
 
-            <button class="view-btn p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+            <button class="view-btn p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors duration-200"
                     (click)="onViewCategory(category)"
                     [title]="'Ver detalles de ' + category.nombre">
               <i class="pi pi-info-circle text-sm"></i>
@@ -119,15 +119,15 @@
 
     <!-- Empty State -->
     <div *ngIf="filteredCategories.length === 0" class="empty-state text-center py-16">
-      <div class="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-slate-400 text-3xl"></i>
+      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-search text-gray-400 text-3xl"></i>
       </div>
-      <h3 class="text-xl font-semibold text-slate-800 mb-2">No se encontraron categorías</h3>
-      <p class="text-slate-600 mb-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron categorías</h3>
+      <p class="text-gray-600 mb-6">
         {{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'Comienza creando tu primera categoría' }}
       </p>
       <button *ngIf="!searchTerm"
-              class="add-first-category-btn flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors duration-200 font-medium mx-auto"
+              class="add-first-category-btn flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
               (click)="onAddCategory()">
         <i class="pi pi-plus text-sm"></i>
         Crear Primera Categoría
@@ -136,7 +136,7 @@
 
     <!-- Load More Button -->
     <div *ngIf="hasMoreCategories" class="load-more-section text-center mt-8">
-      <button class="load-more-btn px-6 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition-colors duration-200 font-medium"
+      <button class="load-more-btn px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
               (click)="loadMoreCategories()">
         <i class="pi pi-refresh text-sm mr-2"></i>
         Cargar más categorías

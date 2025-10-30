@@ -1,38 +1,38 @@
-<div class="products-list-container h-full max-h-full overflow-y-auto bg-slate-50">
-  <div class="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
+<div class="products-list-container min-h-full bg-gray-50">
+  <div class="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">Gestión de Productos</h1>
-        <p class="text-slate-600 mt-1">Administra tu inventario de productos</p>
+        <h1 class="text-xl font-semibold text-gray-800">Gestión de Productos</h1>
+        <p class="text-gray-600 mt-1">Administra tu inventario de productos</p>
       </div>
 
-      <button class="add-product-btn flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 font-medium">
+      <button class="add-product-btn flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium text-sm">
         <i class="pi pi-plus text-sm"></i>
         Agregar Producto
       </button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div class="stat-card bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-blue-600 text-sm font-medium">Total de Productos</p>
-            <p class="text-2xl font-bold text-blue-800">{{ totalProducts }}</p>
+            <p class="text-gray-600 text-sm font-medium">Total de Productos</p>
+            <p class="text-2xl font-bold text-gray-900">{{ totalProducts }}</p>
           </div>
-          <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-box text-white text-lg"></i>
+          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-box text-gray-600 text-lg"></i>
           </div>
         </div>
       </div>
 
-      <div class="stat-card bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-xl border border-amber-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-amber-600 text-sm font-medium">Productos Destacados</p>
-            <p class="text-2xl font-bold text-amber-800">{{ featuredProducts }}</p>
+            <p class="text-gray-600 text-sm font-medium">Productos Destacados</p>
+            <p class="text-2xl font-bold text-gray-900">{{ featuredProducts }}</p>
           </div>
-          <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-star text-white text-lg"></i>
+          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-star text-gray-600 text-lg"></i>
           </div>
         </div>
       </div>
@@ -40,11 +40,11 @@
 
     <div class="search-section">
       <div class="relative">
-        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
         <input
           type="text"
           placeholder="Buscar productos por nombre, categoría..."
-          class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200"
           [(ngModel)]="searchTerm"
           (input)="onSearch()">
       </div>
@@ -55,9 +55,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
       <div *ngFor="let product of filteredProducts; trackBy: trackByProductId"
-           class="product-card bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+           class="product-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
 
-        <div class="product-image-container relative h-48 bg-slate-100 overflow-hidden">
+        <div class="product-image-container relative h-48 bg-gray-100 overflow-hidden">
           <img
             [src]="product.imagenes[0]"
             [alt]="product.nombre"
@@ -66,13 +66,13 @@
             (error)="onImageError($event)">
 
           <div *ngIf="product.destacado"
-               class="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+               class="absolute top-2 right-2 bg-gray-900 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
             <i class="pi pi-star text-xs"></i>
             Destacado
           </div>
 
           <div class="absolute top-2 left-2">
-            <span class="stock-badge px-2 py-1 rounded-full text-xs font-medium"
+            <span class="stock-badge px-2 py-1 rounded text-xs font-medium"
                   [class]="getStockBadgeClass(product.stock)">
               {{ getStockText(product.stock) }}
             </span>
@@ -80,32 +80,32 @@
         </div>
 
         <div class="product-info p-4">
-          <h3 class="product-name font-semibold text-slate-800 mb-2 line-clamp-2 min-h-[3rem]">
+          <h3 class="product-name font-semibold text-gray-800 mb-2 line-clamp-2 min-h-[3rem]">
             {{ product.nombre }}
           </h3>
 
           <div class="price-section mb-3">
-            <span class="text-xl font-bold text-slate-800">${{ formatPrice(product.precio) }}</span>
-            <span class="text-sm text-slate-500 ml-1">MXN</span>
+            <span class="text-xl font-bold text-gray-900">${{ formatPrice(product.precio) }}</span>
+            <span class="text-sm text-gray-500 ml-1">MXN</span>
           </div>
 
           <div class="category-section mb-4">
             <div class="flex items-center gap-2">
-              <i class="pi pi-tag text-slate-400 text-sm"></i>
-              <span class="category-name text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-lg">
+              <i class="pi pi-tag text-gray-400 text-sm"></i>
+              <span class="category-name text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
                 {{ getCategoryName(product.idCategoria) }}
               </span>
             </div>
           </div>
 
           <div class="actions-section flex gap-2">
-            <button class="edit-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200 font-medium"
+            <button class="edit-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
                     (click)="onEditProduct(product)">
               <i class="pi pi-pencil text-sm"></i>
               Editar
             </button>
 
-            <button class="view-btn p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+            <button class="view-btn p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors duration-200"
                     (click)="onViewProduct(product)"
                     [title]="'Ver detalles de ' + product.nombre">
               <i class="pi pi-eye text-sm"></i>
@@ -116,25 +116,18 @@
     </div>
 
     <div *ngIf="filteredProducts.length === 0" class="empty-state text-center py-16">
-      <div class="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-slate-400 text-3xl"></i>
+      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-search text-gray-400 text-3xl"></i>
       </div>
-      <h3 class="text-xl font-semibold text-slate-800 mb-2">No se encontraron productos</h3>
-      <p class="text-slate-600 mb-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron productos</h3>
+      <p class="text-gray-600 mb-6">
         {{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'Comienza agregando tu primer producto' }}
       </p>
       <button *ngIf="!searchTerm"
-              class="add-first-product-btn flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 font-medium mx-auto">
+              class="add-first-product-btn flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm">
         <i class="pi pi-plus text-sm"></i>
         Agregar Primer Producto
       </button>
     </div>
-
-    <!-- <div *ngIf="hasMoreProducts" class="load-more-section text-center mt-8">
-      <button class="load-more-btn px-6 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition-colors duration-200 font-medium">
-        <i class="pi pi-refresh text-sm mr-2"></i>
-        Cargar más productos
-      </button>
-    </div> -->
   </div>
 </div>

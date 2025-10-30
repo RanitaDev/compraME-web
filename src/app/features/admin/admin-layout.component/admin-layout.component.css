@@ -1,0 +1,66 @@
+/* admin-layout.component.css */
+
+/* Contenedor principal del admin */
+.admin-layout {
+  height: 100vh;
+  overflow: hidden; /* Prevenir scroll en el contenedor padre */
+}
+
+/* Área principal de contenido */
+.main-content {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header fijo */
+.top-bar {
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Área de contenido con scroll controlado */
+.content-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Scrollbar personalizada para el contenido principal */
+.content-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Prevenir scroll horizontal en móvil */
+@media (max-width: 1024px) {
+  .admin-layout {
+    overflow-x: hidden;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Suavizar transiciones */
+.main-content {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Overlay móvil */
+.mobile-overlay {
+  backdrop-filter: blur(2px);
+}

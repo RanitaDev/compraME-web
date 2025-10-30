@@ -7,7 +7,7 @@ import { AdminMenuItem, AdminUser } from '../../interfaces/admin/admin-menu.inte
   providedIn: 'root'
 })
 export class AdminNavigationService {
-  private activeMenuItemSubject = new BehaviorSubject<string>('dashboard');
+  private activeMenuItemSubject = new BehaviorSubject<string>('product-list');
   private sidebarCollapsedSubject = new BehaviorSubject<boolean>(false);
 
   activeMenuItem$ = this.activeMenuItemSubject.asObservable();
@@ -15,13 +15,6 @@ export class AdminNavigationService {
 
   // Datos hardcodeados del menú (posteriormente vendrán de MongoDB)
   private menuItems: AdminMenuItem[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: 'pi pi-th-large',
-      route: '/admin/dashboard',
-      isActive: true
-    },
     {
       id: 'products',
       label: 'Productos',

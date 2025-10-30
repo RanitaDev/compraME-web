@@ -1,14 +1,14 @@
 <!-- pages/admin/orders/orders-list/orders-list.component.html -->
-<div class="orders-list-container h-full overflow-y-auto bg-slate-50">
+<div class="orders-list-container min-h-full bg-gray-50">
   <!-- Header Section -->
-  <div class="sticky top-0 bg-white border-b border-slate-200 p-6 z-10">
+  <div class="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">Gestión de Órdenes</h1>
-        <p class="text-slate-600 mt-1">Administra y supervisa todas las órdenes de tu tienda</p>
+        <h1 class="text-xl font-semibold text-gray-800">Gestión de Órdenes</h1>
+        <p class="text-gray-600 mt-1">Administra y supervisa todas las órdenes de tu tienda</p>
       </div>
 
-      <button class="export-btn flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors duration-200 font-medium"
+      <button class="export-btn flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium text-sm"
               (click)="onExportOrders()">
         <i class="pi pi-download text-sm"></i>
         Exportar Órdenes
@@ -18,66 +18,66 @@
     <!-- Stats Cards -->
     <div class="stats-section grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
       <!-- Total Histórico -->
-      <div class="stat-card bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-blue-600 text-xs font-medium">Total Histórico</p>
-            <p class="text-xl font-bold text-blue-800">{{ totalHistoric }}</p>
+            <p class="text-gray-600 text-xs font-medium">Total Histórico</p>
+            <p class="text-xl font-bold text-gray-900">{{ totalHistoric }}</p>
           </div>
-          <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-chart-line text-white text-sm"></i>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-chart-line text-gray-600 text-sm"></i>
           </div>
         </div>
       </div>
 
       <!-- Total Este Mes -->
-      <div class="stat-card bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-green-600 text-xs font-medium">Este Mes</p>
-            <p class="text-xl font-bold text-green-800">{{ totalThisMonth }}</p>
+            <p class="text-gray-600 text-xs font-medium">Este Mes</p>
+            <p class="text-xl font-bold text-gray-900">{{ totalThisMonth }}</p>
           </div>
-          <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-calendar text-white text-sm"></i>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-calendar text-gray-600 text-sm"></i>
           </div>
         </div>
       </div>
 
       <!-- Órdenes Activas -->
-      <div class="stat-card bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-yellow-600 text-xs font-medium">Activas</p>
-            <p class="text-xl font-bold text-yellow-800">{{ totalActive }}</p>
+            <p class="text-gray-600 text-xs font-medium">Activas</p>
+            <p class="text-xl font-bold text-gray-900">{{ totalActive }}</p>
           </div>
-          <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-clock text-white text-sm"></i>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-clock text-gray-600 text-sm"></i>
           </div>
         </div>
       </div>
 
       <!-- Entregadas -->
-      <div class="stat-card bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-emerald-600 text-xs font-medium">Entregadas</p>
-            <p class="text-xl font-bold text-emerald-800">{{ totalDelivered }}</p>
+            <p class="text-gray-600 text-xs font-medium">Entregadas</p>
+            <p class="text-xl font-bold text-gray-900">{{ totalDelivered }}</p>
           </div>
-          <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-check-circle text-white text-sm"></i>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-check-circle text-gray-600 text-sm"></i>
           </div>
         </div>
       </div>
 
       <!-- En Envío -->
-      <div class="stat-card bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+      <div class="stat-card bg-white p-4 rounded-lg border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-purple-600 text-xs font-medium">En Envío</p>
-            <p class="text-xl font-bold text-purple-800">{{ totalInShipping }}</p>
+            <p class="text-gray-600 text-xs font-medium">En Envío</p>
+            <p class="text-xl font-bold text-gray-900">{{ totalInShipping }}</p>
           </div>
-          <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-truck text-white text-sm"></i>
+          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="pi pi-truck text-gray-600 text-sm"></i>
           </div>
         </div>
       </div>
@@ -86,18 +86,18 @@
     <!-- Search and Filters -->
     <div class="search-section flex flex-col md:flex-row gap-4">
       <div class="flex-1 relative">
-        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
         <input
           type="text"
           placeholder="Buscar por número de orden, cliente o ID..."
-          class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200"
           [(ngModel)]="searchTerm"
           (input)="onSearch()">
       </div>
 
       <!-- Status Filter -->
       <div class="relative">
-        <select class="status-filter px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200 appearance-none pr-10"
+        <select class="status-filter px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200 appearance-none pr-10"
                 [(ngModel)]="statusFilter"
                 (change)="onFilterChange()">
           <option value="">Todos los estados</option>
@@ -105,7 +105,7 @@
           <option value="completed">Completadas</option>
           <option value="canceled">Canceladas</option>
         </select>
-        <i class="pi pi-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+        <i class="pi pi-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none"></i>
       </div>
     </div>
   </div>
@@ -115,22 +115,22 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
       <div *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
-           class="order-card bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+           class="order-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
 
         <!-- Order Header -->
-        <div class="order-header p-4 border-b border-slate-100 bg-slate-50">
+        <div class="order-header p-4 border-b border-gray-100 bg-gray-50">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="order-number font-bold text-slate-800">
+              <h3 class="order-number font-bold text-gray-800">
                 #{{ order.orderNumber }}
               </h3>
-              <p class="order-date text-sm text-slate-500">
+              <p class="order-date text-sm text-gray-500">
                 {{ formatDate(order.createdAt) }}
               </p>
             </div>
 
             <!-- Status Badge -->
-            <span class="status-badge px-3 py-1 rounded-full text-xs font-medium"
+            <span class="status-badge px-3 py-1 rounded text-xs font-medium"
                   [class]="getStatusBadgeClass(order.status)">
               {{ getStatusText(order.status) }}
             </span>
@@ -142,14 +142,14 @@
           <!-- Customer Info -->
           <div class="customer-info mb-4">
             <div class="flex items-center gap-2 mb-1">
-              <i class="pi pi-user text-slate-400 text-sm"></i>
-              <span class="customer-name text-sm font-medium text-slate-700">
+              <i class="pi pi-user text-gray-400 text-sm"></i>
+              <span class="customer-name text-sm font-medium text-gray-700">
                 Cliente ID: {{ order.userId }}
               </span>
             </div>
             <div class="flex items-center gap-2">
-              <i class="pi pi-credit-card text-slate-400 text-sm"></i>
-              <span class="payment-method text-sm text-slate-600">
+              <i class="pi pi-credit-card text-gray-400 text-sm"></i>
+              <span class="payment-method text-sm text-gray-600">
                 {{ order.paymentMethod || 'No especificado' }}
               </span>
             </div>
@@ -158,32 +158,32 @@
           <!-- Order Summary -->
           <div class="order-summary mb-4">
             <div class="flex justify-between text-sm mb-1">
-              <span class="text-slate-600">Productos:</span>
-              <span class="font-medium text-slate-800">{{ getTotalItems(order.items) }} items</span>
+              <span class="text-gray-600">Productos:</span>
+              <span class="font-medium text-gray-800">{{ getTotalItems(order.items) }} items</span>
             </div>
             <div class="flex justify-between text-sm mb-1">
-              <span class="text-slate-600">Subtotal:</span>
-              <span class="font-medium text-slate-800">${{ formatPrice(order.subtotal || 0) }}</span>
+              <span class="text-gray-600">Subtotal:</span>
+              <span class="font-medium text-gray-800">${{ formatPrice(order.subtotal || 0) }}</span>
             </div>
             <div *ngIf="order.shippingCost" class="flex justify-between text-sm mb-1">
-              <span class="text-slate-600">Envío:</span>
-              <span class="font-medium text-slate-800">${{ formatPrice(order.shippingCost) }}</span>
+              <span class="text-gray-600">Envío:</span>
+              <span class="font-medium text-gray-800">${{ formatPrice(order.shippingCost) }}</span>
             </div>
-            <div class="flex justify-between text-base font-bold pt-2 border-t border-slate-100">
-              <span class="text-slate-800">Total:</span>
-              <span class="text-slate-900">${{ formatPrice(order.totalAmount) }}</span>
+            <div class="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
+              <span class="text-gray-800">Total:</span>
+              <span class="text-gray-900">${{ formatPrice(order.totalAmount) }}</span>
             </div>
           </div>
 
           <!-- Actions -->
           <div class="actions-section flex gap-2">
-            <button class="view-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+            <button class="view-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
                     (click)="onViewOrder(order)">
               <i class="pi pi-eye text-sm"></i>
               Ver Detalles
             </button>
 
-            <button class="status-btn flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+            <button class="status-btn flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
                     (click)="onChangeStatus(order)">
               <i class="pi pi-refresh text-sm"></i>
               Cambiar Estado
@@ -195,15 +195,15 @@
 
     <!-- Empty State -->
     <div *ngIf="filteredOrders.length === 0" class="empty-state text-center py-16">
-      <div class="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-slate-400 text-3xl"></i>
+      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-search text-gray-400 text-3xl"></i>
       </div>
-      <h3 class="text-xl font-semibold text-slate-800 mb-2">No se encontraron órdenes</h3>
-      <p class="text-slate-600 mb-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron órdenes</h3>
+      <p class="text-gray-600 mb-6">
         {{ searchTerm || statusFilter ? 'Intenta con otros criterios de búsqueda' : 'No hay órdenes registradas aún' }}
       </p>
       <button *ngIf="searchTerm || statusFilter"
-              class="clear-filters-btn flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 font-medium mx-auto"
+              class="clear-filters-btn flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
               (click)="clearFilters()">
         <i class="pi pi-filter-slash text-sm"></i>
         Limpiar Filtros
@@ -212,7 +212,7 @@
 
     <!-- Load More Button -->
     <div *ngIf="hasMoreOrders" class="load-more-section text-center mt-8">
-      <button class="load-more-btn px-6 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl transition-colors duration-200 font-medium"
+      <button class="load-more-btn px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
               (click)="loadMoreOrders()">
         <i class="pi pi-refresh text-sm mr-2"></i>
         Cargar más órdenes
