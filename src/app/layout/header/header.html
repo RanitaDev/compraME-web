@@ -1,149 +1,152 @@
+@if (isClient) {
   <div class="w-full h-auto flex justify-between items-center pt-4 pb-2">
-  <div class="logo">
-    <span class="font-bold text-xl text-gray-800 cursor-pointer" (click)="goHome()">CompraME!</span>
-  </div>
+    <div class="logo">
+      <span class="font-bold text-xl text-gray-800 cursor-pointer" (click)="goHome()">CompraME!</span>
+    </div>
 
-  <div class="flex items-center flex-1 justify-end">
-    <!-- Search Component -->
-    <div class="search-container group relative flex items-center">
-      <div class="flex items-center h-9 bg-transparent rounded-full transition-all duration-300
-                  ease-in-out overflow-hidden w-9 border border-transparent group-hover:border-[#527280]/30"
-                  [class.search-expanded]="searchTerm || showSearchDropdown"
-                  [class.group-hover:w-[calc(75vw-320px)]]="!searchTerm && !showSearchDropdown"
-                  [class.bg-white]="searchTerm || showSearchDropdown || searchFocused"
-                  [class.border-gray-200]="searchTerm || showSearchDropdown || searchFocused">
-        <div class="flex items-center justify-center w-8.5 h-9 flex-shrink-0">
-          <i class="pi pi-search text-[#3f5963] text-lg pl-2 font-bold"></i>
+    <div class="flex items-center flex-1 justify-end">
+      <!-- Search Component -->
+      <div class="search-container group relative flex items-center">
+        <div class="flex items-center h-9 bg-transparent rounded-full transition-all duration-300
+                    ease-in-out overflow-hidden w-9 border border-transparent group-hover:border-[#527280]/30"
+                    [class.search-expanded]="searchTerm || showSearchDropdown"
+                    [class.group-hover:w-[calc(75vw-320px)]]="!searchTerm && !showSearchDropdown"
+                    [class.bg-white]="searchTerm || showSearchDropdown || searchFocused"
+                    [class.border-gray-200]="searchTerm || showSearchDropdown || searchFocused">
+          <div class="flex items-center justify-center w-8.5 h-9 flex-shrink-0">
+            <i class="pi pi-search text-[#3f5963] text-lg pl-2 font-bold"></i>
+          </div>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Buscar productos..."
+            class="flex-1 bg-transparent border-none outline-none px-3 text-[#527280] placeholder-[#527280]/40 transition-opacity duration-350 ease-in-out font-semibold"
+                    [class.opacity-0]="!searchTerm && !showSearchDropdown && !searchFocused"
+                    [class.group-hover:opacity-100]="!searchTerm && !showSearchDropdown && !searchFocused"
+                    [class.opacity-100]="searchTerm || showSearchDropdown || searchFocused"
+            (input)="onSearchInput($event)"
+            (focus)="onSearchFocus()"
+            (blur)="onSearchBlur()"
+            (keydown.escape)="clearSearch()"
+            autocomplete="off"
+          />
         </div>
-        <input
-          #searchInput
-          type="text"
-          placeholder="Buscar productos..."
-          class="flex-1 bg-transparent border-none outline-none px-3 text-[#527280] placeholder-[#527280]/40 transition-opacity duration-350 ease-in-out font-semibold"
-                  [class.opacity-0]="!searchTerm && !showSearchDropdown && !searchFocused"
-                  [class.group-hover:opacity-100]="!searchTerm && !showSearchDropdown && !searchFocused"
-                  [class.opacity-100]="searchTerm || showSearchDropdown || searchFocused"
-          (input)="onSearchInput($event)"
-          (focus)="onSearchFocus()"
-          (blur)="onSearchBlur()"
-          (keydown.escape)="clearSearch()"
-          autocomplete="off"
-        />
+
+        <!-- Search Dropdown Results -->
+        @if (showSearchDropdown && (searchResults.length > 0 || isSearchLoading)) {
+          <div
+            class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200/50 shadow-xl backdrop-blur-md z-50 max-h-80 overflow-hidden">
+
+          <!-- Loading -->
+          @if (isSearchLoading) {
+            <div class="p-4">
+              <div class="flex items-center gap-3">
+                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+                <span class="text-sm text-gray-600">Buscando...</span>
+              </div>
+            </div>
+          }
+
+          <!-- Results -->
+          @if (!isSearchLoading && searchResults.length > 0) {
+            <div class="max-h-80 overflow-y-auto">
+              <div class="px-4 py-2 border-b border-gray-100 bg-gray-50/50">
+                <span class="text-xs font-medium text-gray-500">{{ searchResults.length }} productos encontrados</span>
+              </div>
+
+              <div class="py-2">
+                @for (product of searchResults; track trackByProductId($index, product)) {
+                  <button
+                    type="button"
+                    class="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                    (click)="onProductSelect(product)">
+
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                      <img
+                        [src]="product.imagenes[0] || '/assets/placeholderImage.webp'"
+                        [alt]="product.nombre"
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                        (error)="onImageError($event)">
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                      <h4 class="text-sm font-semibold text-gray-900 truncate">{{ product.nombre }}</h4>
+                      <p class="text-sm font-medium text-emerald-600 mt-1">\${{ product.precio | number:'1.0-0' }}</p>
+                    </div>
+
+                    <div class="flex-shrink-0 text-gray-400">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                      </svg>
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          </div>
+        }
       </div>
 
-      <!-- Search Dropdown Results -->
-      @if (showSearchDropdown && (searchResults.length > 0 || isSearchLoading)) {
-        <div
-          class="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200/50 shadow-xl backdrop-blur-md z-50 max-h-80 overflow-hidden">
+      <div class="flex items-center gap-2">
+        <!-- Elementos para usuarios autenticados -->
+        @if (isAuthenticated && currentUser) {
+          <!-- Botón del carrito -->
+          <div class="relative">
+            <p-button
+              icon="pi pi-shopping-cart"
+              size="large"
+              rounded
+              text
+              [severity]="'info'"
+              [class.cart-animated]="cartAnimated"
+              [class.cart-has-items]="cartTotalItems > 0"
+              (onClick)="abrirCarrito()"
+            ></p-button>
 
-        <!-- Loading -->
-        @if (isSearchLoading) {
-          <div class="p-4">
-            <div class="flex items-center gap-3">
-              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
-              <span class="text-sm text-gray-600">Buscando...</span>
-            </div>
+            <!-- Badge con cantidad de productos -->
+            @if (cartTotalItems > 0) {
+              <span class="cart-badge absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {{ cartTotalItems }}
+              </span>
+            }
+          </div>
+
+          <!-- Avatar con iniciales -->
+          <div class="relative mx-2">
+            <p-avatar
+              [label]="getUserInitials()"
+              class="w-12 h-12 cursor-pointer bg-blue-100 text-blue-600"
+              shape="circle"
+              (click)="goToProfile()">
+            </p-avatar>
           </div>
         }
-
-        <!-- Results -->
-        @if (!isSearchLoading && searchResults.length > 0) {
-          <div class="max-h-80 overflow-y-auto">
-            <div class="px-4 py-2 border-b border-gray-100 bg-gray-50/50">
-              <span class="text-xs font-medium text-gray-500">{{ searchResults.length }} productos encontrados</span>
-            </div>
-
-            <div class="py-2">
-              @for (product of searchResults; track trackByProductId($index, product)) {
-                <button
-                  type="button"
-                  class="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
-                  (click)="onProductSelect(product)">
-
-                  <div class="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                    <img
-                      [src]="product.imagenes[0] || '/assets/placeholderImage.webp'"
-                      [alt]="product.nombre"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                      (error)="onImageError($event)">
-                  </div>
-
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-sm font-semibold text-gray-900 truncate">{{ product.nombre }}</h4>
-                    <p class="text-sm font-medium text-emerald-600 mt-1">\${{ product.precio | number:'1.0-0' }}</p>
-                  </div>
-
-                  <div class="flex-shrink-0 text-gray-400">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M9 18l6-6-6-6"/>
-                    </svg>
-                  </div>
-                </button>
-              }
-            </div>
+        <!-- Usuario no autenticado -->
+        @else {
+          <div class="auth-section flex items-center gap-2">
+            <p-avatar
+              icon="pi pi-user text-gray-400"
+              class="w-12 h-12 cursor-pointer"
+              shape="circle"
+              (click)="goToLogin()"
+              />
           </div>
         }
-        </div>
-      }
-    </div>
-
-    <div class="flex items-center gap-2">
-      <!-- Elementos para usuarios autenticados -->
-      @if (isAuthenticated && currentUser) {
-        <!-- Botón del carrito -->
-        <div class="relative">
-          <p-button
-            icon="pi pi-shopping-cart"
-            size="large"
-            rounded
-            text
-            [severity]="'info'"
-            [class.cart-animated]="cartAnimated"
-            [class.cart-has-items]="cartTotalItems > 0"
-            (onClick)="abrirCarrito()"
-          ></p-button>
-
-          <!-- Badge con cantidad de productos -->
-          @if (cartTotalItems > 0) {
-            <span class="cart-badge absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {{ cartTotalItems }}
-            </span>
-          }
-        </div>
-
-        <!-- Avatar con iniciales -->
-        <div class="relative mx-2">
-          <p-avatar
-            [label]="getUserInitials()"
-            class="w-12 h-12 cursor-pointer bg-blue-100 text-blue-600"
-            shape="circle"
-            (click)="goToProfile()">
-          </p-avatar>
-        </div>
-      }
-      <!-- Usuario no autenticado -->
-      @else {
-        <div class="auth-section flex items-center gap-2">
-          <p-avatar
-            icon="pi pi-user text-gray-400"
-            class="w-12 h-12 cursor-pointer"
-            shape="circle"
-            (click)="goToLogin()"
-            />
-        </div>
-      }
+      </div>
     </div>
   </div>
-</div>
-<div class="border-b border-gray-300"></div>
 
-<app-cart-modal
-  (modalClosed)="modalCarritoCerrada()"
-  (checkoutRequested)="onCheckout()">
-</app-cart-modal>
+  <div class="border-b border-gray-300"></div>
 
-<app-user-profile-modal
-  (modalClosed)="modalPerfilCerrada()"
-  (usuarioCerroSesion)="usuarioCerroSesion()">
-</app-user-profile-modal>
+  <app-cart-modal
+    (modalClosed)="modalCarritoCerrada()"
+    (checkoutRequested)="onCheckout()">
+  </app-cart-modal>
+
+  <app-user-profile-modal
+    (modalClosed)="modalPerfilCerrada()"
+    (usuarioCerroSesion)="usuarioCerroSesion()">
+  </app-user-profile-modal>
+}

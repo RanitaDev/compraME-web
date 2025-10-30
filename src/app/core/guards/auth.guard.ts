@@ -55,9 +55,14 @@ export const adminGuard = () => {
     take(1),
     map(user => {
       if (user && authService.isAuthenticated()) {
-        // Si tienes roles específicos, verifica aquí
-        // Por ahora, solo verifica que esté autenticado
-        return true;
+        // Verificar si es admin
+        if (user.rolId === 'admin') {
+          return true;
+        } else {
+          // Si no es admin, redirigir a home
+          router.navigate(['/home']);
+          return false;
+        }
       } else {
         router.navigate(['/auth']);
         return false;
@@ -65,3 +70,28 @@ export const adminGuard = () => {
     })
   );
 };
+
+/**
+ * Guard para redirigir usuarios admin a panel de administración
+ * Si el usuario es admin y está en una ruta que NO es /admin, redirigir a /admin
+ */
+export const adminRedirectGuard = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return authService.currentUser$.pipe(
+    take(1),
+    map(user => {
+      if (user && authService.isAuthenticated() && user.rolId === 'admin') {
+        // Si es admin y NO está en una ruta de admin, redirigir
+        const currentUrl = router.url;
+        if (!currentUrl.startsWith('/admin')) {
+          router.navigate(['/admin']);
+          return false;
+        }
+      }
+      return true;
+    })
+  );
+};
+

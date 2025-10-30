@@ -42,6 +42,7 @@ export class Header implements OnInit, OnDestroy {
   // Propiedades para manejo de usuario
   currentUser: IUser | null = null;
   isAuthenticated = false;
+  isClient = false; // ← Nueva propiedad para controlar visibilidad
   private userSubscription?: Subscription;
   private authSubscription?: Subscription;
 
@@ -79,11 +80,13 @@ export class Header implements OnInit, OnDestroy {
     // Obtener usuario actual inmediatamente
     this.currentUser = this.authService.getCurrentUser();
     this.isAuthenticated = this.authService.isAuthenticated();
+    this.updateClientStatus(); // ← Verificar si es cliente
 
     // Suscribirse a cambios del usuario
     this.userSubscription = this.authService.currentUser$.subscribe(
       user => {
         this.currentUser = user;
+        this.updateClientStatus(); // ← Actualizar estado cuando cambie el usuario
       }
     );
 
@@ -91,6 +94,9 @@ export class Header implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isAuthenticated$.subscribe(
       isAuth => {
         this.isAuthenticated = isAuth;
+        if (!isAuth) {
+          this.isClient = false; // ← Si no está autenticado, no es cliente
+        }
       }
     );
   }
@@ -102,6 +108,13 @@ export class Header implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+  }
+
+  /**
+   * Actualiza el estado de si el usuario es cliente
+   */
+  private updateClientStatus(): void {
+    this.isClient = this.currentUser?.rolId === 'cliente';
   }
 
   /**

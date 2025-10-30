@@ -5,6 +5,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate, stagger, query } from '@angular/animations';
 import { Router } from '@angular/router';
+import { IUser } from '../../interfaces/auth.interface';
+import { AuthService } from '../../services';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-footer',
@@ -58,7 +61,13 @@ export class FooterComponent implements OnInit {
   public legalLinks: Array<{ name: string; href: string; icon: string }> = [];
   public socialLinks: Array<{ name: string; href: string; platform: string }> = [];
 
+  public currentUser: IUser | null = null;
+  public isAuthenticated: boolean = false;
+  private userSubscription?: Subscription;
+  isClient = false;
+
   constructor(
+    private authService: AuthService,
     public router: Router
   ){
     // Navigation links data
@@ -101,8 +110,25 @@ export class FooterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Obtener usuario actual inmediatamente
+    this.currentUser = this.authService.getCurrentUser();
+    this.isAuthenticated = this.authService.isAuthenticated();
+    this.updateClientStatus();
+
+    // Suscribirse a cambios del usuario
+    this.userSubscription = this.authService.currentUser$.subscribe(
+      user => {
+        this.currentUser = user;
+        this.updateClientStatus(); // ← Actualizar estado cuando cambie el usuario
+      }
+    );
+
     // Inicialización del componente
     this.loadFooterData();
+  }
+
+  private updateClientStatus(): void {
+    this.isClient = this.currentUser?.rolId === 'cliente';
   }
 
   private loadFooterData(): void {

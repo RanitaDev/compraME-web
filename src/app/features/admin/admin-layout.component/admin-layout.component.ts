@@ -1,11 +1,13 @@
 // layouts/admin-layout/admin-layout.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { AdminSidebarComponent } from '../admin-sidebar.component/admin-sidebar.component';
 import { AdminNavigationService } from '../../../services/admin/admin-navigation.service';
 import { AdminMenuItem, AdminMenuSubItem } from '../../../interfaces/admin/admin-menu.interface';
 import { Router, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../../services';
+import { IUser } from '../../../interfaces/auth.interface';
 
 
 @Component({
@@ -22,6 +24,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   showUserMenu = false;
 
   private destroy$ = new Subject<void>();
+
+  // Propiedades para manejo de usuario
+  currentUser: IUser | null = null;
+  isAuthenticated = false;
+  isAdmin = false; // ← Nueva propiedad para controlar visibilidad
+  private userSubscription?: Subscription;
+  private authSubscription?: Subscription;
 
   // Page title mapping
   private pageTitleMap: { [key: string]: string } = {
@@ -45,10 +54,33 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   constructor(
     private adminNavService: AdminNavigationService,
+    private authService: AuthService,
     private router: Router
   ) {}
+  ngOnInit() {
+    // Obtener usuario actual inmediatamente
+    this.currentUser = this.authService.getCurrentUser();
+    this.isAuthenticated = this.authService.isAuthenticated();
+    this.updateAdminStatus(); // ← Verificar si es cliente
 
-  ngOnInit(): void {
+    // Suscribirse a cambios del usuario
+    this.userSubscription = this.authService.currentUser$.subscribe(
+      user => {
+        this.currentUser = user;
+        this.updateAdminStatus(); // ← Actualizar estado cuando cambie el usuario
+      }
+    );
+
+    // Suscribirse a cambios de autenticación
+    this.authSubscription = this.authService.isAuthenticated$.subscribe(
+      isAuth => {
+        this.isAuthenticated = isAuth;
+        if (!isAuth) {
+          this.isAdmin = false; // ← Si no está autenticado, no es cliente
+        }
+      }
+    );
+
     this.subscribeToSidebarState();
     this.subscribeToActiveMenuItem();
     this.setupClickOutsideHandler();
@@ -57,6 +89,13 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Actualiza el estado de si el usuario es cliente
+   */
+  private updateAdminStatus(): void {
+    this.isAdmin = this.currentUser?.rolId === 'admin';
   }
 
   private subscribeToSidebarState(): void {

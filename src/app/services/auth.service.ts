@@ -15,7 +15,6 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private userKey = 'user_data';
 
-  // BehaviorSubject para mantener el estado de autenticación
   private currentUserSubject = new BehaviorSubject<IUser | null>(this.getUserFromStorage());
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -100,7 +99,7 @@ export class AuthService {
   /**
    * Inicio de sesión
    */
-  login(loginData: ILoginRequest): Observable<IAuthResponse> {
+  public login(loginData: ILoginRequest): Observable<IAuthResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -127,14 +126,14 @@ export class AuthService {
   /**
    * Cerrar sesión
    */
-  logout(): void {
+  public logout(): void {
     this.clearSession();
   }
 
   /**
    * Cierra la sesión del usuario
    */
-  cerrarSesion(): Observable<boolean> {
+  public cerrarSesion(): Observable<boolean> {
     return this.http.post<any>(`${this.apiUrl}/logout`, {})
       .pipe(
         tap(() => {
@@ -152,7 +151,7 @@ export class AuthService {
   /**
    * Forzar cierre de sesión (sin llamada al servidor)
    */
-  forceLogout(): void {
+  private forceLogout(): void {
     this.clearSession();
   }
 
@@ -177,8 +176,6 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
-  // MÉTODOS PRIVADOS
-
   /**
    * Establecer la sesión del usuario
    */
@@ -202,6 +199,14 @@ export class AuthService {
    * Manejar redirección después del login
    */
   private handlePostLoginRedirect(): void {
+    const currentUser = this.getCurrentUser();
+
+    // Si es admin, SIEMPRE redirigir a admin panel
+    if (currentUser?.rolId === 'admin') {
+      this.router.navigate(['/admin']);
+      return;
+    }
+
     const redirectUrl = localStorage.getItem('redirect_after_login');
     const purchaseIntent = localStorage.getItem('purchase_intent');
     const checkoutReturn = localStorage.getItem('return_to_checkout');

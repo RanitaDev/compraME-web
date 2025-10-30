@@ -1,14 +1,13 @@
-<ng-container>
-  <app-carousel-banner></app-carousel-banner>
-</ng-container>
+@if (isClient) {
+  <ng-container>
+    <app-carousel-banner></app-carousel-banner>
+  </ng-container>
 
-<ng-container>
-  <app-category-cards></app-category-cards>
-</ng-container>
+  <ng-container>
+    <app-category-cards></app-category-cards>
+  </ng-container>
 
-<ng-container>
-  <app-product-cards></app-product-cards>
-</ng-container>
-
-
-<!-- GENERA UNA MODAL QUE CUANDO SE INICIE SESIÓN () -->
+  <ng-container>
+    <app-product-cards></app-product-cards>
+  </ng-container>
+}
