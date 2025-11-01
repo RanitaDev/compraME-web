@@ -1,18 +1,23 @@
 import { routes } from './../../app.routes';
 // footer.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate, stagger, query } from '@angular/animations';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { IUser } from '../../interfaces/auth.interface';
 import { AuthService } from '../../services';
+import { PoliticasService } from '../../core/services/politicas.service';
+import { ModalService } from '../../core/services/modal.service';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { UserProfileModalComponent } from '../../features/user/user-profile-modal/user-profile-modal.component';
+import { CartModalComponent } from '../../features/cart/cart-modal.component/cart-modal.component';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CartModalComponent, UserProfileModalComponent],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.css'],
   animations: [
@@ -53,7 +58,10 @@ import { Subscription } from 'rxjs';
   ]
 })
 
-export class FooterComponent implements OnInit {
+export class FooterComponent implements OnInit, OnDestroy {
+  @ViewChild(UserProfileModalComponent) modalPerfil!: UserProfileModalComponent;
+  @ViewChild(CartModalComponent) modalCarrito!: CartModalComponent;
+
   newsletterEmail: string = '';
   currentYear: number = new Date().getFullYear();
   public navigationLinks: Array<{ name: string; href: string; icon: string }> = [];
@@ -65,10 +73,14 @@ export class FooterComponent implements OnInit {
   public isAuthenticated: boolean = false;
   private userSubscription?: Subscription;
   isClient = false;
+  isAuthRoute = false; // ← Nueva propiedad para ocultar en auth
+  private routerSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
-    public router: Router
+    public router: Router,
+    private politicasService: PoliticasService,
+    private modalService: ModalService
   ){
     // Navigation links data
   this.navigationLinks = [
@@ -109,11 +121,30 @@ export class FooterComponent implements OnInit {
   ];
   }
 
+  // Open a policy modal by key
+  public openPolicy(key: string): void {
+    const p = this.politicasService.getPolitica(key);
+    if (p) {
+      this.modalService.open(p.title, p.content);
+    }
+  }
+
+  public openFAQ(): void {
+    const event = new CustomEvent('openFaqModal');
+    window.dispatchEvent(event);
+  }
+
+  public openContacto(): void {
+    const event = new CustomEvent('openContactoModal');
+    window.dispatchEvent(event);
+  }
+
   ngOnInit(): void {
     // Obtener usuario actual inmediatamente
     this.currentUser = this.authService.getCurrentUser();
     this.isAuthenticated = this.authService.isAuthenticated();
     this.updateClientStatus();
+    this.updateAuthRouteStatus();
 
     // Suscribirse a cambios del usuario
     this.userSubscription = this.authService.currentUser$.subscribe(
@@ -123,12 +154,24 @@ export class FooterComponent implements OnInit {
       }
     );
 
+    // Suscribirse a cambios de ruta
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.updateAuthRouteStatus();
+    });
+
     // Inicialización del componente
     this.loadFooterData();
   }
 
   private updateClientStatus(): void {
-    this.isClient = this.currentUser?.rolId === 'cliente';
+    // Mostrar para usuarios no autenticados y clientes autenticados (no admins)
+    this.isClient = !this.currentUser || this.currentUser?.rolId === 'cliente';
+  }
+
+  private updateAuthRouteStatus(): void {
+    this.isAuthRoute = this.router.url.startsWith('/auth');
   }
 
   private loadFooterData(): void {
@@ -194,4 +237,35 @@ export class FooterComponent implements OnInit {
     this.router.navigate([`${ruta}/${orderId}`]);
   }
 
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  public abrirModalCuenta(): void {
+    if (this.modalPerfil) {
+      this.modalPerfil.abrirModal();
+    }
+  }
+
+  public abrirModalCarrito(): void {
+    if (this.modalCarrito) {
+      this.modalCarrito.openModal();
+    }
+  }
+
+  public scrollToSection(sectionId: string): void {
+    this.router.navigate(['/']).then(() => {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    });
+  }
 }

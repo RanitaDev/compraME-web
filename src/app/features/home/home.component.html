@@ -1,13 +1,13 @@
-@if (isClient) {
-  <ng-container>
+@if (isClient && !isAuthRoute) {
+  <ng-container id="home">
     <app-carousel-banner></app-carousel-banner>
   </ng-container>
 
-  <ng-container>
+  <ng-container id="categorias">
     <app-category-cards></app-category-cards>
   </ng-container>
 
   <ng-container>
-    <app-product-cards></app-product-cards>
+    <app-product-cards id="productos"></app-product-cards>
   </ng-container>
 }

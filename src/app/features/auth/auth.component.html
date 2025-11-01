@@ -1,20 +1,22 @@
-<div class="flex align-items-center justify-center py-8">
-  <div class="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md relative overflow-hidden auth-card">
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+  <div class="bg-white rounded-lg border border-gray-200 p-8 w-full relative overflow-hidden"
+       [class.max-w-md]="isLoginMode()"
+       [class.max-w-2xl]="!isLoginMode()">
     <!-- ENCABEZADO -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-[#243755] font-gabarito m-0 p-0">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900 mb-2">
         {{ isLoginMode() ? 'Bienvenido de nuevo' : 'Crear cuenta' }}
       </h1>
-      <p class="auth-subtitle m-0 p-0 text-lgc text-gray-500">
+      <p class="text-gray-600 text-sm">
         {{ isLoginMode() ? 'Inicia sesión en tu cuenta' : 'Únete a nuestra comunidad' }}
       </p>
     </div>
 
     <!-- FORMULARIO DE INICIO DE SESIÓN -->
-    <form *ngIf="isLoginMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="flex flex-col gap-4">
+    <form *ngIf="isLoginMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
       <!-- CAMPO DE EMAIL -->
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
-        <label for="loginEmail" class="form-label">Correo electrónico o número de teléfono</label>
+      <div class="form-group">
+        <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
         <div class="input-wrapper"
              [pTooltip]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? 'Ingresa un email válido' : ''"
              tooltipPosition="top"
@@ -25,17 +27,16 @@
               type="email"
               formControlName="email"
               placeholder="tu@email.com"
-              class="form-input text-[#1B3A67] autofill:!text-[#34373a]"
-              [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              [class.border-red-300]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
               autocomplete="username"
             />
         </div>
       </div>
 
       <!-- CAMPO DE CONTRASEÑA -->
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px] mb-2">
-        <label for="loginPassword" class="form-label">Contraseña</label>
-        <!-- CAMPO DE CONTRASEÑA -->
+      <div class="form-group">
+        <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
         <div class="input-wrapper"
           [pTooltip]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched ? 'La contraseña debe tener al menos 6 caracteres' : ''"
           tooltipPosition="top"
@@ -43,8 +44,9 @@
           <p-password
             formControlName="password"
             placeholder="••••••••"
-            styleClass="password-input w-full"
-            [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            styleClass="w-full"
+            inputStyleClass="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-300]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
             [feedback]="false"
             [toggleMask]="true">
           </p-password>
@@ -52,21 +54,21 @@
       </div>
 
       <!-- OPCIONES DE FORMULARIO -->
-      <div class="form-options flex items-center justify-between">
-        <div class="flex items-center gap-2 justify-center">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
             <p-checkbox
               formControlName="rememberMe"
               inputId="rememberMe"
               styleClass="align-middle"
               [ngStyle]="{
                 '--p-checkbox-background': 'white',
-                '--p-checkbox-hover-border-color': '#1B3A67',
-                '--p-checkbox-checked-background': '#1B3A67',
-                '--p-checkbox-checked-hover-background': '#9E4647',
+                '--p-checkbox-hover-border-color': '#3b82f6',
+                '--p-checkbox-checked-background': '#3b82f6',
+                '--p-checkbox-checked-hover-background': '#2563eb',
                 '--p-checkbox-icon-color': 'white',
                 '--p-checkbox-icon-checked-color': 'white',
-                '--p-checkbox-checked-border-color': '#1B3A67',
-                '--p-checkbox-checked-hover-border-color': '#9E4647',
+                '--p-checkbox-checked-border-color': '#3b82f6',
+                '--p-checkbox-checked-hover-border-color': '#2563eb',
                 '--p-checkbox-icon-checked-hover-color': 'white'
               }"
               binary="true"
@@ -75,48 +77,53 @@
           </p-checkbox>
           <label
             for="rememberMe"
-            class="text-sm text-gray-600 cursor-pointer select-none flex items-center h-full"
+            class="text-sm text-gray-600 cursor-pointer select-none"
             (click)="loginForm.get('rememberMe')?.setValue(!loginForm.get('rememberMe')?.value)">
             Recordar usuario
           </label>
         </div>
-        <a href="#" class="forgot-password text-sm text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
+        <a href="#" class="text-sm text-blue-600 hover:text-blue-700 hover:underline">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <!-- BOTÓN DE INICIO DE SESIÓN / REGISTRO -->
-      <p-button
-        type="submit"
-        label="Iniciar Sesión"
-        styleClass="auth-button primary"
-        icon="pi pi-sign-in"
-        [disabled]="loginForm.invalid">
-      </p-button>
+      <!-- BOTÓN DE INICIO DE SESIÓN -->
+      <div class="pt-2">
+        <p-button
+          type="submit"
+          label="Iniciar Sesión"
+          styleClass="auth-button primary w-full"
+          icon="pi pi-sign-in"
+          [disabled]="loginForm.invalid">
+        </p-button>
+      </div>
 
-      <p-divider align="center" styleClass="auth-divider">
-        <span class="divider-text text-[#585a5c] text-[0.95rem]">o continúa con</span>
+      <!-- DIVIDER Y BOTONES SOCIALES -->
+      <p-divider align="center" styleClass="auth-divider my-4">
+        <span class="text-gray-500 text-sm px-3">o inicia con</span>
       </p-divider>
 
-      <div class="social-buttons flex gap-2 w-full justify-center">
+      <div class="grid grid-cols-2 gap-3">
         <p-button
           type="button"
           label="Google"
           icon="pi pi-google"
-          styleClass="auth-button social google flex-1">
+          styleClass="auth-button social google w-full">
         </p-button>
         <p-button
           type="button"
           label="Facebook"
           icon="pi pi-facebook"
-          styleClass="auth-button social facebook flex-1">
+          styleClass="auth-button social facebook w-full">
         </p-button>
       </div>
     </form>
 
     <!-- FORMULARIO DE REGISTRO -->
-    <form *ngIf="!isLoginMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="flex flex-col gap-4">
-      <div class="form-row">
-        <div class="form-group half">
-          <label for="firstName" class="form-label">Nombre</label>
+    <form *ngIf="!isLoginMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="space-y-4">
+
+      <!-- FILA 1: Nombre y Apellido -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
           <div class="input-wrapper w-full"
                [pTooltip]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched ? 'Nombre requerido' : ''"
                tooltipPosition="top"
@@ -127,14 +134,14 @@
               type="text"
               formControlName="firstName"
               placeholder="Juan"
-              class="form-input"
-              [class.error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              [class.border-red-300]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
             />
           </div>
         </div>
 
-        <div class="form-group half">
-          <label for="lastName" class="form-label">Apellido</label>
+        <div class="form-group">
+          <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
           <div class="input-wrapper"
                [pTooltip]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched ? 'Apellido requerido' : ''"
                tooltipPosition="top"
@@ -145,124 +152,124 @@
               type="text"
               formControlName="lastName"
               placeholder="Pérez"
-              class="form-input"
-              [class.error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              [class.border-red-300]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
             />
           </div>
         </div>
       </div>
 
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
-        <label for="registerEmail" class="form-label">Correo electrónico</label>
-        <input
-          pInputText
-          id="registerEmail"
-          type="email"
-          formControlName="email"
-          placeholder="tu@email.com"
-          class="form-input"
-          [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-        />
-        <small
-          *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-          class="error-message">
-          Ingresa un email válido
-        </small>
+      <!-- FILA 2: Email y Teléfono -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="registerEmail" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+          <input
+            pInputText
+            id="registerEmail"
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-300]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          />
+          <small
+            *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+            class="text-red-600 text-xs mt-1 block">
+            Ingresa un email válido
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="registerPhone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input
+            pInputText
+            id="registerPhone"
+            type="tel"
+            formControlName="telefono"
+            placeholder="12345678"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-300]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
+          />
+          <small
+            *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
+            class="text-red-600 text-xs mt-1 block">
+            El teléfono debe tener entre 8 y 15 dígitos
+          </small>
+        </div>
       </div>
 
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
-        <label for="registerPhone" class="form-label">Teléfono</label>
-        <input
-          pInputText
-          id="registerPhone"
-          type="tel"
-          formControlName="telefono"
-          placeholder="12345678"
-          class="form-input"
-          [class.error]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
-        />
-        <small
-          *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched"
-          class="error-message">
-          El teléfono debe tener entre 8 y 15 dígitos
-        </small>
+      <!-- FILA 3: Contraseñas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-group">
+          <label for="registerPassword" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <p-password
+            formControlName="password"
+            placeholder="••••••••"
+            styleClass="w-full"
+            inputStyleClass="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-300]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            [feedback]="true"
+            [toggleMask]="true">
+          </p-password>
+          <small
+            *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            class="text-red-600 text-xs mt-1 block">
+            La contraseña debe tener entre 6 y 32 caracteres
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
+          <p-password
+            formControlName="confirmPassword"
+            placeholder="••••••••"
+            styleClass="w-full"
+            inputStyleClass="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            [class.border-red-300]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+            [feedback]="false"
+            [toggleMask]="true">
+          </p-password>
+          <small
+            *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+            class="text-red-600 text-xs mt-1 block">
+            Las contraseñas no coinciden
+          </small>
+        </div>
       </div>
 
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
-        <label for="registerPassword" class="form-label">Contraseña</label>
-        <p-password
-          formControlName="password"
-          placeholder="••••••••"
-          styleClass="password-input"
-          [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-          [feedback]="true"
-          [toggleMask]="true">
-        </p-password>
-        <small
-          *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-          class="error-message">
-          La contraseña debe tener entre 6 y 32 caracteres
-        </small>
+      <!-- BOTÓN DE REGISTRO -->
+      <div class="pt-4">
+        <p-button
+          type="submit"
+          label="Crear Cuenta"
+          styleClass="auth-button primary w-full">
+        </p-button>
       </div>
 
-      <div class="form-group flex flex-col gap-0.5 min-h-[80px]">
-        <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
-        <p-password
-          formControlName="confirmPassword"
-          placeholder="••••••••"
-          styleClass="password-input"
-          [class.error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-          [feedback]="false"
-          [toggleMask]="true">
-        </p-password>
-        <small
-          *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-          class="error-message">
-          Las contraseñas no coinciden
-        </small>
-      </div>
-
-      <!--
-      <div class="checkbox-wrapper terms">
-        <p-checkbox
-          formControlName="acceptTerms"
-          inputId="acceptTerms"
-          styleClass="custom-checkbox">
-        </p-checkbox>
-        <label for="acceptTerms" class="checkbox-label">
-          Acepto los <a href="#" class="link">términos y condiciones</a> y la <a href="#" class="link">política de privacidad</a>
-        </label>
-      </div>-->
-
-      <p-button
-        type="submit"
-        label="Crear Cuenta"
-        styleClass="auth-button primary">
-      </p-button>
-
-      <p-divider align="center" styleClass="auth-divider">
-        <span class="divider-text text-[#585a5c] text-[0.95rem]">o regístrate con</span>
+      <!-- DIVIDER Y BOTONES SOCIALES -->
+      <p-divider align="center" styleClass="auth-divider my-4">
+        <span class="text-gray-500 text-sm px-3">o regístrate con</span>
       </p-divider>
 
-      <div class="social-buttons flex gap-2 w-full justify-center">
+      <div class="grid grid-cols-2 gap-3">
         <p-button
           type="button"
           label="Google"
           icon="pi pi-google"
-          styleClass="auth-button social google flex-1">
+          styleClass="auth-button social google w-full">
         </p-button>
         <p-button
           type="button"
           label="Facebook"
           icon="pi pi-facebook"
-          styleClass="auth-button social facebook flex-1">
+          styleClass="auth-button social facebook w-full">
         </p-button>
       </div>
     </form>
 
     <!-- CAMBIO A INICIAR SESIÓN/REGISTRO -->
-    <div class="auth-footer text-center mt-8 border-t border-gray-200 pt-4">
-      <p class="toggle-text text-gray-400 text-s m-0 p-0">
+    <div class="text-center mt-6 pt-4 border-t border-gray-200">
+      <p class="text-gray-600 text-sm">
         {{ isLoginMode() ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?' }}
         <p-button
           label="{{ isLoginMode() ? 'Regístrate' : 'Inicia sesión' }}"

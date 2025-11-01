@@ -1,7 +1,13 @@
-@if (isClient) {
-  <div class="w-full h-auto flex justify-between items-center pt-4 pb-2">
+@if (isClient && !isAuthRoute) {
+  <div class="w-full h-auto flex justify-between items-center pt-2 pb-2">
     <div class="logo">
-      <span class="font-bold text-xl text-gray-800 cursor-pointer" (click)="goHome()">CompraME!</span>
+      <img
+        src="/assets/logo.webp"
+        alt="CompraME"
+        class="h-12 md:h-16 w-auto cursor-pointer"
+        (click)="goHome()"
+        loading="lazy"
+      />
     </div>
 
     <div class="flex items-center flex-1 justify-end">
@@ -125,13 +131,32 @@
         }
         <!-- Usuario no autenticado -->
         @else {
-          <div class="auth-section flex items-center gap-2">
-            <p-avatar
-              icon="pi pi-user text-gray-400"
-              class="w-12 h-12 cursor-pointer"
-              shape="circle"
-              (click)="goToLogin()"
-              />
+          <div class="auth-section flex items-center gap-4 ml-4">
+            <div class="relative">
+              <p-avatar
+                icon="pi pi-user text-gray-400"
+                class="w-12 h-12 cursor-pointer hover:bg-gray-50 transition-colors"
+                shape="circle"
+                (click)="goToLogin()"
+                (mouseenter)="onGuestMenuEnter()"
+                (mouseleave)="onGuestMenuLeave()"
+                />
+              <!-- Menú desplegable para usuarios no autenticados -->
+              @if (showGuestMenu) {
+                <div
+                  class="absolute top-full right-0 mt-2 bg-white rounded-lg border border-gray-200 shadow-lg py-2 px-3 z-50 min-w-32"
+                  (mouseenter)="onGuestMenuEnter()"
+                  (mouseleave)="onGuestMenuLeave()">
+                  <button
+                    type="button"
+                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
+                    (click)="goToLogin()">
+                    <i class="pi pi-sign-in text-gray-500"></i>
+                    <span>Iniciar sesión</span>
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         }
       </div>
@@ -141,12 +166,10 @@
   <div class="border-b border-gray-300"></div>
 
   <app-cart-modal
-    (modalClosed)="modalCarritoCerrada()"
     (checkoutRequested)="onCheckout()">
   </app-cart-modal>
 
   <app-user-profile-modal
-    (modalClosed)="modalPerfilCerrada()"
     (usuarioCerroSesion)="usuarioCerroSesion()">
   </app-user-profile-modal>
 }

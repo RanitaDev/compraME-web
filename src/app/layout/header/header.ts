@@ -7,13 +7,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
 import { CartModalComponent } from '../../features/cart/cart-modal.component/cart-modal.component';
 import { UserProfileModalComponent } from '../../features/user/user-profile-modal/user-profile-modal.component';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { ProductService } from '../../services/products.service';
 import { IUser } from '../../interfaces/auth.interface';
 import { IProduct } from '../../interfaces/products.interface';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ToastService } from '../../core/services/toast.service';
 
 @Component({
@@ -43,12 +44,18 @@ export class Header implements OnInit, OnDestroy {
   currentUser: IUser | null = null;
   isAuthenticated = false;
   isClient = false; // ← Nueva propiedad para controlar visibilidad
+  isAuthRoute = false; // ← Nueva propiedad para ocultar en auth
   private userSubscription?: Subscription;
   private authSubscription?: Subscription;
+  private routerSubscription?: Subscription;
 
   // Propiedades para animación del carrito
   cartAnimated = false;
   cartTotalItems = 0;
+
+  // Propiedad para controlar el menú de usuario no autenticado
+  showGuestMenu = false;
+  private guestMenuTimeout?: number;
 
   public searchTerm = '';
   public showSearchDropdown = false;
@@ -81,6 +88,7 @@ export class Header implements OnInit, OnDestroy {
     this.currentUser = this.authService.getCurrentUser();
     this.isAuthenticated = this.authService.isAuthenticated();
     this.updateClientStatus(); // ← Verificar si es cliente
+    this.updateAuthRouteStatus(); // ← Verificar si estamos en auth
 
     // Suscribirse a cambios del usuario
     this.userSubscription = this.authService.currentUser$.subscribe(
@@ -94,11 +102,16 @@ export class Header implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isAuthenticated$.subscribe(
       isAuth => {
         this.isAuthenticated = isAuth;
-        if (!isAuth) {
-          this.isClient = false; // ← Si no está autenticado, no es cliente
-        }
+        this.updateClientStatus(); // ← Actualizar estado cuando cambie la autenticación
       }
     );
+
+    // Suscribirse a cambios de ruta
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.updateAuthRouteStatus();
+    });
   }
 
   ngOnDestroy() {
@@ -108,13 +121,27 @@ export class Header implements OnInit, OnDestroy {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+    if (this.guestMenuTimeout) {
+      clearTimeout(this.guestMenuTimeout);
+    }
   }
 
   /**
    * Actualiza el estado de si el usuario es cliente
    */
   private updateClientStatus(): void {
-    this.isClient = this.currentUser?.rolId === 'cliente';
+    // Mostrar para usuarios no autenticados y clientes autenticados (no admins)
+    this.isClient = !this.currentUser || this.currentUser?.rolId === 'cliente';
+  }
+
+  /**
+   * Actualiza el estado de si estamos en la ruta de autenticación
+   */
+  private updateAuthRouteStatus(): void {
+    this.isAuthRoute = this.router.url.startsWith('/auth');
   }
 
   /**
@@ -148,12 +175,6 @@ export class Header implements OnInit, OnDestroy {
         type: 'cart'
       }
     });
-  }
-
-  public modalCarritoCerrada(): void {
-  }
-
-  public modalPerfilCerrada(): void {
   }
 
   public usuarioCerroSesion(): void {
@@ -320,5 +341,24 @@ export class Header implements OnInit, OnDestroy {
   public onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = '/assets/placeholderImage.webp';
+  }
+
+  /**
+   * Maneja cuando el mouse entra en el área del menú de usuario no autenticado
+   */
+  public onGuestMenuEnter(): void {
+    if (this.guestMenuTimeout) {
+      clearTimeout(this.guestMenuTimeout);
+    }
+    this.showGuestMenu = true;
+  }
+
+  /**
+   * Maneja cuando el mouse sale del área del menú de usuario no autenticado
+   */
+  public onGuestMenuLeave(): void {
+    this.guestMenuTimeout = setTimeout(() => {
+      this.showGuestMenu = false;
+    }, 200); // Delay de 200ms para mejor UX
   }
 }

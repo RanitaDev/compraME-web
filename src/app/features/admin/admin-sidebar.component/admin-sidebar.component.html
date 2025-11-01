@@ -60,33 +60,41 @@
         </button>
 
         <!-- Submenu -->
-        <div *ngIf="item.subItems && item.subItems.length > 0 && showSubMenu[item.id] && !isCollapsed"
+         @if(item.subItems && item.subItems.length > 0 && showSubMenu[item.id] && !isCollapsed) {
+          <div
              class="submenu ml-6 mt-1 space-y-0.5 transition-all duration-300 ease-in-out"
              [@slideDown]>
 
-          <button *ngFor="let subItem of item.subItems"
-                  class="submenu-item w-full flex items-center space-x-3 p-2 rounded-md text-left transition-all duration-200 hover:bg-gray-50"
-                  [class.active]="subItem.isActive"
-                  (click)="onSubMenuItemClick(item.id, subItem)"
-                  [attr.aria-label]="subItem.label">
+          @for (subItem of item.subItems; track $index) {
+            <button
+              class="submenu-item w-full flex items-center space-x-3 p-2 rounded-md text-left transition-all duration-200 hover:bg-gray-50"
+              [class.active]="subItem.isActive"
+              (click)="onSubMenuItemClick(item.id, subItem)"
+              [attr.aria-label]="subItem.label">
 
-            <span class="text-sm transition-colors duration-200"
-                  [class.text-black]="subItem.isActive"
-                  [class.font-medium]="subItem.isActive"
-                  [class.text-gray-400]="!subItem.isActive">
-              {{ subItem.label }}
-            </span>
-          </button>
-        </div>
+              <span class="text-sm transition-colors duration-200"
+                [class.text-black]="subItem.isActive"
+                [class.font-medium]="subItem.isActive"
+                [class.text-gray-400]="!subItem.isActive"
+              >
+                {{ subItem.label }}
+              </span>
+            </button>
+          }
+          </div>
+         }
       </div>
     </div>
   </nav>
 
   <!-- Expand Button (visible when collapsed) -->
-  <button *ngIf="isCollapsed"
-          class="expand-btn absolute top-4 -right-2.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 z-10"
-          (click)="toggleSidebar()"
-          [attr.aria-label]="'Expandir menú lateral'">
-    <i class="pi pi-angle-double-right text-gray-400 text-xs"></i>
-  </button>
+   @if (isCollapsed) {
+    <button
+      class="expand-btn absolute top-4 -right-2.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 z-10"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="'Expandir menú lateral'"
+    >
+      <i class="pi pi-angle-double-right text-gray-400 text-xs"></i>
+    </button>
+   }
 </aside>

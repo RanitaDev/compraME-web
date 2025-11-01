@@ -2,13 +2,14 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home.component';
 import { OrdersListComponent } from './features/admin/order-list.component/orders-list.component';
 import { authGuard, guestGuard, adminGuard, adminRedirectGuard } from './core/guards/auth.guard';
+import { rootRedirectGuard } from './core/guards/root-redirect.guard';
 
 export const routes: Routes = [
   // Rutas públicas existentes
   {
     path: '',
-    component: HomeComponent,
-    canActivate: [adminRedirectGuard] // Redirigir admins a /admin
+    redirectTo: 'home',
+    pathMatch: 'full'
   },
   {
     path: 'auth',
