@@ -1,0 +1,132 @@
+<div class="bg-white text-gray-900">
+  <div class="p-6">
+    <div class="flex items-start gap-6 mb-6">
+      <div class="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-3xl flex-shrink-0">
+        {{ getInitials() }}
+      </div>
+
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2">
+          <h2 class="text-2xl font-bold text-gray-900">
+            {{ usuario?.nombre }} {{ usuario?.apellidos }}
+          </h2>
+          <span 
+            class="px-3 py-1 rounded-full text-sm font-medium"
+            [ngClass]="getRolBadgeClass(usuario?.rolId || '')">
+            {{ getRolText(usuario?.rolId || '') }}
+          </span>
+          <span 
+            class="px-3 py-1 rounded-full text-sm font-medium"
+            [ngClass]="usuario?.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+            {{ usuario?.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        <div class="space-y-1 text-sm text-gray-600">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-envelope text-gray-400"></i>
+            <span>{{ usuario?.email }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-phone text-gray-400"></i>
+            <span>{{ usuario?.telefono || 'No registrado' }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-calendar text-gray-400"></i>
+            <span>Registro: {{ formatDate(usuario?.fechaRegistro) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="flex gap-1">
+        <button
+          class="px-4 py-2 font-medium text-sm border-b-2 transition-colors"
+          [ngClass]="activeTab === 'info' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          (click)="activeTab = 'info'">
+          Información
+        </button>
+        <button
+          class="px-4 py-2 font-medium text-sm border-b-2 transition-colors"
+          [ngClass]="activeTab === 'pedidos' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+          (click)="activeTab = 'pedidos'">
+          Pedidos
+        </button>
+      </nav>
+    </div>
+
+    <div *ngIf="activeTab === 'info'" class="space-y-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Nombre completo</p>
+          <p class="font-medium text-gray-900">{{ usuario?.nombre }} {{ usuario?.apellidos }}</p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Email</p>
+          <p class="font-medium text-gray-900">{{ usuario?.email }}</p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Teléfono</p>
+          <p class="font-medium text-gray-900">{{ usuario?.telefono || 'No registrado' }}</p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Rol</p>
+          <p class="font-medium text-gray-900">{{ getRolText(usuario?.rolId || '') }}</p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Fecha de registro</p>
+          <p class="font-medium text-gray-900">{{ formatDate(usuario?.fechaRegistro) }}</p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-xs text-gray-500 mb-1">Estado</p>
+          <p class="font-medium text-gray-900">{{ usuario?.activo ? 'Activo' : 'Inactivo' }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="estadisticas" class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-lg border border-indigo-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Estadísticas</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-2xl font-bold text-indigo-600">{{ estadisticas.totalPedidos }}</p>
+            <p class="text-sm text-gray-600">Total de pedidos</p>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-indigo-600">${{ estadisticas.totalGastado.toFixed(2) }}</p>
+            <p class="text-sm text-gray-600">Total gastado</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'pedidos'" class="space-y-4">
+      <div class="text-center py-12">
+        <i class="pi pi-shopping-cart text-gray-300 text-5xl mb-4"></i>
+        <p class="text-gray-500 text-sm">Historial de pedidos próximamente disponible</p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+      <button
+        type="button"
+        class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+        (click)="closeModal()">
+        Cerrar
+      </button>
+      <button
+        type="button"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium flex items-center gap-2"
+        (click)="onDeleteUser()"
+        [disabled]="isDeleting">
+        <i *ngIf="!isDeleting" class="pi pi-trash text-sm"></i>
+        <i *ngIf="isDeleting" class="pi pi-spin pi-spinner text-sm"></i>
+        {{ isDeleting ? 'Eliminando...' : 'Eliminar Usuario' }}
+      </button>
+    </div>
+  </div>
+</div>

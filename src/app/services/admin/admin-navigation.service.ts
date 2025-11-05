@@ -65,18 +65,8 @@ export class AdminNavigationService {
         {
           id: 'users-list',
           label: 'Lista de Usuarios',
-          route: '/admin/users/list'
+          route: '/admin/users-list'
         },
-        // {
-        //   id: 'users-admins',
-        //   label: 'Administradores',
-        //   route: '/admin/users/admins'
-        // },
-        // {
-        //   id: 'users-permissions',
-        //   label: 'Permisos',
-        //   route: '/admin/users/permissions'
-        // }
       ]
     },
     {

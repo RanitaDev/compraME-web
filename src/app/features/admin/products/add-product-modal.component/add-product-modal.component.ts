@@ -7,6 +7,7 @@ import { IProduct } from '../../../../interfaces/products.interface';
 import { ProductService } from '../../../../services/products.service';
 import { SpinnerService } from '../../../../core/services/spinner.service';
 import { finalize } from 'rxjs';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-add-product-modal',
@@ -28,7 +29,8 @@ export class AddProductModalComponent implements OnInit {
     private ref: DynamicDialogRef,
     private config: DynamicDialogConfig,
     private readonly productsService: ProductService,
-    private readonly spinnerService: SpinnerService
+    private readonly spinnerService: SpinnerService,
+    private readonly toastService: ToastService
   ) {}
 
   ngOnInit() {
@@ -116,42 +118,6 @@ export class AddProductModalComponent implements OnInit {
   }
 
   /**
-   * Simula la carga de un producto desde el servicio
-   * Reemplazar con tu llamada real al backend
-   */
-  private loadProducts(id: number): void {
-    // AQUÍ CONECTAR CON TU BACKEND
-    // this.productService.getProduct(id).subscribe(...)
-
-    // Simulación con datos de ejemplo
-    // const mockProducts: IProduct[] = [
-    //   {
-    //     idProducto: '1',
-    //     nombre: 'Auriculares Bluetooth Premium',
-    //     descripcion: 'Experimenta una calidad de sonido excepcional con cancelación de ruido activa y hasta 30 horas de batería.',
-    //     precio: 299.99,
-    //     stock: 15,
-    //     imagenes: [
-    //       'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=600&fit=crop',
-    //       'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=600&fit=crop'
-    //     ],
-    //     idCategoria: 1,
-    //     activo: true,
-    //     fechaCreacion: new Date('2024-01-15'),
-    //     fechaActualizacion: new Date('2024-08-01'),
-    //     color: '#667eea',
-    //     destacado: true
-    //   }
-    // ];
-
-    // const product = mockProducts.find(p => p.idProducto === id.toString());
-
-    // if (product) {
-    //   this.loadProductDataIntoForm(product);
-    // }
-  }
-
-  /**
    * Resetea el formulario a valores por defecto
    */
   private resetFormToDefault() {
@@ -182,19 +148,26 @@ export class AddProductModalComponent implements OnInit {
       // Mostrar spinner para operación de guardado
       const message = this.isEditMode ? 'Actualizando producto...' : 'Creando producto...';
       this.spinnerService.show(message, 'bar', 'product-save');
-
-      // Simular guardado (AQUÍ CONECTAR CON TU BACKEND)
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.spinnerService.hide('product-save');
-
-        // Cerrar modal y devolver datos
-        this.ref.close({
-          success: true,
-          data: formData,
-          action: this.isEditMode ? 'updated' : 'created'
-        });
-      }, 1500);
+      this.productsService.agregarProducto(formData as IProduct).pipe(
+        finalize(() => this.spinnerService.hide('product-save'))
+      ).subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          if (response.success) {
+            this.toastService.success('Producto guardado exitosamente');
+            this.ref.close({ success: true, action: 'saved', product: response.data });
+          } else {
+            this.toastService.error?.('No fue posible guardar el producto');
+            this.resetFormToDefault();
+            this.ref.close({ success: false, action: 'error' });
+          }
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.resetFormToDefault();
+          this.ref.close({ success: false, action: 'error' });
+        }
+      });
     } else {
       // Marcar campos como tocados para mostrar errores
       this.markFormGroupTouched(this.productForm);

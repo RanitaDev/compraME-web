@@ -5,6 +5,7 @@ export interface IUsuario {
   apellidos: string;
   email: string;
   telefono: string;
+  rolId: string;
   fechaNacimiento?: Date;
   avatar?: string;
   fechaRegistro: Date;

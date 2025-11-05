@@ -97,6 +97,12 @@ export const routes: Routes = [
           import('./features/admin/order-list.component/orders-list.component')
             .then(m => m.OrdersListComponent)
       },
+      {
+        path: 'users-list',
+        loadComponent: () =>
+          import('./features/admin/users/users-list.component/users-list.component')
+            .then(m => m.UsersListComponent)
+      },
     ]
   },
 

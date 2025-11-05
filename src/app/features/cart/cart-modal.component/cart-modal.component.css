@@ -1,3 +1,10 @@
+/* Small utility for subtle elevation when desired */
+.btn-elevate {
+  transition: transform 0.18s ease-in-out;
+}
+.btn-elevate:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
 /* Animaciones del modal */
 @keyframes fade-in {
   from {

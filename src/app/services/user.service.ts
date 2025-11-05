@@ -135,6 +135,39 @@ export class UserService {
   }
 
   /**
+   * Obtiene todos los usuarios (solo para admin)
+   */
+  obtenerTodosUsuarios(rolId?: string): Observable<IUsuario[]> {
+    const url = rolId ? `${this.apiUrl}/getAll?rolId=${rolId}` : `${this.apiUrl}/getAll`;
+    return this.http.get<IUsuario[]>(url)
+      .pipe(
+        catchError(error => {
+          console.error('Error obteniendo usuarios:', error);
+          return of([]);
+        })
+      );
+  }
+
+  /**
+   * Elimina un usuario
+   */
+  eliminarUsuario(userId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.apiUrl}/${userId}`)
+      .pipe(
+        tap(() => {
+          const datosActuales = this.datosUsuarioCache.value;
+          if (datosActuales && datosActuales.usuario.id === userId) {
+            this.limpiarCache();
+          }
+        }),
+        catchError(error => {
+          console.error('Error eliminando usuario:', error);
+          return of({ success: false });
+        })
+      );
+  }
+
+  /**
    * Limpia el cache (útil al cerrar sesión)
    */
   limpiarCache(): void {

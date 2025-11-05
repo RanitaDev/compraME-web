@@ -3,18 +3,21 @@ import { Component, OnInit, OnDestroy, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ProductService } from '../../../../services/products.service';
 import { IProduct } from '../../../../interfaces/products.interface';
 import { CategoryService } from '../../../../services/category.service';
 import { Category } from '../../../../interfaces/categories.interface';
+import { AddProductModalComponent } from '../add-product-modal.component/add-product-modal.component';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './products-list.component.html',
-  styleUrls: ['./products-list.component.css']
+  styleUrls: ['./products-list.component.css'],
+  providers: [DialogService]
 })
 export class ProductsListComponent implements OnInit, OnDestroy {
   @Input() categoryId: string | null = null;
@@ -23,6 +26,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private categoryService = inject(CategoryService);
   private router = inject(Router);
+  private dialog = inject(DialogService);
   private destroy$ = new Subject<void>();
 
   // Propiedades de datos
@@ -40,6 +44,9 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   currentPage = 1;
   itemsPerPage = 12;
 
+  // Referencia del modal
+  private modalRef?: DynamicDialogRef;
+
   // Subject para búsqueda con debounce
   private searchSubject = new Subject<string>();
 
@@ -52,6 +59,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.modalRef?.close();
   }
 
   private initializeSearchDebounce(): void {
@@ -159,8 +167,21 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   onAddProduct(): void {
-    console.log('Adding new product');
-    this.router.navigate(['/admin/products/add']);
+    this.modalRef = this.dialog.open(AddProductModalComponent, {
+      header: 'Nuevo Producto',
+      width: '800px',
+      modal: true,
+      closable: true,
+      data: {
+        isEditMode: 'crear'
+      }
+    });
+
+    this.modalRef.onClose.subscribe((resultado) => {
+      if (resultado && resultado.success && resultado.action === 'saved') {
+        this.loadProducts();
+      }
+    });
   }
 
   loadMoreProducts(): void {

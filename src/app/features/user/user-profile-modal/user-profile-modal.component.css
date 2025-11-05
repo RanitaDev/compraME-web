@@ -26,20 +26,13 @@
   background: #94a3b8;
 }
 
-/* Transiciones suaves para hover */
-button {
-  transition: all 0.2s ease-in-out;
+.btn-elevate {
+  transition: transform 0.18s ease-in-out;
 }
-
-button:hover:not(:disabled) {
+.btn-elevate:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-/* Estados de botones deshabilitados */
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;

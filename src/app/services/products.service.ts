@@ -1,7 +1,7 @@
+import { IProduct } from './../interfaces/products.interface';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, Observable, of, map } from 'rxjs';
-import { IProduct } from '../interfaces/products.interface';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -67,6 +67,16 @@ export class ProductService {
           return this.getProducts().pipe(
             map(products => this.filterProductsLocally(products, searchTerm))
           );
+        })
+      );
+  }
+
+  public agregarProducto(producto: IProduct): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/agregar-producto`, producto)
+    .pipe(
+        catchError(error => {
+          console.error('Error agregando producto:', error);
+          return error;
         })
       );
   }

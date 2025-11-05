@@ -14,12 +14,6 @@ import { IDatosCompletoUsuario } from '../../../../services/user.service';
 
       <!-- Avatar y nombre -->
       <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-        <img
-          [src]="datosUsuario.usuario.avatar || '/assets/layout.png'"
-          [alt]="datosUsuario.usuario.nombre"
-          class="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-          (error)="onImageError($event)"
-        />
         <div>
           <h3 class="text-lg font-semibold text-gray-900">
             {{ datosUsuario.usuario.nombre }} {{ datosUsuario.usuario.apellidos }}
