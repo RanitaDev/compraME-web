@@ -62,7 +62,7 @@ export class UserDetailModalComponent implements OnInit {
     }).subscribe((resultado) => {
       if (resultado.confirmado && this.usuario) {
         this.isDeleting = true;
-        
+
         this.userService.eliminarUsuario(this.usuario.id)
           .pipe(finalize(() => this.isDeleting = false))
           .subscribe({
