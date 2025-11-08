@@ -71,12 +71,12 @@ export class ProductService {
       );
   }
 
-  public agregarProducto(producto: IProduct): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/agregar-producto`, producto)
-    .pipe(
+  public agregarProducto(producto: IProduct): Observable<IProduct | undefined> {
+    return this.http.post<IProduct>(`${this.apiUrl}/agregar-producto`, producto)
+      .pipe(
         catchError(error => {
           console.error('Error agregando producto:', error);
-          return error;
+          return of(undefined);
         })
       );
   }

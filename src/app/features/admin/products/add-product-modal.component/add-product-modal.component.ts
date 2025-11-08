@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { IProduct } from '../../../../interfaces/products.interface';
 import { ProductService } from '../../../../services/products.service';
+import { CategoryService } from '../../../../services/category.service';
+import { Category } from '../../../../interfaces/categories.interface';
 import { SpinnerService } from '../../../../core/services/spinner.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -23,12 +25,14 @@ export class AddProductModalComponent implements OnInit {
   isEditMode = false;
   productId: string | null = null;
   imageUrls: string[] = [''];
+  categorias: Category[] = [];
 
   constructor(
     private fb: FormBuilder,
     private ref: DynamicDialogRef,
     private config: DynamicDialogConfig,
     private readonly productsService: ProductService,
+    private readonly categoryService: CategoryService,
     private readonly spinnerService: SpinnerService,
     private readonly toastService: ToastService
   ) {}
@@ -37,6 +41,21 @@ export class AddProductModalComponent implements OnInit {
     this.initializeComponent();
     this.initializeForm();
     this.loadProductData();
+    this.obtenerCategorias();
+  }
+
+  private obtenerCategorias(): void {
+    this.categoryService.getActiveCategories()
+      .pipe(finalize(() => {}))
+      .subscribe({
+        next: (categorias) => {
+          this.categorias = categorias;
+        },
+        error: (error) => {
+          console.error('Error cargando categorías:', error);
+          this.toastService.error?.('Error al cargar las categorías');
+        }
+      });
   }
 
   private initializeComponent() {
@@ -104,7 +123,7 @@ export class AddProductModalComponent implements OnInit {
       precio: product.precio,
       stock: product.stock,
       imagenes: product.imagenes,
-      idCategoria: product.idCategoria.toString(),
+      idCategoria: product.idCategoria,
       activo: product.activo,
       color: product.color,
       destacado: product.destacado
@@ -145,17 +164,16 @@ export class AddProductModalComponent implements OnInit {
       // Preparar datos para envío
       const formData = this.prepareFormData();
 
-      // Mostrar spinner para operación de guardado
       const message = this.isEditMode ? 'Actualizando producto...' : 'Creando producto...';
       this.spinnerService.show(message, 'bar', 'product-save');
       this.productsService.agregarProducto(formData as IProduct).pipe(
         finalize(() => this.spinnerService.hide('product-save'))
       ).subscribe({
-        next: (response) => {
+        next: (productoInsertado) => {
           this.isSubmitting = false;
-          if (response.success) {
+          if (productoInsertado) {
             this.toastService.success('Producto guardado exitosamente');
-            this.ref.close({ success: true, action: 'saved', product: response.data });
+            this.ref.close({ success: true, action: 'saved', product: productoInsertado });
           } else {
             this.toastService.error?.('No fue posible guardar el producto');
             this.resetFormToDefault();
@@ -180,24 +198,8 @@ export class AddProductModalComponent implements OnInit {
   private prepareFormData(): Partial<IProduct> {
     const formData = { ...this.productForm.value };
 
-    // Filtrar URLs de imágenes válidas
     const validImageUrls = this.imageUrls.filter(url => url.trim() !== '');
     formData.imagenes = validImageUrls;
-
-    // Convertir idCategoria a number
-    formData.idCategoria = parseInt(formData.idCategoria);
-
-    // Agregar fechas
-    const now = new Date();
-    if (this.isEditMode && this.productId) {
-      formData.idProducto = this.productId;
-      formData.fechaActualizacion = now;
-      // fechaCreacion se mantiene igual
-    } else {
-      formData.fechaCreacion = now;
-      formData.fechaActualizacion = now;
-    }
-
     return formData;
   }
 
