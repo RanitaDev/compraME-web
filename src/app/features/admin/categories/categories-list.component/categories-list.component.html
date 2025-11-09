@@ -49,7 +49,7 @@
   <div class="categories-grid p-6">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-      <div *ngFor="let category of filteredCategories; trackBy: trackByCategoryId"
+      <div *ngFor="let category of filteredCategories;"
            class="category-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:-translate-y-1">
 
         <!-- Category Image -->
@@ -81,16 +81,6 @@
           <p class="category-description text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
             {{ category.descripcion }}
           </p>
-
-          <!-- Category ID -->
-          <div class="category-meta mb-4">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-hashtag text-gray-400 text-sm"></i>
-              <span class="category-id text-sm text-gray-500">
-                ID: {{ category.idCateogria }}
-              </span>
-            </div>
-          </div>
 
           <!-- Actions -->
           <div class="actions-section flex gap-2">

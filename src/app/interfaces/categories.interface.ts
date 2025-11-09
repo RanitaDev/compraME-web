@@ -1,6 +1,5 @@
 export interface Category {
-  _id?: string;
-  idCateogria: number,
+  _id?: string,
   nombre: string,
   descripcion: string,
   imagen: string,

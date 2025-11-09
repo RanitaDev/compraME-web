@@ -109,6 +109,8 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     const endIndex = this.currentPage * this.itemsPerPage;
     this.filteredCategories = filtered.slice(startIndex, endIndex);
     this.hasMoreCategories = filtered.length > endIndex;
+
+    console.log('CATEGORÍAS FILTRADAS:', this.filteredCategories);
   }
 
   /**
@@ -141,8 +143,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
    * Abre el modal para agregar nueva categoría
    */
   onAddCategory(): void {
-    console.log('Agregando nueva categoría');
-
     this.modalRef = this.dialog.open(CategoryModalComponent, {
       header: 'Nueva Categoría',
       width: '500px',
@@ -154,7 +154,8 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     });
 
     this.modalRef.onClose.subscribe((resultado) => {
-      if (resultado && resultado.action === 'created') {
+      console.log('Modal cerrado con resultado:', resultado);
+      if (resultado && resultado.action === 'saved') {
         console.log('Categoría creada:', resultado.category);
         this.onCategoryCreated(resultado.category);
       }
@@ -165,7 +166,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
    * Abre el modal para editar categoría existente
    */
   onEditCategory(category: Category): void {
-    console.log('Editando categoría:', category.nombre);
 
     this.modalRef = this.dialog.open(CategoryModalComponent, {
       header: 'Editar Categoría',
@@ -180,8 +180,8 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
 
     this.modalRef.onClose.subscribe((resultado) => {
       if (resultado && resultado.action === 'updated') {
-        console.log('Categoría actualizada:', resultado.category);
-        this.onCategoryUpdated(resultado.category);
+        this.updateFilteredCategories();
+        this.calculateStats();
       }
     });
   }
@@ -243,21 +243,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     this.showSuccessMessage('Categoría creada correctamente');
   }
 
-  /**
-   * Maneja la actualización exitosa de una categoría
-   */
-  private onCategoryUpdated(updatedCategory: Category): void {
-    // Actualizar la categoría en la lista
-    const index = this.allCategories.findIndex(c => c.idCateogria === updatedCategory.idCateogria);
-    if (index !== -1) {
-      this.allCategories[index] = updatedCategory;
-      this.updateFilteredCategories();
-      this.calculateStats();
-    }
-
-    this.showSuccessMessage('Categoría actualizada correctamente');
-  }
-
   // Métodos utilitarios
 
   /**
@@ -293,12 +278,5 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     console.error('❌ Error:', message);
     // TODO: Implementar sistema de notificaciones
     // this.messageService.add({severity: 'error', summary: 'Error', detail: message});
-  }
-
-  /**
-   * Función trackBy para optimización de ngFor
-   */
-  trackByCategoryId(index: number, category: Category): number {
-    return category.idCateogria;
   }
 }

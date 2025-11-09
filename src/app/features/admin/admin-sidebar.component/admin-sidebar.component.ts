@@ -150,21 +150,24 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     // ABRIMOS LA MODAL, DESDE AQUÍ SIEMPRE SERÁ SIN MODO EDICIÓN
     let componentToOpen: any;
     let titleModal: string = '';
+    let widthModal: string = '500px';
 
     switch (subMenuItem.id) {
       case 'product-add':
         componentToOpen = AddProductModalComponent;
         titleModal = 'Agregar Producto';
+        widthModal = '800px';
         break;
       case 'categories-add':
         componentToOpen = CategoryModalComponent;
         titleModal = 'Agregar Categoría';
+        widthModal = '500px';
         break;
     }
 
     this.ref = this.dialog.open(componentToOpen, {
       header: titleModal,
-      width: '800px',
+      width: widthModal,
       modal: true,
       data: {
         isEditMode: 'crear'

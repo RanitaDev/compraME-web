@@ -126,8 +126,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
       const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(product =>
         product.nombre.toLowerCase().includes(searchLower) ||
-        product.descripcion.toLowerCase().includes(searchLower) ||
-        this.getCategoryName(product.idCategoria).toLowerCase().includes(searchLower)
+        product.descripcion.toLowerCase().includes(searchLower)
       );
     }
 
@@ -187,12 +186,6 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   loadMoreProducts(): void {
     this.currentPage++;
     this.updateFilteredProducts();
-  }
-
-  // Métodos utilitarios
-  getCategoryName(categoryId: number): string {
-    const category = this.categories.find(c => c.idCateogria === categoryId);
-    return category ? category.nombre : 'Sin categoría';
   }
 
   getStockBadgeClass(stock: number): string {
