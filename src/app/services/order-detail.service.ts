@@ -11,14 +11,14 @@ export class OrderDetailService {
     // Datos simulados
     const mockOrderDetail: IOrderDetail = {
       order: {
-        id: orderId,
-        userId: 'user-123',
-        orderNumber: orderId,
+        _id: orderId,
+        usuarioId: 'user-123',
+        numeroOrden: orderId,
         createdAt: new Date('2024-08-15T10:30:00'),
         updatedAt: new Date('2024-08-16T14:20:00'),
-        status: 'pending',
-        paymentMethod: 'Tarjeta de Crédito Visa **** 4242',
-        items: [
+        estado: 'pending',
+        metodoPago: 'Tarjeta de Crédito Visa **** 4242',
+        productos: [
           {
             productId: '1',
             productName: 'Auriculares Bluetooth Premium',
@@ -37,9 +37,9 @@ export class OrderDetailService {
           }
         ],
         subtotal: 999.97,
-        taxes: 159.99,
-        shippingCost: 0,
-        discounts: 0,
+        impuestos: 159.99,
+        costoEnvio: 0,
+        descuentos: 0,
         totalAmount: 1159.96
       },
       shipping: {

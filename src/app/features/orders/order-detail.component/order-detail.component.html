@@ -7,7 +7,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
             <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
-              Pedido #{{ orderDetail()!.order.orderNumber }}
+              Pedido #{{ orderDetail()!.order.numeroOrden }}
             </h1>
             <p class="text-gray-600">
               Realizado el {{ formatDate(orderDetail()!.order.createdAt!) }}
@@ -18,14 +18,14 @@
           <div class="flex items-center gap-3">
             <div
               class="px-4 py-2 rounded-full text-sm font-medium"
-              [class.bg-yellow-100]="orderDetail()!.order.status === 'pending'"
-              [class.text-yellow-800]="orderDetail()!.order.status === 'pending'"
-              [class.bg-green-100]="orderDetail()!.order.status === 'delivered'"
-              [class.text-green-800]="orderDetail()!.order.status === 'delivered'"
-              [class.bg-red-100]="orderDetail()!.order.status === 'canceled'"
-              [class.text-red-800]="orderDetail()!.order.status === 'canceled'"
+              [class.bg-yellow-100]="orderDetail()!.order.estado === 'pending'"
+              [class.text-yellow-800]="orderDetail()!.order.estado === 'pending'"
+              [class.bg-green-100]="orderDetail()!.order.estado === 'delivered'"
+              [class.text-green-800]="orderDetail()!.order.estado === 'delivered'"
+              [class.bg-red-100]="orderDetail()!.order.estado === 'canceled'"
+              [class.text-red-800]="orderDetail()!.order.estado === 'canceled'"
             >
-              {{ getStatusLabel(orderDetail()!.order.status) }}
+              {{ getStatusLabel(orderDetail()!.order.estado) }}
             </div>
           </div>
         </div>
@@ -117,7 +117,7 @@
             </h2>
 
             <div class="space-y-4">
-              @for (item of orderDetail()!.order.items; track item.productId) {
+              @for (item of orderDetail()!.order.productos; track item.productId) {
                 <div class="flex gap-4 p-4 border border-gray-100 rounded-lg">
                   <div class="flex-shrink-0">
                     <img
@@ -216,27 +216,27 @@
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Impuestos</span>
-                <span>${{ formatPrice(orderDetail()!.order.taxes!) }}</span>
+                <span>${{ formatPrice(orderDetail()!.order.impuestos!) }}</span>
               </div>
               <div class="flex justify-between">
                 <span
-                  [class.text-gray-600]="orderDetail()!.order.shippingCost! > 0"
-                  [class.text-green-600]="orderDetail()!.order.shippingCost! === 0"
+                  [class.text-gray-600]="orderDetail()!.order.costoEnvio! > 0"
+                  [class.text-green-600]="orderDetail()!.order.costoEnvio! === 0"
                 >
                   Envío
                 </span>
                 <span
-                  [class.text-gray-600]="orderDetail()!.order.shippingCost! > 0"
-                  [class.text-green-600]="orderDetail()!.order.shippingCost! === 0"
-                  [class.font-medium]="orderDetail()!.order.shippingCost! === 0"
+                  [class.text-gray-600]="orderDetail()!.order.costoEnvio! > 0"
+                  [class.text-green-600]="orderDetail()!.order.costoEnvio! === 0"
+                  [class.font-medium]="orderDetail()!.order.costoEnvio! === 0"
                 >
-                  {{ orderDetail()!.order.shippingCost! === 0 ? 'GRATIS' : '$' + formatPrice(orderDetail()!.order.shippingCost!) }}
+                  {{ orderDetail()!.order.costoEnvio! === 0 ? 'GRATIS' : '$' + formatPrice(orderDetail()!.order.costoEnvio!) }}
                 </span>
               </div>
-              @if (orderDetail()!.order.discounts! > 0) {
+              @if (orderDetail()!.order.descuentos! > 0) {
                 <div class="flex justify-between text-green-600">
                   <span>Descuentos</span>
-                  <span>-${{ formatPrice(orderDetail()!.order.discounts!) }}</span>
+                  <span>-${{ formatPrice(orderDetail()!.order.descuentos!) }}</span>
                 </div>
               }
               <hr class="my-3">
@@ -249,12 +249,12 @@
             <!-- Método de pago -->
             <div class="border-t border-gray-200 pt-4 mb-6">
               <h3 class="font-medium text-gray-900 mb-2">Método de pago</h3>
-              <p class="text-sm text-gray-600">{{ orderDetail()!.order.paymentMethod }}</p>
+              <p class="text-sm text-gray-600">{{ orderDetail()!.order.metodoPago }}</p>
             </div>
 
             <!-- Acciones -->
             <div class="space-y-3">
-              @if (orderDetail()!.order.status === 'pending') {
+              @if (orderDetail()!.order.estado === 'pending') {
                 <button
                   class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
                   [disabled]="isCanceling()"

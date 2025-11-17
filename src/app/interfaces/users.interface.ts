@@ -15,7 +15,7 @@ export interface IUsuario {
 // Dirección del usuario
 export interface IDireccionUsuario {
   id: string;
-  alias: string; // "Casa", "Trabajo", etc.
+  alias: string;
   nombreCompleto: string;
   telefono: string;
   calle: string;

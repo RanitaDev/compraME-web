@@ -46,18 +46,18 @@ export class OrderDetailComponent implements OnInit {
 
   cancelOrder() {
     const order = this.orderDetail();
-    if (!order || order.order.status !== 'pending') return;
+    if (!order || order.order.estado !== 'pending') return;
 
     if (confirm('¿Estás seguro de que quieres cancelar este pedido?')) {
       this.isCanceling.set(true);
 
-      this.orderDetailService.cancelOrder(order.order.id).subscribe({
+      this.orderDetailService.cancelOrder(order.order._id).subscribe({
         next: (result) => {
           this.isCanceling.set(false);
           if (result.success) {
             // Actualizar el estado local
             const updatedOrder = { ...order };
-            updatedOrder.order.status = 'canceled';
+            updatedOrder.order.estado = 'canceled';
             this.orderDetail.set(updatedOrder);
             alert('Pedido cancelado exitosamente');
           } else {
@@ -87,7 +87,7 @@ export class OrderDetailComponent implements OnInit {
   }
 
   downloadInvoice() {
-    const orderId = this.orderDetail()?.order.id;
+    const orderId = this.orderDetail()?.order._id;
     console.log('Descargando factura para pedido:', orderId);
     // Implementar descarga de factura
   }
@@ -95,7 +95,7 @@ export class OrderDetailComponent implements OnInit {
   contactSupport() {
     // Redirigir a página de soporte o abrir chat
     this.router.navigate(['/support'], {
-      queryParams: { orderId: this.orderDetail()?.order.id }
+      queryParams: { orderId: this.orderDetail()?.order._id }
     });
   }
 
@@ -104,7 +104,7 @@ export class OrderDetailComponent implements OnInit {
   }
 
   getTotalItems(): number {
-    return this.orderDetail()?.order.items.reduce((total, item) => total + item.quantity, 0) || 0;
+    return this.orderDetail()?.order.productos.reduce((total, item) => total + item.quantity, 0) || 0;
   }
 
   getStatusLabel(status: string): string {

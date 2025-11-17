@@ -2,26 +2,26 @@ import { IProduct } from './products.interface';
 
 // Extendiendo tus interfaces existentes
 export interface IOrders {
-  id: string;
-  userId: string;
-  items: IOrderItem[];
+  _id: string;
+  usuarioId: string;
+  productos: IOrderItem[];
   totalAmount: number;
-  status: 'pending' | 'proof_uploaded' | 'paid' | 'shipped' | 'delivered' | 'canceled' | 'expired';
+  estado: 'pending' | 'proof_uploaded' | 'paid' | 'shipped' | 'delivered' | 'canceled' | 'expired';
   // Campos adicionales para el detalle
-  orderNumber?: string;
+  numeroOrden?: string;
+  numeroReferencia?: string;
+  metodoPago?: string;
+  tipoMetodoPago?: 'transferencia' | 'deposito' | 'oxxo' | 'tarjeta' | 'paypal';
+  subtotal?: number;
+  total?: number;
+  impuestos?: number;
+  costoEnvio?: number;
+  descuentos?: number;
+  // Nuevos campos para lógica de negocio
+  comprobanteUrl?: string;
+  fechaLimitePago?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  paymentMethod?: string;
-  paymentMethodType?: 'transferencia' | 'deposito' | 'oxxo' | 'tarjeta' | 'paypal';
-  subtotal?: number;
-  taxes?: number;
-  shippingCost?: number;
-  discounts?: number;
-  // Nuevos campos para lógica de negocio
-  paymentProofUrl?: string;
-  paymentDeadline?: Date;
-  lastPaymentMethodUpdate?: Date;
-  referenceNumber?: string;
 }
 
 export interface IOrderItem {

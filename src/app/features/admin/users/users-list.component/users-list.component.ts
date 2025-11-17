@@ -59,6 +59,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (users) => {
+          console.log('Usuarios cargados:', users);
           this.allUsers = users;
           this.updateFilteredUsers();
           this.calculateStats();

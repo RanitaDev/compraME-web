@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { IOrders, IOrderItem } from '../../../interfaces/orders.interface';
+import { OrderService } from '../../../services';
 
 @Component({
   selector: 'app-orders-list',
@@ -16,25 +17,26 @@ import { IOrders, IOrderItem } from '../../../interfaces/orders.interface';
 export class OrdersListComponent implements OnInit, OnDestroy {
   // Inyección de dependencias usando inject()
   private router = inject(Router);
+  private ordersService = inject(OrderService)
   private destroy$ = new Subject<void>();
 
   // Propiedades de datos
-  allOrders: IOrders[] = [];
-  filteredOrders: IOrders[] = [];
-  searchTerm = '';
-  statusFilter = '';
+  public allOrders: IOrders[] = [];
+  public filteredOrders: IOrders[] = [];
+  public searchTerm = '';
+  public statusFilter = '';
 
   // Estadísticas
-  totalHistoric = 0;
-  totalThisMonth = 0;
-  totalActive = 0;
-  totalDelivered = 0;
-  totalInShipping = 0;
-  hasMoreOrders = false;
+  public totalHistoric = 0;
+  public totalThisMonth = 0;
+  public totalActive = 0;
+  public totalDelivered = 0;
+  public totalInShipping = 0;
+  public hasMoreOrders = false;
 
   // Paginación
-  currentPage = 1;
-  itemsPerPage = 9;
+  public currentPage = 1;
+  public itemsPerPage = 9;
 
   // Subject para búsqueda con debounce
   private searchSubject = new Subject<string>();
@@ -64,15 +66,21 @@ export class OrdersListComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Carga las órdenes hardcodeadas
-   */
   private loadOrders(): void {
-    // Datos hardcodeados de órdenes para demostración
-    this.allOrders = [];
-
-    this.updateFilteredOrders();
-    this.calculateStats();
+    this.ordersService.getOrders()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (orders) => {
+          console.log('Órdenes cargadas:', orders);
+          this.allOrders = orders;
+          this.updateFilteredOrders();
+          this.calculateStats();
+        },
+        error: (error) => {
+          console.error('Error loading orders:', error);
+          this.showErrorMessage('Error al cargar las órdenes');
+        }
+      });
   }
 
   /**
@@ -85,16 +93,16 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(order =>
-        order.orderNumber?.toLowerCase().includes(searchLower) ||
-        order.id.toLowerCase().includes(searchLower) ||
-        order.userId.toLowerCase().includes(searchLower) ||
-        order.paymentMethod?.toLowerCase().includes(searchLower)
+        order.numeroOrden?.toLowerCase().includes(searchLower) ||
+        order._id.toLowerCase().includes(searchLower) ||
+        order.usuarioId.toLowerCase().includes(searchLower) ||
+        order.metodoPago?.toLowerCase().includes(searchLower)
       );
     }
 
     // Aplicar filtro de estado
     if (this.statusFilter) {
-      filtered = filtered.filter(order => order.status === this.statusFilter);
+      filtered = filtered.filter(order => order.estado === this.statusFilter);
     }
 
     // Ordenar por fecha más reciente
@@ -127,10 +135,10 @@ export class OrdersListComponent implements OnInit, OnDestroy {
              orderDate.getFullYear() === currentYear;
     }).length;
 
-    this.totalActive = this.allOrders.filter(order => order.status === 'pending').length;
-    this.totalDelivered = this.allOrders.filter(order => order.status === 'delivered').length;
+    this.totalActive = this.allOrders.filter(order => order.estado === 'pending').length;
+    this.totalDelivered = this.allOrders.filter(order => order.estado === 'delivered').length;
     // Para este ejemplo, "en envío" será igual a pending (puedes ajustarlo según tu lógica)
-    this.totalInShipping = this.allOrders.filter(order => order.status === 'pending').length;
+    this.totalInShipping = this.allOrders.filter(order => order.estado === 'pending').length;
   }
 
   /**
@@ -147,14 +155,14 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Maneja el evento de búsqueda
    */
-  onSearch(): void {
+  public onSearch(): void {
     this.searchSubject.next(this.searchTerm);
   }
 
   /**
    * Maneja el cambio de filtro de estado
    */
-  onFilterChange(): void {
+  public onFilterChange(): void {
     this.currentPage = 1;
     this.updateFilteredOrders();
   }
@@ -162,7 +170,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Limpia todos los filtros
    */
-  clearFilters(): void {
+  public clearFilters(): void {
     this.searchTerm = '';
     this.statusFilter = '';
     this.currentPage = 1;
@@ -172,8 +180,8 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Ver detalles de una orden
    */
-  onViewOrder(order: IOrders): void {
-    console.log('Viendo orden:', order.orderNumber);
+  public onViewOrder(order: IOrders): void {
+    console.log('Viendo orden:', order.numeroOrden);
     // Navegar a vista detallada de la orden
     // this.router.navigate(['/admin/orders/detail', order.id]);
   }
@@ -181,9 +189,9 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Cambiar estado de una orden
    */
-  onChangeStatus(order: IOrders): void {
+  public onChangeStatus(order: IOrders): void {
     // Lógica para cambiar estado (puedes implementar un modal o dropdown)
-    const currentStatus = order.status;
+    const currentStatus = order.estado;
     let newStatus;
 
     // Lógica simple para demostración
@@ -201,13 +209,13 @@ export class OrdersListComponent implements OnInit, OnDestroy {
 
     // Recalcular estadísticas
     this.calculateStats();
-    this.showSuccessMessage(`Estado de orden #${order.orderNumber} actualizado`);
+    this.showSuccessMessage(`Estado de orden #${order.numeroOrden} actualizado`);
   }
 
   /**
    * Exportar órdenes
    */
-  onExportOrders(): void {
+  public onExportOrders(): void {
     // Implementar lógica de exportación
     this.showSuccessMessage('Exportación iniciada');
   }
@@ -215,7 +223,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Carga más órdenes
    */
-  loadMoreOrders(): void {
+  public loadMoreOrders(): void {
     this.currentPage++;
     this.updateFilteredOrders();
   }
@@ -225,24 +233,31 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Obtiene la clase CSS para el badge de estado
    */
-  getStatusBadgeClass(status: string): string {
+  public getStatusBadgeClass(estado: string): string {
     const statusClasses: { [key: string]: string } = {
-      'pending': 'bg-yellow-100 text-yellow-800',
-      'completed': 'bg-green-100 text-green-800',
-      'canceled': 'bg-red-100 text-red-800'
+      'pending': 'bg-yellow-800',
+      'proof_uploaded': 'bg-blue-800',
+      'paid': 'bg-green-800',
+      'shipped': 'bg-green-800',
+      'completed': 'bg-green-800',
+      'canceled': 'bg-red-800'
     };
 
-    return statusClasses[status] || 'bg-gray-100 text-gray-800';
+    return statusClasses[estado] || 'bg-gray-100';
   }
 
   /**
    * Obtiene el texto del estado
    */
-  getStatusText(status: string): string {
+  public getStatusText(status: string): string {
     const statusTexts: { [key: string]: string } = {
       'pending': 'Pendiente',
+      'proof_uploaded': 'Comprobada',
+      'paid': 'Pagada',
+      'shipped': 'Enviada',
       'completed': 'Completada',
-      'canceled': 'Cancelada'
+      'canceled': 'Cancelada',
+      'expired': 'Expirada'
     };
 
     return statusTexts[status] || 'Desconocido';
@@ -251,14 +266,14 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Calcula el total de items en una orden
    */
-  getTotalItems(items: IOrderItem[]): number {
+  public getTotalItems(items: IOrderItem[]): number {
     return items.reduce((total, item) => total + item.quantity, 0);
   }
 
   /**
    * Formatea fecha para mostrar
    */
-  formatDate(date: Date | undefined): string {
+  public formatDate(date: Date | undefined): string {
     if (!date) return 'N/A';
 
     return new Intl.DateTimeFormat('es-MX', {
@@ -273,7 +288,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Formatea precio
    */
-  formatPrice(price: number): string {
+  public formatPrice(price: number): string {
     return new Intl.NumberFormat('es-MX', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -301,7 +316,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   /**
    * Función trackBy para optimización de ngFor
    */
-  trackByOrderId(index: number, order: IOrders): string {
-    return order.id;
+  public trackByOrderId(index: number, order: IOrders): string {
+    return order._id;
   }
 }

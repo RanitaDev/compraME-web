@@ -19,9 +19,22 @@ export class OrderService {
   ) {}
 
   /**
+   * Obtener todas las órdenes (para admin)
+   */
+  public getOrders(): Observable<IOrders[]> {
+    return this.http.get<IOrders[]>(`${this.apiUrl}/`)
+      .pipe(
+        catchError(error => {
+          console.error('❌ OrderService: Error fetching orders:', error);
+          return of([]);
+        })
+      );
+  }
+
+  /**
    * Eliminar una orden (para compra directa)
    */
-  deleteOrder(orderId: string): Observable<{ success: boolean }> {
+  public deleteOrder(orderId: string): Observable<{ success: boolean }> {
 
     return this.http.delete<any>(`${this.apiUrl}/${orderId}`).pipe(
       map(response => {
@@ -40,7 +53,7 @@ export class OrderService {
   /**
    * Actualizar productos de una orden existente (para carrito)
    */
-  updateOrderProducts(orderId: string, checkoutData: ICheckoutSummary): Observable<{ success: boolean }> {
+  public updateOrderProducts(orderId: string, checkoutData: ICheckoutSummary): Observable<{ success: boolean }> {
     const payload = {
       productos: checkoutData.items.map(item => ({
         productoId: item.idProducto,
@@ -70,12 +83,12 @@ export class OrderService {
   /**
    * Verificar si el usuario tiene una orden pendiente
    */
-  getUserPendingOrder(userId: string): Observable<any> {
+  public getUserPendingOrder(userId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/user/${userId}/pending`).pipe(
-      map(response => response.data), // Retorna la orden o null
+      map(response => response.data),
       catchError(error => {
         console.error('Error fetching pending order:', error);
-        return of(null); // Si hay error, asumir que no hay orden pendiente
+        return of(null);
       })
     );
   }
@@ -83,7 +96,7 @@ export class OrderService {
   /**
    * Crear una nueva orden en el backend
    */
-  createOrder(checkoutData: ICheckoutSummary): Observable<{ orderId: string; orderNumber: string; paymentDeadline: Date }> {
+  public createOrder(checkoutData: ICheckoutSummary): Observable<{ orderId: string; orderNumber: string; paymentDeadline: Date }> {
     const orderPayload = this.buildOrderPayload(checkoutData);
 
     return this.http.post<any>(`${this.apiUrl}`, orderPayload).pipe(
@@ -115,7 +128,7 @@ export class OrderService {
   /**
    * Actualizar método de pago de una orden existente
    */
-  updatePaymentMethod(orderId: string, paymentMethodType: string, paymentMethodName: string): Observable<{ success: boolean }> {
+  public updatePaymentMethod(orderId: string, paymentMethodType: string, paymentMethodName: string): Observable<{ success: boolean }> {
     const payload = {
       paymentMethodType,
       paymentMethodName,
@@ -134,13 +147,11 @@ export class OrderService {
   /**
    * Actualizar estado de una orden
    */
-  updateOrderStatus(orderId: string, status: IOrders['status'], additionalData?: any): Observable<{ success: boolean }> {
+  public updateOrderStatus(orderId: string, status: IOrders['estado'], additionalData?: any): Observable<{ success: boolean }> {
     const payload = {
       estado: status,
       ...additionalData
     };
-
-    console.log(`🔄 Actualizando estado de orden ${orderId} a '${status}'`, payload);
 
     return this.http.put<any>(`${this.apiUrl}/${orderId}/status`, payload).pipe(
       map(response => ({ success: response.success })),
@@ -154,7 +165,7 @@ export class OrderService {
   /**
    * Subir comprobante de pago
    */
-  uploadPaymentProof(orderId: string, file: File, paymentData: {
+  public uploadPaymentProof(orderId: string, file: File, paymentData: {
     referenceNumber: string;
     amount: number;
     paymentMethod: string;
@@ -188,7 +199,7 @@ export class OrderService {
   /**
    * Obtener orden por ID
    */
-  getOrderById(orderId: string): Observable<IOrders> {
+  public getOrderById(orderId: string): Observable<IOrders> {
     return this.http.get<any>(`${this.apiUrl}/${orderId}`).pipe(
       map(response => {
 
@@ -211,7 +222,7 @@ export class OrderService {
   /**
    * Obtener detalle completo de orden
    */
-  getOrderDetail(orderId: string): Observable<IOrderDetail> {
+  public getOrderDetail(orderId: string): Observable<IOrderDetail> {
     return this.http.get<any>(`${this.apiUrl}/${orderId}/detail`).pipe(
       map(response => response.data),
       catchError(error => {
@@ -224,7 +235,7 @@ export class OrderService {
   /**
    * Cancelar orden
    */
-  cancelOrder(orderId: string, reason?: string): Observable<{ success: boolean }> {
+  public cancelOrder(orderId: string, reason?: string): Observable<{ success: boolean }> {
     const payload = {
       reason: reason || 'Cancelada por el usuario',
       canceledAt: new Date().toISOString()
@@ -242,13 +253,8 @@ export class OrderService {
   /**
    * Obtener órdenes del usuario actual
    */
-  getUserOrders(userId: string, status?: IOrders['status']): Observable<IOrders[]> {
-    let url = `${this.apiUrl}/user/${userId}`;
-    if (status) {
-      url += `?status=${status}`;
-    }
-
-    return this.http.get<any>(url).pipe(
+  public getUserOrders(userId: string, status?: IOrders['estado']): Observable<IOrders[]> {
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}${status ? `?status=${status}` : ''}`).pipe(
       map(response => response.data),
       catchError(error => {
         console.error('Error fetching user orders:', error);
@@ -311,16 +317,15 @@ export class OrderService {
    * Monitorear estado de una orden específica
    * Útil para detectar cambios de estado automáticamente
    */
-  monitorOrderStatus(orderId: string, onStatusChange?: (newStatus: string) => void): Observable<any> {
+  public monitorOrderStatus(orderId: string, onStatusChange?: (newStatus: string) => void): Observable<any> {
     return new Observable(observer => {
-      // Polling cada 30 segundos para verificar cambios de estado
       const interval = setInterval(() => {
         this.getOrderById(orderId).subscribe({
           next: (order) => {
             observer.next(order);
             if (onStatusChange) {
               // El backend puede devolver 'estado' pero la interfaz espera 'status'
-              const status = (order as any).estado || order.status;
+              const status = (order as any).estado || order.estado;
               onStatusChange(status);
             }
           },
@@ -341,28 +346,28 @@ export class OrderService {
   /**
    * Verificar si una orden puede ser modificada
    */
-  canModifyOrder(order: IOrders): boolean {
-    return ['pending'].includes(order.status);
+  public canModifyOrder(order: IOrders): boolean {
+    return ['pending'].includes(order.estado);
   }
 
   /**
    * Verificar si una orden está expirada
    */
-  isOrderExpired(order: IOrders): boolean {
-    if (!order.paymentDeadline) return false;
-    return new Date() > new Date(order.paymentDeadline);
+  public isOrderExpired(order: IOrders): boolean {
+    if (!order.fechaLimitePago) return false;
+    return new Date() > new Date(order.fechaLimitePago);
   }
 
   /**
    * Calcular tiempo restante para el pago
    */
-  getTimeRemainingForPayment(order: IOrders): { days: number; hours: number; minutes: number; expired: boolean } {
-    if (!order.paymentDeadline) {
+  public getTimeRemainingForPayment(order: IOrders): { days: number; hours: number; minutes: number; expired: boolean } {
+    if (!order.fechaLimitePago) {
       return { days: 0, hours: 0, minutes: 0, expired: true };
     }
 
     const now = new Date().getTime();
-    const deadline = new Date(order.paymentDeadline).getTime();
+    const deadline = new Date(order.fechaLimitePago).getTime();
     const diff = deadline - now;
 
     if (diff <= 0) {
