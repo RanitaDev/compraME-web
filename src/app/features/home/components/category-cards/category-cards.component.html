@@ -11,7 +11,7 @@
 
   <!-- CATEGORÍAS-->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" [@gridAnimation]>
-    <div *ngFor="let category of activeCategories(); let i = index"
+    <div *ngFor="let category of visibleCategories(); let i = index"
          class="category-card group relative h-64 rounded-3xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:scale-105 hover:shadow-2xl"
          [@cardAnimation]="i"
          (click)="selectCategory(category)">
@@ -61,10 +61,14 @@
     </div>
   </div>
 
-  <!-- <div class="text-center mt-12" *ngIf="hasMoreCategories">
-    <button class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-2xl hover:from-indigo-600 hover:to-purple-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-      Ver más categorías
-    <i class="pi pi-angle-double-down w-5 h-5 ml-2 inline-block"></i>
-    </button>
-  </div> -->
+  @if (hasMoreCategories()) {
+    <div class="text-center mt-12">
+      <button
+        (click)="toggleShowAll()"
+        class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-2xl hover:from-indigo-600 hover:to-purple-600 transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-xl">
+        {{ showAll() ? 'Ocultar categorías' : 'Ver más categorías' }}
+        <i class="pi {{ showAll() ? 'pi-angle-double-up' : 'pi-angle-double-down' }} w-5 h-5 ml-2 inline-block"></i>
+      </button>
+    </div>
+  }
 </div>

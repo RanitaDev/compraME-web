@@ -245,7 +245,7 @@ export class CategoryProductsComponent implements OnInit {
    * Navega de regreso a la página de categorías
    */
   goBack(): void {
-    this.router.navigate(['/categories']);
+    this.router.navigate(['/home']);
   }
 
   /**

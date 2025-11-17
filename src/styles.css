@@ -81,8 +81,8 @@ body {
 .p-dialog textarea:focus,
 .p-dialog select:focus,
 .p-dialog .p-inputtext:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  border-color: #747474 !important;
+  box-shadow: none;
 }
 
 /* --- Global safeguard: force light backgrounds for inputs (including PrimeNG .p-inputtext)

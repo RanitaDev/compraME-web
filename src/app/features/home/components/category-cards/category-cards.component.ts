@@ -1,5 +1,5 @@
 // category-cards.component.ts
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate, stagger, query } from '@angular/animations';
 import { CategoryService } from '../../../../services/category.service';
@@ -43,8 +43,21 @@ import { Router } from '@angular/router';
   ]
 })
 export class CategoryCardsComponent implements OnInit {
-  activeCategories = signal<Category[]>([]);
-  hasMoreCategories = signal<boolean>(false);
+  private readonly INITIAL_LIMIT = 6;
+
+  allCategories = signal<Category[]>([]);
+  showAll = signal<boolean>(false);
+
+  // Computed signal to show limited or all categories
+  visibleCategories = computed(() => {
+    const all = this.allCategories();
+    return this.showAll() ? all : all.slice(0, this.INITIAL_LIMIT);
+  });
+
+  // Computed signal to check if there are more categories to show
+  hasMoreCategories = computed(() => {
+    return this.allCategories().length > this.INITIAL_LIMIT;
+  });
 
   constructor(
     private categoryService: CategoryService,
@@ -59,17 +72,25 @@ export class CategoryCardsComponent implements OnInit {
     this.categoryService.getActiveCategories()
       .pipe().subscribe({
         next: (categorias) => {
-          this.activeCategories.set(categorias);
+          this.allCategories.set(categorias);
         }
       });
   }
 
-  selectCategory(category: Category): void {
-    this.router.navigate(['/category', category._id]);
+  public selectCategory(category: Category): void {
+    // Navigate then ensure the viewport is at the top of the destination page
+    this.router.navigate(['/category', category._id]).then(() => {
+      // Scroll to top to avoid the page staying at previous scroll position
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      } catch (e) {
+        // Fallback for older browsers
+        window.scrollTo(0, 0);
+      }
+    });
   }
 
-  loadMoreCategories(): void {
-    // Implementar lógica para cargar más categorías si es necesario
-    console.log('Cargando más categorías...');
+  public toggleShowAll(): void {
+    this.showAll.set(!this.showAll());
   }
 }
