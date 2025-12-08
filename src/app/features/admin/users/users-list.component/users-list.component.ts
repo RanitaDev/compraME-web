@@ -152,4 +152,10 @@ export class UsersListComponent implements OnInit, OnDestroy {
   trackByUserId(index: number, user: IUsuario): string {
     return user.id;
   }
+
+  scrollToTop(): void {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
