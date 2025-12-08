@@ -221,13 +221,16 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   private showErrorMessage(message: string): void {
-    // Implementar sistema de notificaciones
     console.error(message);
-    // Por ejemplo: this.toastService.error(message);
   }
 
-  // Función trackBy para optimización de ngFor
   trackByProductId(index: number, product: IProduct): string | undefined {
     return product?.idProducto;
+  }
+
+  scrollToTop(): void {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
