@@ -74,13 +74,18 @@ export class ProductCardsComponent implements OnInit {
   }
 
   /**
-   * @description Obtiene los productos activos.
+   * @description Obtiene los productos activos ordenados de manera descendente.
    */
   private loadProducts(): void {
     this.productService.getProducts().subscribe(products => {
-      const activeProducts = products.filter(product =>
-        product.activo && product.stock > 0
-      );
+      const activeProducts = products
+        .filter(product => product.activo && product.stock > 0)
+        .sort((a, b) => {
+          // Ordenar por fecha de creación descendente (más recientes primero)
+          const dateA = new Date(a.fechaCreacion || 0).getTime();
+          const dateB = new Date(b.fechaCreacion || 0).getTime();
+          return dateB - dateA;
+        });
 
       this.allProducts.set(activeProducts);
       this.loadInitialProducts();

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -12,6 +13,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
   imports: [
+    BadgeModule,
     ButtonModule,
     TooltipModule,
     TableModule,
@@ -25,6 +27,7 @@ import { TooltipModule } from 'primeng/tooltip';
     FormsModule
   ],
   exports: [
+    BadgeModule,
     ButtonModule,
     TooltipModule,
     TableModule,

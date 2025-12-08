@@ -1,27 +1,123 @@
 <section class="py-16 px-4 bg-white">
   <div class="max-w-4xl mx-auto">
-    <!-- Header con estadísticas -->
+    <!-- Header con estadísticas y botón para comentar -->
     <div class="mb-12">
-      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 animate-fade-in">
-        Opiniones de Clientes
-      </h2>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 animate-fade-in">
+          Opiniones de Clientes
+        </h2>
 
-      @if (averageRating()) {
+        @if (isAuthenticated()) {
+          <button
+            (click)="toggleCommentForm()"
+            class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            type="button"
+          >
+            {{ showCommentForm() ? 'Cancelar' : 'Escribir opinión' }}
+          </button>
+        }
+      </div>
+
+      <!-- Formulario de comentario -->
+      @if (showCommentForm()) {
+        <div class="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 mb-8 animate-fade-in">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">
+            {{ editingCommentId() ? 'Editar opinión' : 'Compartir tu opinión' }}
+          </h3>
+
+          <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="space-y-4">
+            <!-- Calificación -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Calificación</label>
+              <div class="flex gap-2">
+                @for (star of [1,2,3,4,5]; track star) {
+                  <button
+                    type="button"
+                    (click)="commentForm.patchValue({calificacion: star})"
+                    class="focus:outline-none transition-transform hover:scale-110"
+                  >
+                    <svg
+                      class="w-8 h-8 transition-colors"
+                      [class.text-yellow-400]="star <= commentForm.get('calificacion')?.value"
+                      [class.text-gray-300]="star > commentForm.get('calificacion')?.value"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Título -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Título</label>
+              <input
+                type="text"
+                formControlName="titulo"
+                placeholder="Resume tu experiencia"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+              @if (commentForm.get('titulo')?.invalid && commentForm.get('titulo')?.touched) {
+                <p class="text-red-600 text-sm mt-1">El título debe tener entre 5 y 100 caracteres</p>
+              }
+            </div>
+
+            <!-- Texto -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tu opinión</label>
+              <textarea
+                formControlName="texto"
+                rows="4"
+                placeholder="Comparte tu experiencia con este producto"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+              ></textarea>
+              @if (commentForm.get('texto')?.invalid && commentForm.get('texto')?.touched) {
+                <p class="text-red-600 text-sm mt-1">La opinión debe tener entre 10 y 500 caracteres</p>
+              }
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-3">
+              <button
+                type="submit"
+                [disabled]="commentForm.invalid"
+                class="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {{ editingCommentId() ? 'Actualizar' : 'Publicar' }}
+              </button>
+              @if (editingCommentId()) {
+                <button
+                  type="button"
+                  (click)="cancelEdit()"
+                  class="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancelar
+                </button>
+              }
+            </div>
+          </form>
+        </div>
+      }
+
+      <!-- Estadísticas -->
+      @if (ratingStats().total > 0) {
         <div class="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 md:p-8 animate-fade-in-delay">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <!-- Calificación promedio -->
             <div class="text-center md:text-left">
               <div class="flex items-center justify-center md:justify-start gap-4 mb-4">
                 <span class="text-5xl font-bold text-gray-900">
-                  {{ averageRating()!.average.toFixed(1) }}
+                  {{ ratingStats().average.toFixed(1) }}
                 </span>
                 <div class="flex flex-col">
                   <div class="flex items-center gap-1 mb-1">
                     @for (star of [1,2,3,4,5]; track star) {
                       <svg
                         class="w-5 h-5 transition-colors duration-200"
-                        [class.text-yellow-400]="star <= averageRating()!.average"
-                        [class.text-gray-300]="star > averageRating()!.average"
+                        [class.text-yellow-400]="star <= ratingStats().average"
+                        [class.text-gray-300]="star > ratingStats().average"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
@@ -30,7 +126,7 @@
                     }
                   </div>
                   <span class="text-sm text-gray-600">
-                    {{ averageRating()!.total }} opiniones
+                    {{ ratingStats().total }} opiniones
                   </span>
                 </div>
               </div>
@@ -38,22 +134,20 @@
 
             <!-- Distribución de calificaciones -->
             <div class="space-y-2">
-              @if (ratingDistribution()) {
-                @for (rating of [5,4,3,2,1]; track rating) {
-                  <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium text-gray-700 w-8">{{ rating }}</span>
-                    <svg class="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                    <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div
-                        class="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-700 ease-out"
-                        [style.width.%]="getRatingPercentage(rating)"
-                      ></div>
-                    </div>
-                    <span class="text-sm text-gray-600 w-8">{{ ratingDistribution()![rating] }}</span>
+              @for (rating of [5,4,3,2,1]; track rating) {
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-medium text-gray-700 w-8">{{ rating }}</span>
+                  <svg class="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-700 ease-out"
+                      [style.width.%]="getRatingPercentage(rating)"
+                    ></div>
                   </div>
-                }
+                  <span class="text-sm text-gray-600 w-8">{{ ratingStats().distribution[rating] || 0 }}</span>
+                </div>
               }
             </div>
           </div>
@@ -62,9 +156,9 @@
     </div>
 
     <!-- Lista de comentarios -->
-    @if (comments().length > 0) {
+    @if (visibleComments().length > 0) {
       <div class="space-y-6">
-        @for (comment of comments(); track comment.idComentario; let i = $index) {
+        @for (comment of visibleComments(); track comment._id; let i = $index) {
           <div
             class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
             [class]="'animate-slide-up-' + (i % 4 + 1)"
@@ -98,9 +192,14 @@
                       </span>
                     }
                   </div>
-                  <span class="text-sm text-gray-500">
-                    {{ formatDate(comment.fechaComentario) }}
-                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-500">
+                      {{ formatDate(comment.fechaCreacion) }}
+                    </span>
+                    @if (comment.fechaEdicion) {
+                      <span class="text-xs text-gray-400">(editado)</span>
+                    }
+                  </div>
                 </div>
 
                 <!-- Calificación -->
@@ -125,7 +224,7 @@
 
             <!-- Contenido del comentario -->
             <div class="mb-4">
-              <p class="text-gray-700 leading-relaxed">{{ comment.comentario }}</p>
+              <p class="text-gray-700 leading-relaxed">{{ comment.texto }}</p>
             </div>
 
             <!-- Respuesta del equipo -->
@@ -146,20 +245,46 @@
 
             <!-- Acciones -->
             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-              <button
-                class="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
-                (click)="markAsUseful(comment.idComentario)"
-                type="button"
-              >
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M7 10v12l4-4 4 4V10a1 1 0 0 1 1-1h2a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h2a1 1 0 0 1 1 1z"/>
-                </svg>
-                Útil ({{ comment.util }})
-              </button>
-
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <span>¿Te ayudó esta opinión?</span>
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="toggleUseful(comment._id, comment)"
+                  [disabled]="!isAuthenticated()"
+                  class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-all duration-200"
+                  [class.text-indigo-600]="hasMarkedUseful(comment)"
+                  [class.bg-indigo-50]="hasMarkedUseful(comment)"
+                  [class.text-gray-600]="!hasMarkedUseful(comment)"
+                  [class.hover:text-indigo-600]="!hasMarkedUseful(comment)"
+                  [class.hover:bg-indigo-50]="!hasMarkedUseful(comment)"
+                  [class.opacity-50]="!isAuthenticated()"
+                  [class.cursor-not-allowed]="!isAuthenticated()"
+                  type="button"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" [attr.fill]="hasMarkedUseful(comment) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                  </svg>
+                  Útil ({{ comment.util }})
+                </button>
               </div>
+
+              <!-- Botones de editar/eliminar (solo para el autor) -->
+              @if (canModifyComment(comment)) {
+                <div class="flex items-center gap-2">
+                  <button
+                    (click)="startEdit(comment)"
+                    class="px-3 py-1.5 text-sm text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                    type="button"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    (click)="deleteComment(comment._id)"
+                    class="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    type="button"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              }
             </div>
           </div>
         }
@@ -169,8 +294,8 @@
       @if (hasMoreComments()) {
         <div class="text-center mt-8">
           <button
-            class="inline-flex items-center gap-2 px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all duration-300 hover:shadow-lg"
             (click)="loadMoreComments()"
+            class="inline-flex items-center gap-2 px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all duration-300 hover:shadow-lg"
             type="button"
           >
             Ver más opiniones
@@ -182,15 +307,29 @@
       }
     } @else if (!isLoading()) {
       <!-- Estado vacío -->
-      <div class="text-center py-12">
-        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-          <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M8 12h8m-4-4v8"/>
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <div class="text-center py-16">
+        <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
           </svg>
         </div>
-        <h3 class="text-lg font-medium text-gray-700 mb-2">Aún no hay opiniones</h3>
-        <p class="text-gray-500">Sé el primero en compartir tu experiencia con este producto</p>
+        <h3 class="text-2xl font-bold text-gray-900 mb-3">¡Sé el primero en comentar sobre este producto!</h3>
+        <p class="text-gray-600 mb-6 max-w-md mx-auto">
+          Comparte tu experiencia y ayuda a otros usuarios a tomar la mejor decisión
+        </p>
+        @if (isAuthenticated()) {
+          <button
+            (click)="toggleCommentForm()"
+            class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            type="button"
+          >
+            ✨ Escribir primera opinión
+          </button>
+        } @else {
+          <p class="text-sm text-gray-500">
+            <a href="/auth" class="text-indigo-600 hover:text-indigo-700 font-medium">Inicia sesión</a> para dejar tu opinión
+          </p>
+        }
       </div>
     }
 

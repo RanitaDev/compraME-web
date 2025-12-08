@@ -1,17 +1,39 @@
 export interface IComment {
-  idComentario: number;
-  idProducto: number;
+  _id: string;
+  productoId: string;
+  usuarioId: string;
   nombreUsuario: string;
   avatarUsuario?: string;
-  calificacion: number; // 1-5 estrellas
+  calificacion: number;
   titulo: string;
-  comentario: string;
-  fechaComentario: Date;
-  verificado: boolean; // Si es una compra verificada
-  util: number; // Votos de "útil"
+  texto: string;
+  fechaCreacion: Date;
+  fechaEdicion?: Date;
+  verificado: boolean;
+  util: number;
+  usuariosUtil: string[];
   respuesta?: {
     texto: string;
     fecha: Date;
-    autor: string; // Ej: "Equipo de Ventas"
+    autor: string;
   };
+}
+
+export interface ICreateComment {
+  productoId: string;
+  calificacion: number;
+  titulo: string;
+  texto: string;
+}
+
+export interface IUpdateComment {
+  calificacion?: number;
+  titulo?: string;
+  texto?: string;
+}
+
+export interface IRatingStats {
+  average: number;
+  total: number;
+  distribution: { [key: number]: number };
 }

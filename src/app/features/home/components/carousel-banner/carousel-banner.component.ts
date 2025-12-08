@@ -57,12 +57,18 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * @description Carga los productos destacados.
+   * @description Carga los productos destacados ordenados de manera descendente.
    */
   private loadFeaturedProducts(): void {
     this.productService.getFeaturedProducts().subscribe(products => {
-      this.featuredProducts.set(products);
-      if (products.length > 0) {
+      // Ordenar productos de manera descendente por fecha de creación
+      const sortedProducts = products.sort((a, b) => {
+        const dateA = new Date(a.fechaCreacion || 0).getTime();
+        const dateB = new Date(b.fechaCreacion || 0).getTime();
+        return dateB - dateA;
+      });
+      this.featuredProducts.set(sortedProducts);
+      if (sortedProducts.length > 0) {
         this.currentIndex.set(0);
       }
     });

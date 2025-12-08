@@ -23,19 +23,41 @@
 /* Menu item styles */
 .menu-item {
   position: relative;
-  background: transparent;
-  border: none;
-  cursor: pointer;
 }
 
-.menu-item:hover {
-  background: rgba(148, 163, 184, 0.1);
+.menu-item ::ng-deep .p-button {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.menu-item ::ng-deep .p-button:hover {
+  background: rgba(148, 163, 184, 0.1) !important;
   transform: translateX(2px);
 }
 
-.menu-item.active {
-  background: rgba(37, 99, 235, 0.1);
-  color: #ffffff;
+.menu-item.active ::ng-deep .p-button,
+.menu-item ::ng-deep .p-button.active {
+  background: rgba(37, 99, 235, 0.1) !important;
+  color: #000000;
+}
+
+/* Centrado para modo colapsado */
+.menu-item ::ng-deep .p-button.justify-content-center {
+  justify-content: center !important;
+}
+
+.menu-item ::ng-deep .p-button .p-button-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
 }
 
 /* Menu label styling */

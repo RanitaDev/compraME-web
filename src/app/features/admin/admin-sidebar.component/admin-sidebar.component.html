@@ -1,65 +1,53 @@
-<!-- layouts/admin-sidebar/admin-sidebar.component.html -->
-<aside class="admin-sidebar h-screen bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out"
+<aside class="admin-sidebar h-screen bg-white border-r border-gray-200
+              shadow-sm transition-all duration-300 ease-in-out"
        [class.collapsed]="isCollapsed"
-       [style.width]="isCollapsed ? '60px' : '240px'">
+       [style.width]="isCollapsed ? '50px' : '240px'">
 
-  <!-- Header con Logo y Toggle -->
-  <div class="sidebar-header flex items-center justify-between p-4 border-b border-gray-100">
-    <!-- Toggle Button -->
-    <button class="toggle-btn p-1.5 hover:bg-gray-100 rounded-md transition-colors duration-200 cursor-pointer"
-            [class.hidden]="isCollapsed"
-            (click)="toggleSidebar()"
-            [attr.aria-label]="'Colapsar menú lateral'">
-      <i class="pi pi-angle-double-left text-gray-400 text-sm"></i>
+  <div class="sidebar-header flex items-center justify-between p-3 border-b border-gray-100">
+    <button
+      class="toggle-btn p-1.5 hover:bg-gray-50/10 rounded-md transition-colors duration-200 cursor-pointer"
+      [class.hidden]="isCollapsed"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="'Colapsar menú lateral'"
+    >
+      <i class="pi pi-angle-left text-gray-400 text-sm"></i>
     </button>
   </div>
 
-  <!-- Navigation Menu -->
   <nav class="sidebar-nav flex-1 overflow-y-auto py-2">
     <div class="space-y-1 px-2">
-
-      <!-- Menu Items -->
       <div *ngFor="let item of menuItems" class="menu-item-container">
+        <p-button
+          [text]="true"
+          [rounded]="true"
+          [styleClass]="'w-full p-2.5 transition-all duration-200 ' +
+                        (item.isActive ? 'active' : '') +
+                        (isCollapsed ? ' justify-content-center' : '')"
+          (click)="onMenuItemClick(item)"
+          [attr.aria-label]="item.label"
+        >
+          <ng-template pTemplate="content">
+            <div class="flex items-center w-full"
+                 [ngClass]="isCollapsed ? 'justify-center' : 'justify-between'">
+              <div class="flex items-center gap-3">
+                <i class="text-base transition-colors duration-200"
+                   [class]="'pi ' + item.icon"
+                   [class.text-black]="item.isActive"
+                   [class.text-gray-300]="!item.isActive"></i>
 
-        <!-- Main Menu Item -->
-        <button class="menu-item w-full flex items-center justify-between p-2.5 rounded-md transition-all duration-200 group text-left"
-                [class.active]="item.isActive"
-                [class.px-2.5]="isCollapsed"
-                [class.justify-center]="isCollapsed"
-                (click)="onMenuItemClick(item)"
-                [attr.aria-label]="item.label"
-                #menuButton>
-
-          <div class="flex items-center space-x-3" [class.space-x-0]="isCollapsed">
-            <!-- Icon -->
-            <div class="menu-icon flex-shrink-0">
-              <i class="text-base transition-colors duration-200"
-                 [class]="'pi ' + item.icon"
-                 [class.text-black]="item.isActive"
-                 [class.text-gray-400]="!item.isActive"></i>
+                @if (!isCollapsed) {
+                  <span class="text-sm transition-all duration-300"
+                        [class.text-black]="item.isActive"
+                        [class.font-medium]="item.isActive"
+                        [class.text-gray-300]="!item.isActive">
+                    {{ item.label }}
+                  </span>
+                }
+              </div>
             </div>
+          </ng-template>
+        </p-button>
 
-            <!-- Label -->
-            <span class="menu-label text-sm transition-all duration-300"
-                  [class.hidden]="isCollapsed"
-                  [class.text-black]="item.isActive"
-                  [class.font-medium]="item.isActive"
-                  [class.text-gray-400]="!item.isActive">
-              {{ item.label }}
-            </span>
-          </div>
-
-          <!-- Badge only -->
-          <div class="flex items-center" [class.hidden]="isCollapsed">
-            <!-- Badge -->
-            <span *ngIf="item.badge && item.badge > 0"
-                  class="badge bg-gray-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-              {{ item.badge > 99 ? '99+' : item.badge }}
-            </span>
-          </div>
-        </button>
-
-        <!-- Submenu -->
          @if(item.subItems && item.subItems.length > 0 && showSubMenu[item.id] && !isCollapsed) {
           <div
              class="submenu ml-6 mt-1 space-y-0.5 transition-all duration-300 ease-in-out"
@@ -87,14 +75,15 @@
     </div>
   </nav>
 
-  <!-- Expand Button (visible when collapsed) -->
    @if (isCollapsed) {
     <button
-      class="expand-btn absolute top-4 -right-2.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200 z-10"
+      class="expand-btn absolute top-6 -right-2.5 w-5 h-5 bg-white border
+            border-gray-200 rounded-full flex items-center justify-center
+              shadow-sm hover:shadow-md transition-all duration-200 z-10"
       (click)="toggleSidebar()"
       [attr.aria-label]="'Expandir menú lateral'"
     >
-      <i class="pi pi-angle-double-right text-gray-400 text-xs"></i>
+      <i class="pi pi-angle-right text-gray-400 text-lg"></i>
     </button>
    }
 </aside>

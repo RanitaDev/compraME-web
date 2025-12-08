@@ -10,12 +10,13 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AddProductModalComponent } from '../products/add-product-modal.component/add-product-modal.component';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { CategoryModalComponent } from '../categories/category-modal.component/category-modal.component';
+import { PrimeNgModule } from "../../../primeng.module";
 
 
 @Component({
   selector: 'app-admin-sidebar',
   standalone: true,
-  imports: [CommonModule, DynamicDialogModule],
+  imports: [CommonModule, DynamicDialogModule, PrimeNgModule],
   providers: [DialogService],
   templateUrl: './admin-sidebar.component.html',
   styleUrls: ['./admin-sidebar.component.css'],

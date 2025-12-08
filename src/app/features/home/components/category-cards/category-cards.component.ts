@@ -72,7 +72,9 @@ export class CategoryCardsComponent implements OnInit {
     this.categoryService.getActiveCategories()
       .pipe().subscribe({
         next: (categorias) => {
-          this.allCategories.set(categorias);
+          // Invertir el orden del arreglo (mostrar de manera descendente)
+          const reversedCategories = [...categorias].reverse();
+          this.allCategories.set(reversedCategories);
         }
       });
   }
