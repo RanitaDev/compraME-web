@@ -309,14 +309,15 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    */
   private showErrorMessage(message: string): void {
     console.error('❌ Error:', message);
-    // TODO: Implementar sistema de notificaciones
-    // this.messageService.add({severity: 'error', summary: 'Error', detail: message});
   }
 
-  /**
-   * Función trackBy para optimización de ngFor
-   */
   public trackByOrderId(index: number, order: IOrders): string {
     return order._id;
+  }
+
+  public scrollToTop(): void {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
