@@ -1,3 +1,4 @@
+import { Category } from "./categories.interface";
 export interface IProduct {
   _id: string;
   idProducto?: string;
@@ -7,10 +8,12 @@ export interface IProduct {
   precio: number;
   stock: number;
   imagenes: string[];
-  idCategoria: number;
+  idCategoria?: string;
+  categoriaId?: string;
   activo: boolean;
   fechaCreacion: Date;
   fechaActualizacion: Date;
   color: string;
   destacado: boolean;
+  categoriaCompleta?: Category;
 }

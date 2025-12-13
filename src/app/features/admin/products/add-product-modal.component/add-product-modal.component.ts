@@ -24,6 +24,7 @@ export class AddProductModalComponent implements OnInit {
   isSubmitting = false;
   isEditMode = false;
   productId: string | null = null;
+  product: IProduct | null = null;
   imageUrls: string[] = [''];
   categorias: Category[] = [];
 
@@ -40,7 +41,6 @@ export class AddProductModalComponent implements OnInit {
   ngOnInit() {
     this.initializeComponent();
     this.initializeForm();
-    this.loadProductData();
     this.obtenerCategorias();
   }
 
@@ -50,10 +50,14 @@ export class AddProductModalComponent implements OnInit {
       .subscribe({
         next: (categorias) => {
           this.categorias = categorias;
+          // Cargar datos del producto después de tener las categorías
+          this.loadProductData();
         },
         error: (error) => {
           console.error('Error cargando categorías:', error);
           this.toastService.error?.('Error al cargar las categorías');
+          // Aún así intentar cargar el producto
+          this.loadProductData();
         }
       });
   }
@@ -63,7 +67,8 @@ export class AddProductModalComponent implements OnInit {
 
     if (data) {
       this.productId = data.id || null;
-      this.isEditMode = data.isEditMode === 'editar' && this.productId !== null;
+      this.product = data.product || null;
+      this.isEditMode = data.isEditMode === 'editar' && (this.productId !== null || this.product !== null);
     }
   }
 
@@ -88,26 +93,31 @@ export class AddProductModalComponent implements OnInit {
    * Carga los datos del producto si está en modo edición
    */
   private loadProductData(): void {
-    if (this.isEditMode && this.productId) {
-      // Mostrar spinner con mensaje personalizado
-      this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
+    if (this.isEditMode) {
+      // Si el producto ya viene en los datos, usarlo directamente
+      if (this.product) {
+        this.loadProductDataIntoForm(this.product);
+      } else if (this.productId) {
+        // Si solo viene el ID, cargar del servidor
+        this.spinnerService.show('Cargando datos del producto...', 'default', 'product-load');
 
-      this.productsService.getProduct(this.productId)
-        .pipe(
-          finalize(() => {
-            this.spinnerService.hide('product-load');
-          })
-        )
-        .subscribe({
-          next: (product) => {
-            if (product) {
-              this.loadProductDataIntoForm(product);
+        this.productsService.getProduct(this.productId)
+          .pipe(
+            finalize(() => {
+              this.spinnerService.hide('product-load');
+            })
+          )
+          .subscribe({
+            next: (product) => {
+              if (product) {
+                this.loadProductDataIntoForm(product);
+              }
+            },
+            error: (error) => {
+              console.error('Error al cargar el producto:', error);
             }
-          },
-          error: (error) => {
-            console.error('Error al cargar el producto:', error);
-          }
-        });
+          });
+      }
     } else {
       this.resetFormToDefault();
     }
@@ -117,13 +127,16 @@ export class AddProductModalComponent implements OnInit {
    * Carga los datos del producto en el formulario
    */
   private loadProductDataIntoForm(product: IProduct): void {
+    // El backend puede enviar categoriaId o idCategoria
+    const categoryId = product.idCategoria || product.categoriaId;
+
     this.productForm.patchValue({
       nombre: product.nombre,
       descripcion: product.descripcion,
       precio: product.precio,
       stock: product.stock,
       imagenes: product.imagenes,
-      idCategoria: product.idCategoria,
+      idCategoria: categoryId,
       activo: product.activo,
       color: product.color,
       destacado: product.destacado
@@ -166,7 +179,13 @@ export class AddProductModalComponent implements OnInit {
 
       const message = this.isEditMode ? 'Actualizando producto...' : 'Creando producto...';
       this.spinnerService.show(message, 'bar', 'product-save');
-      this.productsService.agregarProducto(formData as IProduct).pipe(
+
+      // Usar el método correcto según si es edición o creación
+      const productObservable = this.isEditMode && this.product
+        ? this.productsService.actualizarProducto(this.product._id, formData)
+        : this.productsService.agregarProducto(formData as IProduct);
+
+      productObservable.pipe(
         finalize(() => this.spinnerService.hide('product-save'))
       ).subscribe({
         next: (productoInsertado) => {
@@ -200,6 +219,12 @@ export class AddProductModalComponent implements OnInit {
 
     const validImageUrls = this.imageUrls.filter(url => url.trim() !== '');
     formData.imagenes = validImageUrls;
+
+    // Incluir el ID del producto si está en modo edición
+    if (this.isEditMode && this.product) {
+      formData.idProducto = this.product.idProducto;
+    }
+
     return formData;
   }
 

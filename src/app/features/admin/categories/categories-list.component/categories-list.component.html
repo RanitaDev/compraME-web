@@ -68,17 +68,15 @@
               <i class="pi pi-pencil text-xs"></i>
               Editar
             </button>
-            <button class="toggle-btn p-1.5 rounded-lg transition-colors duration-200"
-                    [class]="category.activa ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
-                    (click)="toggleCategoryStatus(category)"
-                    [title]="category.activa ? 'Desactivar categoría' : 'Activar categoría'">
-              <i [class]="category.activa ? 'pi pi-eye text-xs' : 'pi pi-eye-slash text-xs'"></i>
-            </button>
-            <button class="view-btn p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors duration-200"
-                    (click)="onViewCategory(category)"
-                    [title]="'Ver detalles de ' + category.nombre">
-              <i class="pi pi-info-circle text-xs"></i>
-            </button>
+            <p-button
+              [text]="true"
+              [rounded]="true"
+              [styleClass]="'p-1.5'"
+              (click)="toggleCategoryStatus(category)"
+              [pTooltip]="category.activa ? 'Desactivar categoría' : 'Activar categoría'"
+              tooltipPosition="top">
+              <i [class]="category.activa ? 'pi pi-eye text-xs text-gray-700' : 'pi pi-eye-slash text-xs text-gray-500'"></i>
+            </p-button>
           </div>
         </div>
       </div>

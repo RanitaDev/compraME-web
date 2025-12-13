@@ -8,11 +8,12 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CategoryService } from '../../../../services/category.service';
 import { CategoryModalComponent } from '../category-modal.component/category-modal.component';
 import { Category } from '../../../../interfaces/categories.interface';
+import { PrimeNgModule } from '../../../../primeng.module';
 
 @Component({
   selector: 'app-categories-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   templateUrl: './categories-list.component.html',
   styleUrls: ['./categories-list.component.css'],
   providers: [DialogService]
@@ -179,9 +180,9 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     });
 
     this.modalRef.onClose.subscribe((resultado) => {
-      if (resultado && resultado.action === 'updated') {
-        this.updateFilteredCategories();
-        this.calculateStats();
+      if (resultado && resultado.action === 'saved') {
+        console.log('Categoría actualizada:', resultado.category);
+        this.onCategoryUpdated(resultado.category);
       }
     });
   }
@@ -241,6 +242,20 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     this.calculateStats();
 
     this.showSuccessMessage('Categoría creada correctamente');
+  }
+
+  /**
+   * Maneja la actualización exitosa de una categoría
+   */
+  private onCategoryUpdated(updatedCategory: Category): void {
+    // Encontrar y actualizar la categoría en la lista
+    const index = this.allCategories.findIndex(c => c._id === updatedCategory._id);
+    if (index !== -1) {
+      this.allCategories[index] = updatedCategory;
+      this.updateFilteredCategories();
+      this.calculateStats();
+      this.showSuccessMessage('Categoría actualizada correctamente');
+    }
   }
 
   // Métodos utilitarios

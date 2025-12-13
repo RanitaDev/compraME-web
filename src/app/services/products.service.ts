@@ -81,6 +81,16 @@ export class ProductService {
       );
   }
 
+  public actualizarProducto(id: string, producto: Partial<IProduct>): Observable<IProduct | undefined> {
+    return this.http.put<IProduct>(`${this.apiUrl}/actualizar/${id}`, producto)
+      .pipe(
+        catchError(error => {
+          console.error('Error actualizando producto:', error);
+          return of(undefined);
+        })
+      );
+  }
+
   /**
    * Filtrado local de productos (fallback)
    */

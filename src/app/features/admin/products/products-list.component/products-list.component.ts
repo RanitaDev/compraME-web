@@ -54,6 +54,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.initializeSearchDebounce();
     this.loadProducts();
     this.loadCategories();
+    console.log('productos', this.allProducts);
   }
 
   ngOnDestroy(): void {
@@ -95,6 +96,8 @@ export class ProductsListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (products) => {
+          console.log('PRODUCTOS', products);
+
           this.allProducts = products.filter(p => p.activo);
           this.updateFilteredProducts();
           this.calculateStats();
@@ -154,9 +157,24 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   onEditProduct(product: IProduct): void {
-    console.log('Editing product:', product.nombre);
-    // Navegar a formulario de edición
-    this.router.navigate(['/admin/products/edit', product.idProducto]);
+    console.log('Editing product:', product);
+    this.modalRef = this.dialog.open(AddProductModalComponent, {
+      header: 'Editar Producto',
+      width: '800px',
+      modal: true,
+      closable: true,
+      data: {
+        isEditMode: 'editar',
+        product: product
+      }
+    });
+
+    this.modalRef.onClose.subscribe((resultado) => {
+      if (resultado && resultado.action === 'saved') {
+        console.log('Producto actualizado:', resultado.product);
+        this.onProductUpdated(resultado.product);
+      }
+    });
   }
 
   onViewProduct(product: IProduct): void {
@@ -181,6 +199,16 @@ export class ProductsListComponent implements OnInit, OnDestroy {
         this.loadProducts();
       }
     });
+  }
+
+  private onProductUpdated(updatedProduct: IProduct): void {
+    const index = this.allProducts.findIndex(p => p.idProducto === updatedProduct.idProducto);
+    if (index !== -1) {
+      this.allProducts[index] = updatedProduct;
+      this.updateFilteredProducts();
+      this.calculateStats();
+      this.showSuccessMessage('Producto actualizado correctamente');
+    }
   }
 
   loadMoreProducts(): void {
@@ -222,6 +250,10 @@ export class ProductsListComponent implements OnInit, OnDestroy {
 
   private showErrorMessage(message: string): void {
     console.error(message);
+  }
+
+  private showSuccessMessage(message: string): void {
+    console.log('✅ Éxito:', message);
   }
 
   trackByProductId(index: number, product: IProduct): string | undefined {
