@@ -16,7 +16,7 @@ export interface IAddress {
 
 export interface IPaymentMethod {
   id: number;
-  tipo: 'tarjeta' | 'paypal' | 'oxxo' | 'transferencia' | 'deposito' | 'cuenta_vendedor';
+  tipo: 'tarjeta' | 'paypal' | 'oxxo' | 'transferencia' | 'deposito';
   nombre: string;
   descripcion: string;
   activo: boolean;

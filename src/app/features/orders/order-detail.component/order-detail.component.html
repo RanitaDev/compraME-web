@@ -52,7 +52,7 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado del pedido</h2>
 
             <div class="space-y-4">
-              @for (step of orderDetail()!.timeline; track step.id; let i = $index) {
+              @for (step of orderDetail()!.timeline; track step._id; let i = $index) {
                 <div class="flex gap-4">
                   <div class="flex flex-col items-center">
                     <div
@@ -87,7 +87,7 @@
                         [class.text-gray-900]="step.isCompleted"
                         [class.text-gray-500]="!step.isCompleted"
                       >
-                        {{ step.status }}
+                        {{ step.estado }}
                       </h3>
                       <span
                         class="text-sm"
@@ -102,7 +102,7 @@
                       [class.text-gray-600]="step.isCompleted"
                       [class.text-gray-400]="!step.isCompleted"
                     >
-                      {{ step.description }}
+                      {{ step.descripcion }}
                     </p>
                   </div>
                 </div>
@@ -117,24 +117,24 @@
             </h2>
 
             <div class="space-y-4">
-              @for (item of orderDetail()!.order.productos; track item.productId) {
+              @for (item of orderDetail()!.order.productos; track item.productoId) {
                 <div class="flex gap-4 p-4 border border-gray-100 rounded-lg">
                   <div class="flex-shrink-0">
                     <img
-                      [src]="item.productImage"
-                      [alt]="item.productName"
+                      [src]="item.imagen"
+                      [alt]="item.nombre"
                       class="w-16 h-16 rounded-lg object-cover"
                     >
                   </div>
 
                   <div class="flex-1 min-w-0">
                     <h3 class="font-medium text-gray-900 line-clamp-2">
-                      {{ item.productName }}
+                      {{ item.nombre }}
                     </h3>
                     <div class="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div class="flex items-center gap-4 text-sm text-gray-600">
-                        <span>Cantidad: {{ item.quantity }}</span>
-                        <span>Precio: ${{ formatPrice(item.price) }}</span>
+                        <span>Cantidad: {{ item.cantidad }}</span>
+                        <span>Precio: ${{ formatPrice(item.precioUnitario) }}</span>
                       </div>
                       <p class="font-semibold text-gray-900">
                         ${{ formatPrice(item.subtotal!) }}
@@ -154,11 +154,11 @@
               <div>
                 <h3 class="font-medium text-gray-900 mb-2">Dirección de entrega</h3>
                 <div class="text-gray-600">
-                  <p>{{ orderDetail()!.customerInfo.name }}</p>
+                  <p>{{ orderDetail()!.customerInfo.nombre }}</p>
                   <p>{{ orderDetail()!.shipping.address }}</p>
                   <p>{{ orderDetail()!.shipping.city }}, {{ orderDetail()!.shipping.postalCode }}</p>
                   <p>{{ orderDetail()!.shipping.country }}</p>
-                  <p class="mt-1">Tel: {{ orderDetail()!.customerInfo.phone }}</p>
+                  <p class="mt-1">Tel: {{ orderDetail()!.customerInfo.telefono }}</p>
                 </div>
               </div>
 
@@ -184,7 +184,7 @@
                         </span>
                       </div>
                     }
-                    <button
+                    <!-- <button
                       class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium mt-2"
                       (click)="trackPackage()"
                       type="button"
@@ -193,7 +193,7 @@
                         <path d="M10 13l5 5-7-7 7-7-5 5z"/>
                       </svg>
                       Rastrear paquete
-                    </button>
+                    </button> -->
                   </div>
                 </div>
               }
@@ -242,7 +242,7 @@
               <hr class="my-3">
               <div class="flex justify-between text-lg font-bold text-gray-900">
                 <span>Total</span>
-                <span>${{ formatPrice(orderDetail()!.order.totalAmount) }}</span>
+                <span>${{ formatPrice(orderDetail()!.order.total) }}</span>
               </div>
             </div>
 

@@ -4,21 +4,29 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IOrders, IOrderItem } from '../../../interfaces/orders.interface';
 import { OrderService } from '../../../services';
+import { ToastService } from '../../../core/services/toast.service';
+import { ReviewPaymentProofComponent } from '../review-payment-proof.component/review-payment-proof.component';
+import { ChangeOrderStatusComponent } from '../change-order-status.component/change-order-status.component';
 
 @Component({
   selector: 'app-orders-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [DialogService],
   templateUrl: './orders-list.component.html',
   styleUrls: ['./orders-list.component.css']
 })
 export class OrdersListComponent implements OnInit, OnDestroy {
   // Inyección de dependencias usando inject()
   private router = inject(Router);
-  private ordersService = inject(OrderService)
+  private ordersService = inject(OrderService);
+  private dialogService = inject(DialogService);
+  private toastService = inject(ToastService);
   private destroy$ = new Subject<void>();
+  private dialogRef: DynamicDialogRef | undefined;
 
   // Propiedades de datos
   public allOrders: IOrders[] = [];
@@ -49,6 +57,9 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 
   /**
@@ -190,26 +201,52 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Cambiar estado de una orden
    */
   public onChangeStatus(order: IOrders): void {
-    // Lógica para cambiar estado (puedes implementar un modal o dropdown)
-    const currentStatus = order.estado;
-    let newStatus;
+    this.dialogRef = this.dialogService.open(ChangeOrderStatusComponent, {
+      header: 'Cambiar Estado de Orden',
+      width: '600px',
+      modal: true,
+      dismissableMask: false,
+      data: {
+        orden: order
+      }
+    });
 
-    // Lógica simple para demostración
-    if (currentStatus === 'pending') {
-      newStatus = 'completed';
-    } else if (currentStatus === 'delivered') {
-      newStatus = 'pending';
-    } else {
-      newStatus = 'pending';
-    }
+    this.dialogRef.onClose.subscribe((result) => {
+      if (result?.updated) {
+        this.toastService.success('Estado Actualizado', `La orden ${order.numeroOrden} ha sido actualizada`);
+        this.loadOrders(); // Recargar lista
+      }
+    });
+  }
 
-    // Actualizar estado
-    //order.status = newStatus;
-    order.updatedAt = new Date();
+  /**
+   * Revisar comprobante de pago
+   */
+  public onReviewProof(order: IOrders): void {
+    this.dialogRef = this.dialogService.open(ReviewPaymentProofComponent, {
+      header: 'Revisar Comprobante de Pago',
+      width: '900px',
+      modal: true,
+      dismissableMask: false,
+      data: {
+        orden: order
+      }
+    });
 
-    // Recalcular estadísticas
-    this.calculateStats();
-    this.showSuccessMessage(`Estado de orden #${order.numeroOrden} actualizado`);
+    this.dialogRef.onClose.subscribe((result) => {
+      if (result?.approved || result?.rejected) {
+        const message = result.approved ? 'Comprobante aprobado' : 'Comprobante rechazado';
+        this.toastService.success('Revisión Completada', message);
+        this.loadOrders(); // Recargar lista
+      }
+    });
+  }
+
+  /**
+   * Verificar si una orden tiene comprobante por revisar
+   */
+  public hasProofToReview(order: IOrders): boolean {
+    return order.estado === 'proof_uploaded' && !!order.comprobanteUrl;
   }
 
   /**
@@ -267,7 +304,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Calcula el total de items en una orden
    */
   public getTotalItems(items: IOrderItem[]): number {
-    return items.reduce((total, item) => total + item.quantity, 0);
+    return items.reduce((total, item) => total + (item.cantidad ?? (item as any).quantity ?? 0), 0);
   }
 
   /**

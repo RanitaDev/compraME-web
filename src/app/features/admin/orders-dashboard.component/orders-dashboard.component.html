@@ -1,0 +1,259 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Dashboard de Órdenes</h1>
+      <p class="text-gray-600 mt-1">Vista general de todas las órdenes del sistema</p>
+    </div>
+    <button
+      (click)="refreshData()"
+      class="refresh-btn"
+      [disabled]="isLoading()">
+      <i class="pi pi-refresh" [class.pi-spin]="isLoading()"></i>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Estadísticas principales -->
+  <div class="stats-grid">
+    <!-- Total de órdenes -->
+    <div class="stat-card total-card">
+      <div class="stat-icon">
+        <i class="pi pi-shopping-cart"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Total de Órdenes</p>
+        <p class="stat-value">{{ orderStats().total }}</p>
+      </div>
+    </div>
+
+    <!-- Comprobantes por revisar -->
+    <div class="stat-card review-card">
+      <div class="stat-icon">
+        <i class="pi pi-upload"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Por Revisar</p>
+        <p class="stat-value">{{ orderStats().proofUploaded }}</p>
+        <a [routerLink]="['/admin/orders']" [queryParams]="{estado: 'proof_uploaded'}" class="stat-link">
+          Ver comprobantes <i class="pi pi-arrow-right ml-1"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Órdenes completadas -->
+    <div class="stat-card completed-card">
+      <div class="stat-icon">
+        <i class="pi pi-verified"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Completadas</p>
+        <p class="stat-value">{{ orderStats().completed }}</p>
+        <p class="stat-subtext">{{ getPercentage(orderStats().completed, orderStats().total) }}% del total</p>
+      </div>
+    </div>
+
+    <!-- Ingresos totales -->
+    <div class="stat-card revenue-card">
+      <div class="stat-icon">
+        <i class="pi pi-dollar"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Ingresos Confirmados</p>
+        <p class="stat-value">${{ formatPrice(revenueStats().paidRevenue) }}</p>
+        <p class="stat-subtext">MXN</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico de estados (barras simples) -->
+  <div class="chart-section">
+    <h2 class="section-title">Distribución de Órdenes por Estado</h2>
+    <div class="status-bars">
+      <div class="status-bar-item">
+        <div class="bar-info">
+          <span class="bar-label">Pendientes</span>
+          <span class="bar-value">{{ orderStats().pending }}</span>
+        </div>
+        <div class="bar-container">
+          <div
+            class="bar bar-warning"
+            [style.width.%]="getPercentage(orderStats().pending, orderStats().total)">
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-item">
+        <div class="bar-info">
+          <span class="bar-label">Comprobantes Subidos</span>
+          <span class="bar-value">{{ orderStats().proofUploaded }}</span>
+        </div>
+        <div class="bar-container">
+          <div
+            class="bar bar-info"
+            [style.width.%]="getPercentage(orderStats().proofUploaded, orderStats().total)">
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-item">
+        <div class="bar-info">
+          <span class="bar-label">Pagadas</span>
+          <span class="bar-value">{{ orderStats().paid }}</span>
+        </div>
+        <div class="bar-container">
+          <div
+            class="bar bar-success"
+            [style.width.%]="getPercentage(orderStats().paid, orderStats().total)">
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-item">
+        <div class="bar-info">
+          <span class="bar-label">Enviadas</span>
+          <span class="bar-value">{{ orderStats().shipped }}</span>
+        </div>
+        <div class="bar-container">
+          <div
+            class="bar bar-primary"
+            [style.width.%]="getPercentage(orderStats().shipped, orderStats().total)">
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar-item">
+        <div class="bar-info">
+          <span class="bar-label">Completadas</span>
+          <span class="bar-value">{{ orderStats().completed }}</span>
+        </div>
+        <div class="bar-container">
+          <div
+            class="bar bar-completed"
+            [style.width.%]="getPercentage(orderStats().completed, orderStats().total)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid de información -->
+  <div class="info-grid">
+
+    <!-- Comprobantes por revisar -->
+    <div class="info-card">
+      <h3 class="card-title">
+        <i class="pi pi-exclamation-circle text-blue-600"></i>
+        Comprobantes por Revisar ({{ proofsToReview().length }})
+      </h3>
+
+      <div class="card-content" *ngIf="proofsToReview().length > 0; else noProofs">
+        <div
+          *ngFor="let orden of proofsToReview()"
+          class="order-item"
+          [routerLink]="['/admin/orders']"
+          [queryParams]="{ordenId: orden._id}">
+          <div class="order-info">
+            <p class="order-number">#{{ orden.numeroOrden }}</p>
+            <p class="order-date">{{ formatDate(orden.uploadedFileDate || orden.updatedAt) }}</p>
+          </div>
+          <div class="order-amount">${{ formatPrice(orden.total) }}</div>
+          <i class="pi pi-chevron-right text-gray-400"></i>
+        </div>
+      </div>
+
+      <ng-template #noProofs>
+        <div class="empty-state">
+          <i class="pi pi-check-circle text-5xl text-green-500"></i>
+          <p class="mt-2 text-gray-600">No hay comprobantes pendientes</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Órdenes urgentes -->
+    <div class="info-card">
+      <h3 class="card-title">
+        <i class="pi pi-clock text-red-600"></i>
+        Órdenes Urgentes ({{ urgentOrders().length }})
+      </h3>
+
+      <div class="card-content" *ngIf="urgentOrders().length > 0; else noUrgent">
+        <div
+          *ngFor="let orden of urgentOrders()"
+          class="order-item urgent"
+          [routerLink]="['/admin/orders']"
+          [queryParams]="{ordenId: orden._id}">
+          <div class="order-info">
+            <p class="order-number">#{{ orden.numeroOrden }}</p>
+            <p class="order-date time-remaining">
+              <i class="pi pi-clock mr-1"></i>
+              {{ getTimeRemaining(orden.fechaLimitePago) }}
+            </p>
+          </div>
+          <div class="order-amount">${{ formatPrice(orden.total) }}</div>
+          <i class="pi pi-chevron-right text-gray-400"></i>
+        </div>
+      </div>
+
+      <ng-template #noUrgent>
+        <div class="empty-state">
+          <i class="pi pi-check-circle text-5xl text-green-500"></i>
+          <p class="mt-2 text-gray-600">No hay órdenes urgentes</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Órdenes recientes -->
+    <div class="info-card full-width">
+      <h3 class="card-title">
+        <i class="pi pi-list text-purple-600"></i>
+        Órdenes Recientes
+      </h3>
+
+      <div class="card-content" *ngIf="recentOrders().length > 0; else noRecent">
+        <div
+          *ngFor="let orden of recentOrders()"
+          class="order-item recent"
+          [routerLink]="['/admin/orders']"
+          [queryParams]="{ordenId: orden._id}">
+          <div class="order-info">
+            <p class="order-number">#{{ orden.numeroOrden }}</p>
+            <p class="order-date">{{ formatDate(orden.createdAt) }}</p>
+          </div>
+          <div class="order-status">
+            <span
+              class="status-badge"
+              [ngClass]="getStatusBadge(orden.estado).class">
+              <i class="pi {{ getStatusBadge(orden.estado).icon }} mr-1"></i>
+              {{ getStatusBadge(orden.estado).label }}
+            </span>
+          </div>
+          <div class="order-amount">${{ formatPrice(orden.total) }}</div>
+          <i class="pi pi-chevron-right text-gray-400"></i>
+        </div>
+      </div>
+
+      <ng-template #noRecent>
+        <div class="empty-state">
+          <i class="pi pi-inbox text-5xl text-gray-400"></i>
+          <p class="mt-2 text-gray-600">No hay órdenes recientes</p>
+        </div>
+      </ng-template>
+
+      <div class="card-footer">
+        <a [routerLink]="['/admin/orders']" class="view-all-link">
+          Ver todas las órdenes <i class="pi pi-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <div class="spinner-container">
+      <i class="pi pi-spin pi-spinner text-5xl text-blue-600"></i>
+      <p class="mt-4 text-gray-700">Cargando datos...</p>
+    </div>
+  </div>
+</div>

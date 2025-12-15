@@ -1,0 +1,239 @@
+<div class="order-created-container min-h-full bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center h-96">
+      <div class="text-center">
+        <i class="pi pi-spin pi-spinner text-4xl text-gray-400 mb-4"></i>
+        <p class="text-gray-600">Cargando orden...</p>
+      </div>
+    </div>
+
+    <!-- Order Created Content -->
+    <div *ngIf="!isLoading && orden" class="space-y-6">
+      <!-- Success Header -->
+      <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
+        <div class="mb-4">
+          <i class="pi pi-check-circle text-6xl text-green-500"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">¡Orden Creada Exitosamente!</h1>
+        <p class="text-gray-600 mb-6">Tu pedido ha sido confirmado. Ahora necesitas completar el pago dentro del plazo establecido.</p>
+
+        <!-- Número de Orden -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-4 inline-block">
+          <p class="text-sm text-gray-600 mb-1">Número de Orden</p>
+          <div class="flex items-center gap-3">
+            <p class="text-2xl font-bold text-gray-900">{{ orden.numeroOrden }}</p>
+            <button
+              (click)="copiarNumeroOrden()"
+              class="p-2 hover:bg-gray-200 rounded transition-colors"
+              title="Copiar número de orden"
+            >
+              <i class="pi pi-copy text-gray-600"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiempo Restante Alert -->
+      <div *ngIf="tiempoRestante"
+           class="border-l-4 p-4 rounded-lg"
+           [ngClass]="getAlertClass()">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-clock text-xl"></i>
+          <div class="flex-1">
+            <p class="font-semibold mb-1">Tiempo restante para pagar</p>
+            <p class="text-lg font-bold">
+              {{ tiempoRestante.dias }}d {{ tiempoRestante.horas }}h {{ tiempoRestante.minutos }}m
+            </p>
+            <p class="text-sm mt-1" *ngIf="!tiempoRestante.expirado">
+              Vence el {{ orden.fechaLimitePago | date:'short' }}
+            </p>
+            <p class="text-sm mt-1 font-semibold" *ngIf="tiempoRestante.expirado">
+              ⚠️ Tu orden ha expirado. Crea una nueva orden para continuar.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Resumen de Orden (2 columnas) -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Estado Actual -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado Actual</h2>
+            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+              <i [class]="'pi ' + getStatusIcon() + ' text-2xl text-gray-600'"></i>
+              <div>
+                <p class="text-sm text-gray-600">Estado</p>
+                <p class="text-xl font-bold text-gray-900">{{ getStatusText() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instrucciones de Pago -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <i [class]="'pi ' + metodoPagoInfo.icono + ' text-gray-600'"></i>
+              {{ metodoPagoInfo.nombre }}
+            </h2>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p class="text-sm text-blue-800">
+                {{ metodoPagoInfo.instruccion }}
+              </p>
+            </div>
+
+            <!-- Pasos para realizar el pago -->
+            <div class="space-y-3">
+              <div class="flex gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-900 text-white">
+                  <span class="text-sm font-bold">1</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Ve a la sucursal / plataforma</p>
+                  <p class="text-sm text-gray-600">Dirígete a la entidad indicada para realizar tu pago</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-900 text-white">
+                  <span class="text-sm font-bold">2</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Proporciona los datos de referencia</p>
+                  <p class="text-sm text-gray-600">Utiliza el número de orden o referencia que aparece arriba</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-900 text-white">
+                  <span class="text-sm font-bold">3</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Obtén tu comprobante</p>
+                  <p class="text-sm text-gray-600">Guarda el folio, referencia o comprobante del pago</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-gray-900 text-white">
+                  <span class="text-sm font-bold">4</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Sube tu comprobante aquí</p>
+                  <p class="text-sm text-gray-600">Regresa y carga el comprobante de pago para validar tu orden</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de Productos -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Productos</h2>
+            <div class="space-y-3">
+              <div *ngFor="let producto of orden.productos" class="flex items-start justify-between pb-3 border-b border-gray-200 last:border-b-0 last:pb-0">
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">{{ producto.nombre }}</p>
+                  <p class="text-sm text-gray-600">Cantidad: {{ producto.cantidad }}</p>
+                </div>
+                <p class="font-medium text-gray-900 whitespace-nowrap ml-4">
+                  ${{ producto.subtotal.toFixed(2) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dirección de Envío -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <i class="pi pi-map-marker text-gray-600"></i>
+              Dirección de Envío
+            </h2>
+            <div class="text-sm text-gray-700 space-y-1">
+              <p class="font-medium">{{ orden.direccionEnvio.nombreCompleto }}</p>
+              <p>{{ orden.direccionEnvio.calle }} {{ orden.direccionEnvio.numeroExterior }}</p>
+              <p *ngIf="orden.direccionEnvio.numeroInterior">
+                Depto/Suite: {{ orden.direccionEnvio.numeroInterior }}
+              </p>
+              <p>{{ orden.direccionEnvio.colonia }}, {{ orden.direccionEnvio.ciudad }}</p>
+              <p>{{ orden.direccionEnvio.estado }} {{ orden.direccionEnvio.codigoPostal }}</p>
+              <p class="mt-3 text-gray-600">📞 {{ orden.direccionEnvio.telefono }}</p>
+              <p *ngIf="orden.direccionEnvio.referencias" class="mt-2 text-gray-600">
+                <strong>Notas:</strong> {{ orden.direccionEnvio.referencias }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totales y Acciones (1 columna) -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-6 space-y-6">
+            <!-- Totales -->
+            <div class="space-y-2 text-sm border-b border-gray-200 pb-6">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal:</span>
+                <span>${{ orden.subtotal.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Impuestos:</span>
+                <span>${{ orden.impuestos.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Envío:</span>
+                <span>${{ orden.costoEnvio.toFixed(2) }}</span>
+              </div>
+              <div *ngIf="orden.descuentos && orden.descuentos > 0" class="flex justify-between text-green-600">
+                <span>Descuento:</span>
+                <span>-${{ orden.descuentos.toFixed(2) }}</span>
+              </div>
+
+              <div class="flex justify-between font-bold text-lg text-gray-900 pt-2">
+                <span>Total:</span>
+                <span>${{ orden.total.toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="space-y-3">
+              <button
+                (click)="irASubirComprobante()"
+                [disabled]="tiempoRestante?.expirado"
+                class="w-full py-3 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              >
+                <i class="pi pi-upload mr-2"></i>
+                Subir Comprobante
+              </button>
+
+              <button
+                *ngIf="puedeCancelarseOrden()"
+                (click)="cancelarOrden()"
+                class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-700 font-medium rounded-lg transition-colors"
+              >
+                <i class="pi pi-trash mr-2"></i>
+                Cancelar Orden
+              </button>
+
+              <button
+                (click)="loadOrden()"
+                class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+              >
+                <i class="pi pi-refresh mr-2"></i>
+                Actualizar
+              </button>
+            </div>
+
+            <!-- Info Box -->
+            <div class="bg-gray-50 rounded-lg p-4 text-xs text-gray-600 space-y-2">
+              <p>
+                <strong>💡 Consejo:</strong> Guarda el número de orden en un lugar seguro.
+              </p>
+              <p>
+                <strong>⏰ Recuerda:</strong> Tienes {{ tiempoRestante?.dias || 0 }} días para completar el pago.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

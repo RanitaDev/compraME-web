@@ -71,21 +71,6 @@ export class PaymentMethodService {
 
     let availableMethods = [...this.basePaymentMethods];
 
-    // Agregar métodos adicionales según el tipo de usuario o región
-    if (user?.rolId === 'cliente') {
-      // Todos los métodos están disponibles para clientes
-    } else if (user?.rolId === 'vendedor') {
-      // Los vendedores podrían tener métodos adicionales o diferentes
-      availableMethods.push({
-        id: 4,
-        tipo: 'cuenta_vendedor',
-        nombre: 'Cuenta de Vendedor',
-        descripcion: 'Pago directo a cuenta de vendedor',
-        activo: true,
-        tiempoEstimado: '1-2 hrs'
-      });
-    }
-
     // Filtrar métodos activos
     const activeMethods = availableMethods.filter(method => method.activo);
 

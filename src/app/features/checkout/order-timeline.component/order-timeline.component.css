@@ -1,0 +1,242 @@
+.order-timeline-container {
+  padding: 2rem 0;
+}
+
+/* Timeline Styles */
+.timeline {
+  position: relative;
+}
+
+.timeline-header {
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.timeline-items {
+  position: relative;
+  padding-left: 0;
+}
+
+.timeline-item {
+  display: flex;
+  position: relative;
+  margin-bottom: 2rem;
+  animation: slideDown 0.5s ease-out;
+}
+
+.timeline-item.last .timeline-line {
+  display: none;
+}
+
+/* Timeline Line */
+.timeline-line {
+  position: absolute;
+  left: 1.75rem;
+  top: 3.5rem;
+  width: 2px;
+  bottom: -2rem;
+  background: linear-gradient(to bottom, #3b82f6, #e5e7eb);
+}
+
+/* Timeline Icon */
+.timeline-icon {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1.5rem;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.timeline-icon i {
+  font-size: 1.25rem;
+}
+
+.timeline-item:hover .timeline-icon {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+/* Timeline Body */
+.timeline-body {
+  flex-grow: 1;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.timeline-item:hover .timeline-body {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #3b82f6;
+  transform: translateX(4px);
+}
+
+/* Status Badge */
+.timeline-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.timeline-status-badge i {
+  font-size: 0.875rem;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-processing {
+  background-color: #fef3c7;
+  color: #92400e;
+  animation: pulse 2s infinite;
+}
+
+.status-pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Event Styles */
+.timeline-item h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.timeline-item p {
+  margin: 0;
+  color: #374151;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .timeline-item {
+    margin-bottom: 2.5rem;
+  }
+
+  .timeline-line {
+    left: 1.25rem;
+  }
+
+  .timeline-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-width: 2px;
+    margin-right: 1rem;
+  }
+
+  .timeline-icon i {
+    font-size: 1rem;
+  }
+
+  .timeline-body {
+    padding: 1rem;
+  }
+
+  .timeline-body h3 {
+    font-size: 1rem;
+  }
+
+  .timeline-body p {
+    font-size: 0.875rem;
+  }
+
+  .timeline-status-badge {
+    display: block;
+    margin-top: 0.5rem;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 0.75rem;
+  border: 2px dashed #e5e7eb;
+}
+
+.empty-state i {
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Color backgrounds for different methods */
+.bg-green-100 {
+  background-color: #dcfce7;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+
+.bg-orange-100 {
+  background-color: #fed7aa;
+}
+
+.bg-yellow-100 {
+  background-color: #fef3c7;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+
+/* Spinner animation for processing status */
+.pi-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

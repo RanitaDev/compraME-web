@@ -1,0 +1,61 @@
+<div class="order-timeline-container">
+  <div *ngIf="timelineEvents.length === 0" class="empty-state text-center py-12">
+    <i class="pi pi-inbox text-4xl text-gray-400 mb-4"></i>
+    <p class="text-gray-600">No hay eventos para esta orden aún</p>
+  </div>
+
+  <div *ngIf="timelineEvents.length > 0" class="timeline">
+    <div class="timeline-header mb-8">
+      <h2 class="text-2xl font-bold text-gray-900">Historial de la Orden</h2>
+      <p class="text-gray-600 text-sm mt-1">Seguimiento de eventos desde la creación de tu orden</p>
+    </div>
+
+    <div class="timeline-items">
+      <div *ngFor="let event of timelineEvents; let i = index"
+           class="timeline-item"
+           [class.last]="isLastEvent(i)">
+
+        <!-- Timeline Line (Vertical) -->
+        <div class="timeline-line" *ngIf="!isLastEvent(i)"></div>
+
+        <!-- Event Card -->
+        <div class="timeline-content">
+          <!-- Event Icon -->
+          <div [class]="'timeline-icon ' + getEventClass(event)">
+            <i [class]="'pi ' + getEventIcon(event) + ' ' + getIconColorClass(event)"></i>
+          </div>
+
+          <!-- Event Details -->
+          <div class="timeline-body">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">{{ event.title }}</h3>
+                <div class="flex items-center gap-3 text-sm text-gray-600 mt-1">
+                  <span class="flex items-center gap-1">
+                    <i class="pi pi-calendar text-xs"></i>
+                    {{ formatDate(event.date) }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <i class="pi pi-clock text-xs"></i>
+                    {{ event.time }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Status Badge -->
+              <span [class]="'timeline-status-badge ' + 'status-' + event.status">
+                <i *ngIf="event.status === 'completed'" class="pi pi-check-circle"></i>
+                <i *ngIf="event.status === 'processing'" class="pi pi-spin pi-spinner"></i>
+                <i *ngIf="event.status === 'pending'" class="pi pi-clock"></i>
+                {{ event.status === 'completed' ? 'Completado' : event.status === 'processing' ? 'En proceso' : 'Pendiente' }}
+              </span>
+            </div>
+
+            <!-- Event Description -->
+            <p class="text-gray-700 text-sm leading-relaxed">{{ event.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

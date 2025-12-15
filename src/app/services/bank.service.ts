@@ -6,6 +6,7 @@ import { IBankAccount, IBankPaymentData, IBankPaymentResult, IBankInstructions }
 import { OrderService } from './order.service';
 import { ToastService } from '../core/services/toast.service';
 import { environment } from '../../environments/environment';
+import { EstadoPedido } from '../interfaces/orders.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -135,10 +136,11 @@ export class BankService {
       }
     ).pipe(
       switchMap((uploadResponse: { success: boolean; proofUrl: string }) => {
-        return this.orderService.updateOrderStatus(paymentData.orderId, 'proof_uploaded', {
-          paymentProofUrl: uploadResponse.proofUrl,
-          numeroReferencia: paymentData.numeroReferencia
-        }).pipe(
+        return this.orderService.updateOrderStatus(
+          paymentData.orderId,
+          EstadoPedido.PROOF_UPLOADED,
+          `Comprobante de pago subido. Referencia: ${paymentData.numeroReferencia}`
+        ).pipe(
           map(() => ({
             success: true,
             message: 'Comprobante recibido correctamente. Tu pago será verificado en las próximas 24 horas.',

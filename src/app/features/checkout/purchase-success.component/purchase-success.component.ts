@@ -36,7 +36,7 @@ export class PurchaseSuccessComponent implements OnInit {
     });
   }
 
-  getTotalAmount(): string {
+  gettotal(): string {
     const data = this.orderData();
     if (data?.resumen?.total) {
       return this.formatPrice(data.resumen.total);

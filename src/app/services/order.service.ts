@@ -32,6 +32,27 @@ export class OrderService {
   }
 
   /**
+   * Obtener todas las órdenes (alias para getOrders)
+   */
+  public getAllOrders(): Observable<IOrders[]> {
+    return this.getOrders();
+  }
+
+  /**
+   * Obtener orden pendiente del usuario actual
+   */
+  public getPendingOrder(userId: string): Observable<IOrders | null> {
+    return this.http.get<{ data: IOrders | null }>(`${this.apiUrl}/user/${userId}/pending`)
+      .pipe(
+        map(response => response.data),
+        catchError(error => {
+          console.error('❌ OrderService: Error fetching pending order:', error);
+          return of(null);
+        })
+      );
+  }
+
+  /**
    * Eliminar una orden (para compra directa)
    */
   public deleteOrder(orderId: string): Observable<{ success: boolean }> {
@@ -147,14 +168,48 @@ export class OrderService {
   /**
    * Actualizar estado de una orden
    */
-  public updateOrderStatus(orderId: string, status: IOrders['estado'], additionalData?: any): Observable<{ success: boolean }> {
-    const payload = {
+  public updateOrderStatus(
+    orderId: string,
+    status: IOrders['estado'],
+    notas?: string
+  ): Observable<{ success: boolean; message?: string }> {
+    const payload: any = {
       estado: status,
-      ...additionalData
+      updatedAt: new Date().toISOString()
     };
 
+    // Agregar notas si se proporcionan
+    if (notas) {
+      payload.notasAdmin = notas;
+    }
+
+    // Agregar campos específicos según el estado
+    switch (status) {
+      case 'paid':
+        payload.fechaPagado = new Date().toISOString();
+        break;
+      case 'shipped':
+        payload.fechaEnvio = new Date().toISOString();
+        if (!payload.fechaPreparacion) {
+          payload.fechaPreparacion = new Date().toISOString();
+        }
+        break;
+      case 'delivered':
+        payload.fechaEntrega = new Date().toISOString();
+        break;
+      case 'canceled':
+        payload.razonCancelacion = notas || 'Cancelado por administrador';
+        break;
+      case 'expired':
+        payload.razonCancelacion = notas || 'Tiempo de pago expirado';
+        break;
+    }
+
     return this.http.put<any>(`${this.apiUrl}/${orderId}/status`, payload).pipe(
-      map(response => ({ success: response.success })),
+      map(response => ({
+        success: response.success || true,
+        message: response.message || 'Estado actualizado correctamente'
+      })),
       catchError(error => {
         console.error('Error updating order status:', error);
         return throwError(() => new Error('Error al actualizar estado de orden'));

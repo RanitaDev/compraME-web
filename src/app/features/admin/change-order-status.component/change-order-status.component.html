@@ -1,0 +1,142 @@
+<div class="change-status-modal">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <h2 class="text-2xl font-bold text-white">Cambiar Estado de Orden</h2>
+      <p class="text-sm text-gray-100 mt-1">Orden #{{ orden?.numeroOrden }}</p>
+    </div>
+    <button
+      (click)="cerrar()"
+      class="close-btn"
+      [disabled]="isLoading">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="modal-content" *ngIf="orden">
+
+    <!-- Información actual de la orden -->
+    <div class="current-order-info">
+      <h3 class="section-title">Información Actual</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Número de Orden:</span>
+          <span class="value">{{ orden.numeroOrden }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Total:</span>
+          <span class="value font-bold">${{ formatPrice(orden.total) }} MXN</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Estado Actual:</span>
+          <span
+            class="status-badge"
+            [ngClass]="getStatusBadge(orden.estado).class">
+            {{ getStatusBadge(orden.estado).label }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label">Fecha de Creación:</span>
+          <span class="value">{{ formatDate(orden.createdAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selector de nuevo estado -->
+    <div class="status-selector-section">
+      <h3 class="section-title">Seleccionar Nuevo Estado</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Solo se muestran los estados permitidos según el flujo de trabajo.
+      </p>
+
+      <div class="status-options-grid">
+        <div
+          *ngFor="let option of statusOptions"
+          class="status-option"
+          [class.selected]="selectedStatus === option.value"
+          [class.disabled]="option.disabled"
+          (click)="!option.disabled && !isLoading ? selectedStatus = option.value : null">
+
+          <div class="option-header">
+            <i
+              class="pi {{ option.icon }} text-2xl"
+              [style.color]="option.color">
+            </i>
+            <span class="option-label" [style.color]="option.color">
+              {{ option.label }}
+            </span>
+          </div>
+
+          <p class="option-description">{{ option.description }}</p>
+
+          <div class="option-check" *ngIf="selectedStatus === option.value">
+            <i class="pi pi-check-circle text-green-600"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Razón de cancelación (si se selecciona cancelado) -->
+    <div class="cancel-reason-section" *ngIf="requiereCancelacion()">
+      <h3 class="section-title text-red-600">
+        <i class="pi pi-exclamation-triangle mr-2"></i>
+        Razón de Cancelación
+      </h3>
+      <textarea
+        [(ngModel)]="razonCancelacion"
+        placeholder="Explica por qué se cancela la orden (será visible para el cliente)..."
+        class="cancel-textarea"
+        rows="3"
+        [disabled]="isLoading"
+        required>
+      </textarea>
+      <p class="text-xs text-red-500 mt-2">
+        * Este campo es obligatorio para cancelaciones
+      </p>
+    </div>
+
+    <!-- Notas del administrador -->
+    <div class="admin-notes-section">
+      <h3 class="section-title">Notas Administrativas (Opcional)</h3>
+      <textarea
+        [(ngModel)]="notasAdmin"
+        placeholder="Agrega notas internas sobre este cambio de estado..."
+        class="admin-notes-textarea"
+        rows="2"
+        [disabled]="isLoading">
+      </textarea>
+      <p class="text-xs text-gray-500 mt-2">
+        Estas notas son solo para uso interno
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Footer con botones de acción -->
+  <div class="modal-footer">
+    <button
+      (click)="cerrar()"
+      class="btn-cancel"
+      [disabled]="isLoading">
+      <i class="pi pi-times mr-2"></i>
+      Cancelar
+    </button>
+
+    <button
+      (click)="cambiarEstado()"
+      class="btn-confirm"
+      [disabled]="!selectedStatus || isLoading">
+      <i class="pi pi-save mr-2"></i>
+      Cambiar Estado
+    </button>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner-container">
+      <i class="pi pi-spin pi-spinner text-5xl text-blue-600"></i>
+      <p class="mt-4 text-gray-700">Actualizando estado...</p>
+    </div>
+  </div>
+</div>

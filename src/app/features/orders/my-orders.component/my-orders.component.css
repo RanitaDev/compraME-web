@@ -1,0 +1,207 @@
+.my-orders-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Order Card Styles */
+.order-card {
+  transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+}
+
+.order-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.order-number {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Status Badge Animations */
+.inline-flex[class*="bg-"] {
+  transition: all 0.2s ease;
+}
+
+.order-card:hover .inline-flex[class*="bg-"] {
+  transform: scale(1.05);
+}
+
+/* Button Styles */
+button:not(:disabled) {
+  transition: all 0.2s ease;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Loading Spinner */
+.border-4.border-gray-300.border-t-gray-900.rounded-full {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .order-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .order-number {
+    font-size: 0.9rem;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-state i {
+  display: block;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+/* Grid responsive */
+@media (max-width: 1024px) {
+  .grid.grid-cols-1 {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+/* Sticky header adjustments */
+@media (max-width: 768px) {
+  .bg-white.border-b.border-gray-200.p-4.sticky {
+    top: 0;
+    z-index: 30;
+    padding: 1rem;
+  }
+}
+
+/* Form controls in header */
+input[type="text"],
+select {
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Status-specific colors */
+.bg-yellow-100 {
+  background-color: #fef3c7;
+}
+
+.text-yellow-800 {
+  color: #92400e;
+}
+
+.border-yellow-300 {
+  border-color: #fcd34d;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+
+.text-blue-800 {
+  color: #1e40af;
+}
+
+.border-blue-300 {
+  border-color: #7dd3fc;
+}
+
+.bg-green-100 {
+  background-color: #dcfce7;
+}
+
+.text-green-800 {
+  color: #15803d;
+}
+
+.border-green-300 {
+  border-color: #86efac;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+
+.text-red-800 {
+  color: #991b1b;
+}
+
+.border-red-300 {
+  border-color: #fca5a5;
+}
+
+.bg-indigo-100 {
+  background-color: #e0e7ff;
+}
+
+.text-indigo-800 {
+  color: #3730a3;
+}
+
+.border-indigo-300 {
+  border-color: #a5b4fc;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.text-gray-800 {
+  color: #1f2937;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db;
+}
+
+/* Scroll to top button */
+button.fixed {
+  transition: all 0.3s ease;
+}
+
+button.fixed:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}

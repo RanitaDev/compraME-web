@@ -1,0 +1,197 @@
+<div class="review-payment-proof-modal">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Revisar Comprobante de Pago</h2>
+      <p class="text-sm text-gray-500 mt-1">Orden #{{ orden?.numeroOrden }}</p>
+    </div>
+    <button
+      (click)="cerrar()"
+      class="close-btn"
+      [disabled]="isLoading">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="modal-content" *ngIf="orden">
+
+    <!-- Información de la orden -->
+    <div class="order-info-section">
+      <h3 class="section-title">Información de la Orden</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Número de Orden:</span>
+          <span class="value">{{ orden.numeroOrden }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Total:</span>
+          <span class="value font-bold text-lg">${{ formatPrice(orden.total) }} MXN</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Método de Pago:</span>
+          <span class="value">{{ getMetodoPagoInfo() }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Fecha de Creación:</span>
+          <span class="value">{{ formatDate(orden.createdAt) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Fecha Subida Comprobante:</span>
+          <span class="value">{{ formatDate(orden.uploadedFileDate) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Límite de Pago:</span>
+          <span class="value text-red-600">{{ formatDate(orden.fechaLimitePago) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles del pago -->
+    <div class="payment-details-section" *ngIf="orden.comprobanteUrl">
+      <h3 class="section-title">Detalles del Pago</h3>
+      <div class="info-grid">
+        <div class="info-item" *ngIf="orden.metodoPago === 'transferencia' || orden.metodoPago === 'deposito'">
+          <span class="label">Referencia:</span>
+          <span class="value">{{ orden.comprobanteUrl || 'N/A' }}</span>
+        </div>
+        <!-- Puedes agregar más campos específicos del método de pago aquí -->
+      </div>
+    </div>
+
+    <!-- Visualizador de comprobante -->
+    <div class="proof-viewer-section">
+      <h3 class="section-title">Comprobante de Pago</h3>
+
+      <!-- Controles de zoom y acciones -->
+      <div class="viewer-controls">
+        <div class="zoom-controls">
+          <button
+            (click)="zoomOut()"
+            [disabled]="zoomLevel <= 0.5"
+            class="control-btn"
+            title="Alejar">
+            <i class="pi pi-search-minus"></i>
+          </button>
+          <span class="zoom-level">{{ (zoomLevel * 100).toFixed(0) }}%</span>
+          <button
+            (click)="zoomIn()"
+            [disabled]="zoomLevel >= 3"
+            class="control-btn"
+            title="Acercar">
+            <i class="pi pi-search-plus"></i>
+          </button>
+          <button
+            (click)="resetZoom()"
+            class="control-btn"
+            title="Restablecer zoom">
+            <i class="pi pi-refresh"></i>
+          </button>
+        </div>
+
+        <div class="action-controls">
+          <button
+            (click)="abrirEnNuevaVentana()"
+            class="control-btn"
+            title="Abrir en nueva ventana">
+            <i class="pi pi-external-link"></i>
+            Abrir
+          </button>
+          <button
+            (click)="descargarComprobante()"
+            class="control-btn"
+            title="Descargar comprobante">
+            <i class="pi pi-download"></i>
+            Descargar
+          </button>
+        </div>
+      </div>
+
+      <!-- Imagen del comprobante -->
+      <div class="proof-container" *ngIf="esImagen()">
+        <img
+          [src]="orden.comprobanteUrl"
+          [style.transform]="'scale(' + zoomLevel + ')'"
+          alt="Comprobante de pago"
+          class="proof-image">
+      </div>
+
+      <!-- PDF del comprobante -->
+      <div class="proof-container" *ngIf="esPDF()">
+        <iframe
+          [src]="orden.comprobanteUrl"
+          class="proof-pdf"
+          frameborder="0">
+        </iframe>
+      </div>
+
+      <!-- Sin comprobante -->
+      <div class="no-proof" *ngIf="!orden.comprobanteUrl">
+        <i class="pi pi-file text-6xl text-gray-400"></i>
+        <p class="text-gray-500 mt-4">No hay comprobante disponible</p>
+      </div>
+    </div>
+
+    <!-- Notas del admin -->
+    <div class="admin-notes-section">
+      <h3 class="section-title">Notas del Administrador (Opcional)</h3>
+      <textarea
+        [(ngModel)]="notasAdmin"
+        placeholder="Agrega notas internas sobre esta revisión..."
+        class="admin-notes-textarea"
+        rows="3"
+        [disabled]="isLoading">
+      </textarea>
+    </div>
+
+    <!-- Sección de rechazo (condicional) -->
+    <div class="reject-section" *ngIf="showRejectReason">
+      <h3 class="section-title text-red-600">Razón del Rechazo</h3>
+      <textarea
+        [(ngModel)]="razonRechazo"
+        placeholder="Explica por qué se rechaza el comprobante (será enviado al usuario)..."
+        class="reject-textarea"
+        rows="3"
+        [disabled]="isLoading">
+      </textarea>
+    </div>
+
+  </div>
+
+  <!-- Footer con botones de acción -->
+  <div class="modal-footer">
+    <button
+      (click)="cerrar()"
+      class="btn-cancel"
+      [disabled]="isLoading">
+      <i class="pi pi-times mr-2"></i>
+      Cancelar
+    </button>
+
+    <div class="action-buttons">
+      <button
+        (click)="showRejectReason ? rechazarComprobante() : toggleRejectReason()"
+        class="btn-reject"
+        [disabled]="isLoading">
+        <i class="pi pi-times-circle mr-2"></i>
+        {{ showRejectReason ? 'Confirmar Rechazo' : 'Rechazar' }}
+      </button>
+
+      <button
+        (click)="aprobarComprobante()"
+        class="btn-approve"
+        [disabled]="isLoading">
+        <i class="pi pi-check-circle mr-2"></i>
+        Aprobar Comprobante
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay de carga -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner-container">
+      <i class="pi pi-spin pi-spinner text-5xl text-blue-600"></i>
+      <p class="mt-4 text-gray-700">Procesando...</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,383 @@
+<div class="upload-proof-container min-h-full bg-gray-50 pb-12">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <div class="w-16 h-16 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-600 font-medium">Cargando orden...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && orden" class="w-full">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <button
+              type="button"
+              (click)="cancelar()"
+              class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-2">
+              <i class="pi pi-arrow-left text-sm"></i>
+              <span>Volver</span>
+            </button>
+            <h1 class="text-2xl font-bold text-gray-900">Subir Comprobante de Pago</h1>
+            <p class="text-gray-600 text-sm mt-1">Orden: {{ orden.numeroOrden }}</p>
+          </div>
+          <div *ngIf="!hasExpired()" class="text-right">
+            <div class="text-sm text-gray-600">Tiempo restante:</div>
+            <div class="text-lg font-semibold text-blue-600">{{ getTimeRemaining() }}</div>
+          </div>
+          <div *ngIf="hasExpired()" class="text-right">
+            <div class="px-4 py-2 bg-red-100 border border-red-300 rounded-lg">
+              <div class="text-sm font-semibold text-red-700">¡Orden Expirada!</div>
+              <div class="text-xs text-red-600">No puedes subir comprobante</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Form Section -->
+        <div class="lg:col-span-2">
+          <form [formGroup]="proofForm" (ngSubmit)="subirComprobante()" class="space-y-6">
+            <!-- Orden Info (Disabled Fields) -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Información de la Orden</h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Número de Orden</label>
+                  <input
+                    type="text"
+                    [value]="orden.numeroOrden"
+                    disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Monto Total</label>
+                  <input
+                    type="text"
+                    [value]="'$' + (orden.total || 0 | number: '1.2-2')"
+                    disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
+                  <input
+                    type="text"
+                    [value]="getPaymentMethodInfo()?.nombre || orden.metodoPago"
+                    disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                  <input
+                    type="text"
+                    [value]="orden.estado === 'pending' ? 'Pendiente de Pago' : 'Comprobante Subido'"
+                    disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed">
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Detalles del Pago</h2>
+
+              <div class="space-y-4">
+                <!-- Código de Referencia -->
+                <div>
+                  <label for="referencia" class="block text-sm font-medium text-gray-700 mb-1">
+                    Código de Referencia / Folio
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="referencia"
+                    type="text"
+                    formControlName="referencia"
+                    placeholder="Ej: REF-2024-001234"
+                    [class]="getFieldClass('referencia')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                  <p *ngIf="getFieldError('referencia')" class="text-red-500 text-xs mt-1">
+                    {{ getFieldError('referencia') }}
+                  </p>
+                  <p class="text-gray-500 text-xs mt-1">El código que proporcionamos o el que recibiste del banco</p>
+                </div>
+
+                <!-- Código de Transacción -->
+                <div>
+                  <label for="transactionCode" class="block text-sm font-medium text-gray-700 mb-1">
+                    Código de Transacción
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="transactionCode"
+                    type="text"
+                    formControlName="transactionCode"
+                    placeholder="Ej: TRX-20241213-001"
+                    [class]="getFieldClass('transactionCode')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                  <p *ngIf="getFieldError('transactionCode')" class="text-red-500 text-xs mt-1">
+                    {{ getFieldError('transactionCode') }}
+                  </p>
+                  <p class="text-gray-500 text-xs mt-1">ID de transacción del banco o plataforma de pago</p>
+                </div>
+
+                <!-- Fecha de Pago -->
+                <div>
+                  <label for="paymentDate" class="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha del Pago
+                    <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="paymentDate"
+                    type="date"
+                    formControlName="paymentDate"
+                    [class]="getFieldClass('paymentDate')"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                  <p *ngIf="getFieldError('paymentDate')" class="text-red-500 text-xs mt-1">
+                    {{ getFieldError('paymentDate') }}
+                  </p>
+                </div>
+
+                <!-- Hora de Pago (Opcional) -->
+                <div>
+                  <label for="paymentTime" class="block text-sm font-medium text-gray-700 mb-1">
+                    Hora del Pago
+                  </label>
+                  <input
+                    id="paymentTime"
+                    type="time"
+                    formControlName="paymentTime"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                  <p class="text-gray-500 text-xs mt-1">Opcional - Hora en que realizaste el pago</p>
+                </div>
+
+                <!-- Banco/Sucursal (Solo para depósito) -->
+                <div *ngIf="orden.metodoPago === 'deposito'">
+                  <label for="bancoBranch" class="block text-sm font-medium text-gray-700 mb-1">
+                    Banco y Sucursal
+                  </label>
+                  <input
+                    id="bancoBranch"
+                    type="text"
+                    formControlName="bancoBranch"
+                    placeholder="Ej: Banamex - Sucursal Centro"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Tienda OXXO (Solo para OXXO Pay) -->
+                <div *ngIf="orden.metodoPago === 'oxxo'">
+                  <label for="tiendaOxxo" class="block text-sm font-medium text-gray-700 mb-1">
+                    Tienda OXXO
+                  </label>
+                  <input
+                    id="tiendaOxxo"
+                    type="text"
+                    formControlName="tiendaOxxo"
+                    placeholder="Ej: OXXO López Mateos"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Últimos 4 dígitos (Solo para tarjeta) -->
+                <div *ngIf="orden.metodoPago === 'tarjeta'">
+                  <label for="ultimosCuatroDigitos" class="block text-sm font-medium text-gray-700 mb-1">
+                    Últimos 4 Dígitos de la Tarjeta
+                  </label>
+                  <input
+                    id="ultimosCuatroDigitos"
+                    type="text"
+                    formControlName="ultimosCuatroDigitos"
+                    placeholder="Ej: 4242"
+                    maxlength="4"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Notas Adicionales -->
+                <div>
+                  <label for="notas" class="block text-sm font-medium text-gray-700 mb-1">
+                    Notas Adicionales (Opcional)
+                  </label>
+                  <textarea
+                    id="notas"
+                    formControlName="notas"
+                    placeholder="Ej: Pago realizado con depósito, código de cliente: XXX"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+                  <p class="text-gray-500 text-xs mt-1">Máximo 500 caracteres</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Comprobante de Pago</h2>
+
+              <!-- Upload Area -->
+              <div class="relative">
+                <input
+                  type="file"
+                  id="archivo"
+                  (change)="onFileSelected($event)"
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  class="hidden">
+
+                <label
+                  for="archivo"
+                  class="block p-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <i *ngIf="!filePreview" class="pi pi-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                    <i *ngIf="filePreview && !selectedFile?.type?.startsWith('image')" class="pi pi-file-pdf text-4xl text-red-500 mb-2"></i>
+
+                    <p class="text-gray-700 font-medium">
+                      {{ selectedFile ? 'Cambiar archivo' : 'Sube tu comprobante de pago' }}
+                    </p>
+                    <p class="text-gray-500 text-sm mt-1">
+                      Arrastra o haz clic para seleccionar
+                    </p>
+                    <p class="text-gray-400 text-xs mt-2">
+                      Formatos: JPEG, PNG o PDF (Máximo 5 MB)
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <!-- File Preview -->
+              <div *ngIf="selectedFile" class="mt-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1">
+                      <div *ngIf="filePreview && selectedFile.type.startsWith('image')" class="w-16 h-16 rounded-lg overflow-hidden border border-gray-300">
+                        <img [src]="filePreview" alt="Preview" class="w-full h-full object-cover">
+                      </div>
+                      <div *ngIf="!filePreview" class="w-16 h-16 flex items-center justify-center bg-red-100 rounded-lg">
+                        <i class="pi pi-file-pdf text-2xl text-red-600"></i>
+                      </div>
+
+                      <div>
+                        <p class="font-medium text-gray-900">{{ selectedFile.name }}</p>
+                        <p class="text-gray-600 text-sm">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      (click)="removeFile()"
+                      class="ml-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200 text-sm font-medium">
+                      <i class="pi pi-times text-sm mr-1"></i>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- File Error -->
+              <div *ngIf="fileError" class="mt-4 p-4 bg-red-50 border border-red-300 rounded-lg">
+                <p class="text-red-700 text-sm font-medium">{{ fileError }}</p>
+              </div>
+
+              <!-- Required Field Error -->
+              <div *ngIf="getFieldError('archivo') && proofForm.get('archivo')?.touched" class="mt-4 p-4 bg-red-50 border border-red-300 rounded-lg">
+                <p class="text-red-700 text-sm font-medium">{{ getFieldError('archivo') }}</p>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                (click)="cancelar()"
+                class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors duration-200 font-medium"
+                [disabled]="isSubmitting">
+                <i class="pi pi-arrow-left text-sm mr-2"></i>
+                Volver a la Orden
+              </button>
+
+              <button
+                type="submit"
+                [disabled]="!proofForm.valid || !selectedFile || isSubmitting || hasExpired()"
+                class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 font-medium flex items-center justify-center gap-2">
+                <i class="pi pi-upload text-sm"></i>
+                {{ isSubmitting ? 'Subiendo...' : 'Subir Comprobante' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+          <!-- Order Summary -->
+          <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Resumen de la Orden</h3>
+
+            <!-- Order Items -->
+            <div class="space-y-3 mb-4 pb-4 border-b border-gray-200">
+              <div *ngFor="let item of orden.productos" class="flex justify-between items-start gap-2">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800">{{ item.nombre }}</p>
+                  <p class="text-xs text-gray-500">Cantidad: {{ item.cantidad }}</p>
+                </div>
+                <p class="text-sm font-semibold text-gray-900">
+                  ${{ (item.subtotal | number: '1.2-2') }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Totals -->
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal:</span>
+                <span class="font-medium">${{ (orden.subtotal | number: '1.2-2') }}</span>
+              </div>
+              <div *ngIf="orden.impuestos" class="flex justify-between text-gray-600">
+                <span>Impuestos:</span>
+                <span class="font-medium">${{ (orden.impuestos | number: '1.2-2') }}</span>
+              </div>
+              <div *ngIf="orden.costoEnvio" class="flex justify-between text-gray-600">
+                <span>Envío:</span>
+                <span class="font-medium">${{ (orden.costoEnvio | number: '1.2-2') }}</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+                <span>Total:</span>
+                <span>${{ (orden.total | number: '1.2-2') }}</span>
+              </div>
+            </div>
+
+            <!-- Instructions -->
+            <div *ngIf="getPaymentMethodInfo()" class="mt-6 pt-6 border-t border-gray-200">
+              <h4 class="text-sm font-semibold text-gray-900 mb-3">Pasos a Seguir</h4>
+              <ol class="space-y-2 text-xs text-gray-600">
+                <li *ngFor="let paso of getPaymentMethodInfo().instrucciones; let i = index" class="flex gap-2">
+                  <span class="font-semibold text-blue-600 min-w-fit">{{ i + 1 }}.</span>
+                  <span>{{ paso }}</span>
+                </li>
+              </ol>
+            </div>
+
+            <!-- Info Box -->
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p class="text-xs text-blue-800">
+                <strong>💡 Consejo:</strong> Asegúrate de que el comprobante sea legible y muestre claramente el código de referencia o transacción.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Orden State -->
+  <div *ngIf="!isLoading && !orden" class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+      <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
+      <p class="text-gray-600 font-medium">No se encontró la orden</p>
+    </div>
+  </div>
+</div>

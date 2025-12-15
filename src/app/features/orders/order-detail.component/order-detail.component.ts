@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { IOrderDetail, IOrders } from '../../../interfaces/orders.interface';
+import { EstadoPedido, IOrderDetail, IOrders, IOrderTimeline } from '../../../interfaces/orders.interface';
 import { OrderDetailService } from '../../../services/order-detail.service';
 
 @Component({
@@ -54,14 +54,14 @@ export class OrderDetailComponent implements OnInit {
       this.orderDetailService.cancelOrder(order.order._id).subscribe({
         next: (result) => {
           this.isCanceling.set(false);
-          if (result.success) {
+          if (result) {
             // Actualizar el estado local
             const updatedOrder = { ...order };
-            updatedOrder.order.estado = 'canceled';
+            updatedOrder.order.estado = EstadoPedido.CANCELED;
             this.orderDetail.set(updatedOrder);
             alert('Pedido cancelado exitosamente');
           } else {
-            alert(result.message);
+            alert('No se pudo cancelar el pedido.');
           }
         },
         error: (error) => {
@@ -73,18 +73,18 @@ export class OrderDetailComponent implements OnInit {
     }
   }
 
-  trackPackage() {
-    const shipping = this.orderDetail()?.shipping;
-    if (shipping?.trackingNumber) {
-      this.orderDetailService.trackOrder(shipping.trackingNumber).subscribe({
-        next: (result) => {
-          if (result.success && result.url) {
-            window.open(result.url, '_blank');
-          }
-        }
-      });
-    }
-  }
+  // trackPackage() {
+  //   const shipping = this.orderDetail()?.shipping;
+  //   if (shipping?.trackingNumber) {
+  //     this.orderDetailService.trackOrder(shipping.trackingNumber).subscribe({
+  //       next: (result) => {
+  //         if (result.success && result.url) {
+  //           window.open(result.url, '_blank');
+  //         }
+  //       }
+  //     });
+  //   }
+  // }
 
   downloadInvoice() {
     const orderId = this.orderDetail()?.order._id;
@@ -104,7 +104,7 @@ export class OrderDetailComponent implements OnInit {
   }
 
   getTotalItems(): number {
-    return this.orderDetail()?.order.productos.reduce((total, item) => total + item.quantity, 0) || 0;
+    return this.orderDetail()?.order.productos.reduce((total, item) => total + item.cantidad, 0) || 0;
   }
 
   getStatusLabel(status: string): string {

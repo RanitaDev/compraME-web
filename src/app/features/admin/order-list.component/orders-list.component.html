@@ -153,15 +153,26 @@
             </div>
           </div>
           <div class="actions-section flex gap-2">
+            <!-- Botón para revisar comprobante (solo si tiene comprobante subido) -->
+            <button
+              *ngIf="hasProofToReview(order)"
+              class="review-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
+              (click)="onReviewProof(order)"
+              title="Revisar comprobante de pago">
+              <i class="pi pi-file-check text-xs"></i>
+              Revisar
+            </button>
+
             <button class="view-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
                     (click)="onViewOrder(order)">
               <i class="pi pi-eye text-xs"></i>
               Ver
             </button>
+
             <button class="status-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
                     (click)="onChangeStatus(order)">
               <i class="pi pi-refresh text-xs"></i>
-              Cambiar
+              Estado
             </button>
           </div>
         </div>

@@ -1,0 +1,280 @@
+<div class="checkout-confirmation-container min-h-full bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Confirmar Compra</h1>
+      <p class="text-gray-600">Revisa los detalles de tu pedido antes de procesar el pago</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Formulario de dirección y pago (2 columnas) -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Dirección de Envío -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="pi pi-map-marker text-gray-600"></i>
+            Dirección de Envío
+          </h2>
+
+          <form [formGroup]="addressForm" class="space-y-4">
+            <!-- Seleccionar dirección guardada -->
+            <div *ngIf="userAddresses.length > 0">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Usar dirección guardada
+              </label>
+              <select
+                formControlName="selectedAddressId"
+                (ngModelChange)="onAddressSelected($event)"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+              >
+                <option value="">Seleccionar dirección</option>
+                <option *ngFor="let addr of userAddresses" [value]="addr._id">
+                  {{ addr.calle }} {{ addr.numeroExterior }}, {{ addr.ciudad }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Formulario de dirección -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre Completo *
+                </label>
+                <input
+                  type="text"
+                  formControlName="nombreCompleto"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="Juan Carlos Pérez"
+                >
+                <div *ngIf="addressForm.get('nombreCompleto')?.invalid && addressForm.get('nombreCompleto')?.touched"
+                     class="text-red-600 text-xs mt-1">
+                  Nombre requerido (mínimo 3 caracteres)
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono *
+                </label>
+                <input
+                  type="tel"
+                  formControlName="telefono"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="4771234567"
+                >
+                <div *ngIf="addressForm.get('telefono')?.invalid && addressForm.get('telefono')?.touched"
+                     class="text-red-600 text-xs mt-1">
+                  Teléfono válido requerido
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Calle *
+                </label>
+                <input
+                  type="text"
+                  formControlName="calle"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="Avenida Paseo de la República"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Número Exterior *
+                </label>
+                <input
+                  type="text"
+                  formControlName="numeroExterior"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="123"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Número Interior (opcional)
+                </label>
+                <input
+                  type="text"
+                  formControlName="numeroInterior"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="Depto 4B"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Colonia *
+                </label>
+                <input
+                  type="text"
+                  formControlName="colonia"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="Centro"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Ciudad *
+                </label>
+                <input
+                  type="text"
+                  formControlName="ciudad"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="León"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Estado *
+                </label>
+                <input
+                  type="text"
+                  formControlName="estado"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="Guanajuato"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Código Postal *
+                </label>
+                <input
+                  type="text"
+                  formControlName="codigoPostal"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                  placeholder="37000"
+                  maxlength="5"
+                >
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Referencias (opcional)
+                </label>
+                <textarea
+                  formControlName="referencias"
+                  rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm resize-none"
+                  placeholder="Ej: Entregar al portero, casa con puerta azul, etc."
+                ></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Método de Pago -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="pi pi-credit-card text-gray-600"></i>
+            Método de Pago
+          </h2>
+
+          <form [formGroup]="paymentForm" class="space-y-3">
+            <div *ngFor="let method of paymentMethods" class="flex items-center">
+              <input
+                type="radio"
+                [id]="'payment-' + method.tipo"
+                [value]="method.tipo"
+                formControlName="metodoPago"
+                class="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300"
+              >
+              <label [for]="'payment-' + method.tipo" class="ml-3 flex items-center gap-2 cursor-pointer text-sm">
+                <i [class]="'pi ' + method.icono + ' text-gray-600'"></i>
+                <span class="font-medium text-gray-700">{{ method.nombre }}</span>
+              </label>
+            </div>
+
+            <!-- Instrucciones del método seleccionado -->
+            <div *ngIf="getSelectedPaymentMethod()" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p class="text-sm text-blue-800">
+                <i class="pi pi-info-circle mr-2"></i>
+                {{ orderCheckoutService.getInstruccionesPago(getSelectedPaymentMethod()?.tipo || '') }}
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Resumen del Pedido (1 columna) -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen del Pedido</h2>
+
+          <!-- Items del carrito -->
+          <div *ngIf="checkoutSummary" class="space-y-3 mb-6 pb-6 border-b border-gray-200">
+            <div *ngFor="let item of checkoutSummary.items" class="flex items-start justify-between gap-3 text-sm">
+              <div>
+                <p class="font-medium text-gray-900">{{ item.nombre }}</p>
+                <p class="text-gray-600">Cantidad: {{ item.cantidad }}</p>
+              </div>
+              <p class="font-medium text-gray-900 whitespace-nowrap">
+                ${{ (item.subtotal || 0).toFixed(2) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Totales -->
+          <div *ngIf="checkoutSummary" class="space-y-2 text-sm">
+            <div class="flex justify-between text-gray-600">
+              <span>Subtotal:</span>
+              <span>${{ checkoutSummary.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Impuestos:</span>
+              <span>${{ checkoutSummary.impuestos.toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-between text-gray-600">
+              <span>Envío:</span>
+              <span>${{ checkoutSummary.envio.toFixed(2) }}</span>
+            </div>
+            <div *ngIf="checkoutSummary.descuentos && checkoutSummary.descuentos > 0" class="flex justify-between text-green-600">
+              <span>Descuento:</span>
+              <span>-${{ checkoutSummary.descuentos.toFixed(2) }}</span>
+            </div>
+
+            <div class="flex justify-between font-semibold text-lg text-gray-900 pt-3 border-t border-gray-200">
+              <span>Total:</span>
+              <span>${{ checkoutSummary.total.toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="mt-6 space-y-3">
+            <button
+              (click)="crearOrden()"
+              [disabled]="isSubmitting || !addressForm.valid || !paymentForm.valid"
+              class="w-full py-3 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors duration-200"
+            >
+              <span *ngIf="!isSubmitting" class="flex items-center justify-center gap-2">
+                <i class="pi pi-check"></i>
+                Crear Orden
+              </span>
+              <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
+                <i class="pi pi-spin pi-spinner"></i>
+                Creando orden...
+              </span>
+            </button>
+
+            <button
+              (click)="cancelarCheckout()"
+              [disabled]="isSubmitting"
+              class="w-full py-3 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium rounded-lg transition-colors duration-200"
+            >
+              Volver al Carrito
+            </button>
+          </div>
+
+          <p class="text-xs text-gray-500 text-center mt-4">
+            * Campos obligatorios
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+.checkout-confirmation-container {
+  font-family: inherit;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sticky {
+    position: relative;
+    top: 0 !important;
+  }
+}
+
+/* Smooth transitions */
+input, textarea, select {
+  transition: all 0.2s ease;
+}
+
+/* Focus states */
+input:focus, textarea:focus, select:focus {
+  transition: all 0.2s ease;
+}
