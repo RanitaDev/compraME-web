@@ -10,6 +10,7 @@ import { OrderService } from '../../../services';
 import { ToastService } from '../../../core/services/toast.service';
 import { ReviewPaymentProofComponent } from '../review-payment-proof.component/review-payment-proof.component';
 import { ChangeOrderStatusComponent } from '../change-order-status.component/change-order-status.component';
+import { OrderDetailModalComponent } from '../order-detail-modal.component/order-detail-modal.component';
 
 @Component({
   selector: 'app-orders-list',
@@ -192,9 +193,15 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Ver detalles de una orden
    */
   public onViewOrder(order: IOrders): void {
-    console.log('Viendo orden:', order.numeroOrden);
-    // Navegar a vista detallada de la orden
-    // this.router.navigate(['/admin/orders/detail', order.id]);
+    this.dialogRef = this.dialogService.open(OrderDetailModalComponent, {
+      header: `Detalles de Orden #${order.numeroOrden}`,
+      width: '600px',
+      modal: true,
+      dismissableMask: true,
+      data: {
+        orden: order
+      }
+    });
   }
 
   /**

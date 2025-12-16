@@ -1,17 +1,4 @@
-<div class="change-status-modal">
-  <!-- Header -->
-  <div class="modal-header">
-    <div>
-      <h2 class="text-2xl font-bold text-white">Cambiar Estado de Orden</h2>
-      <p class="text-sm text-gray-100 mt-1">Orden #{{ orden?.numeroOrden }}</p>
-    </div>
-    <button
-      (click)="cerrar()"
-      class="close-btn"
-      [disabled]="isLoading">
-      <i class="pi pi-times"></i>
-    </button>
-  </div>
+  <!-- Header interno removido: el modal padre ya provee encabezado -->
 
   <!-- Contenido principal -->
   <div class="modal-content" *ngIf="orden">
@@ -132,11 +119,3 @@
     </button>
   </div>
 
-  <!-- Overlay de carga -->
-  <div class="loading-overlay" *ngIf="isLoading">
-    <div class="spinner-container">
-      <i class="pi pi-spin pi-spinner text-5xl text-blue-600"></i>
-      <p class="mt-4 text-gray-700">Actualizando estado...</p>
-    </div>
-  </div>
-</div>
