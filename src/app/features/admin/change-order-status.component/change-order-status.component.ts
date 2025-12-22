@@ -1,7 +1,10 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Subject, takeUntil } from 'rxjs';
 import { IOrders, EstadoPedido } from '../../../interfaces/orders.interface';
 import { OrderService } from '../../../services/order.service';
@@ -24,7 +27,8 @@ interface StatusOption {
 @Component({
   selector: 'app-change-order-status',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, NgIf, NgForOf, FormsModule, ConfirmDialogModule],
+  providers: [ConfirmationService],
   templateUrl: './change-order-status.component.html',
   styleUrls: ['./change-order-status.component.css']
 })
@@ -35,6 +39,8 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
   private spinnerService = inject(SpinnerService);
+  private confirmationService = inject(ConfirmationService);
+  private confirmService = inject(ConfirmService);
 
   private destroy$ = new Subject<void>();
 
@@ -83,7 +89,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.PENDING,
         label: 'Pendiente',
-        description: 'Orden creada, esperando comprobante de pago',
+        description: 'Si el comprobante no ha sido subido, está borroso o es inválido, cambia a este estatus para avisar al cliente y subair uno nuevo',
         icon: 'pi-clock',
         color: '#f59e0b',
         disabled: !allowedStatuses.includes(EstadoPedido.PENDING)
@@ -91,7 +97,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.PROOF_UPLOADED,
         label: 'Comprobante Subido',
-        description: 'Cliente ha subido comprobante de pago',
+        description: 'El cliente ha subido un comprobante de pago y está pendiente de verificación',
         icon: 'pi-upload',
         color: '#3b82f6',
         disabled: !allowedStatuses.includes(EstadoPedido.PROOF_UPLOADED)
@@ -99,7 +105,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.PAID,
         label: 'Pagado',
-        description: 'Pago verificado y confirmado',
+        description: 'Tras revisar el comprobante adjunto, selecciona este estatus para confirmar que el pago ha sido recibido. Se notificará al cliente que su pedido está siendo procesado.',
         icon: 'pi-check-circle',
         color: '#10b981',
         disabled: !allowedStatuses.includes(EstadoPedido.PAID)
@@ -107,7 +113,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.SHIPPED,
         label: 'Enviado',
-        description: 'Orden en tránsito hacia el cliente',
+        description: 'Si el pedido ha sido enviado al cliente, selecciona este estatus para notificarle que su orden está en camino. Se notificará al cliente con los detalles de envío.',
         icon: 'pi-send',
         color: '#8b5cf6',
         disabled: !allowedStatuses.includes(EstadoPedido.SHIPPED)
@@ -115,7 +121,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.DELIVERED,
         label: 'Completado',
-        description: 'Orden entregada al cliente',
+        description: 'Una vez que el cliente haya recibido su pedido, selecciona este estatus para marcar la orden como completada. Se notificará al cliente que su pedido ha sido entregado con éxito.',
         icon: 'pi-verified',
         color: '#059669',
         disabled: !allowedStatuses.includes(EstadoPedido.DELIVERED)
@@ -123,7 +129,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.CANCELED,
         label: 'Cancelado',
-        description: 'Orden cancelada',
+        description: 'Si por alguna razón el pedido debe ser cancelado, selecciona este estatus. Asegúrate de proporcionar una razón para la cancelación en el campo correspondiente.',
         icon: 'pi-times-circle',
         color: '#ef4444',
         disabled: !allowedStatuses.includes(EstadoPedido.CANCELED)
@@ -131,7 +137,7 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
       {
         value: EstadoPedido.EXPIRED,
         label: 'Expirado',
-        description: 'Tiempo de pago agotado',
+        description: 'Si el cliente no ha subido su comprobante de pago y el sistema no lo inhabilita automáticamente, puedes marcar la orden como expirada para liberar el stock y notificar al cliente.',
         icon: 'pi-ban',
         color: '#6b7280',
         disabled: !allowedStatuses.includes(EstadoPedido.EXPIRED)
@@ -157,14 +163,24 @@ export class ChangeOrderStatusComponent implements OnInit, OnDestroy {
     }
 
     const statusLabel = this.getStatusLabel(this.selectedStatus);
-    if (!confirm(`¿Estás seguro de cambiar el estado a "${statusLabel}"?`)) {
-      return;
-    }
+
+    this.confirmService.confirm({
+      message: `¿Estás seguro de cambiar el estado a "${statusLabel}"?`,
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Aceptar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.ejecutarCambioEstado(statusLabel);
+      }
+    });
+  }
+
+  private ejecutarCambioEstado(statusLabel: string): void {
+    if (!this.orden || !this.selectedStatus) return;
 
     this.isLoading = true;
     this.spinnerService.show();
 
-    // Preparar notas
     let notaCompleta = this.notasAdmin;
     if (this.selectedStatus === EstadoPedido.CANCELED && this.razonCancelacion) {
       notaCompleta = `CANCELADO: ${this.razonCancelacion}${this.notasAdmin ? '\n' + this.notasAdmin : ''}`;

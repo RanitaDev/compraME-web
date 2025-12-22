@@ -81,6 +81,11 @@ export class AdminNavigationService {
           label: 'Órdenes',
           route: '/admin/orders-list'
         },
+        {
+          id: 'archived-orders-list',
+          label: 'Órdenes Archivadas y canceladas',
+          route: '/admin/archived-orders-list'
+        },
         // {
         //   id: 'orders-reports',
         //   label: 'Reportes',

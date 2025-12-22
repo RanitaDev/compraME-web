@@ -9,7 +9,8 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../services';
 import { IUser } from '../../../interfaces/auth.interface';
 import { ConfirmationService } from '../../../services/utils/confirmation.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { NotificationsModalComponent } from '../notifications-modal.component/notifications-modal.component';
 
 
 @Component({
@@ -25,6 +26,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   sidebarCollapsed = false;
   showMobileSidebar = false;
   showUserMenu = false;
+  private dialogRef: DynamicDialogRef | undefined;
 
   private destroy$ = new Subject<void>();
 
@@ -58,7 +60,8 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     private adminNavService: AdminNavigationService,
     private authService: AuthService,
     private router: Router,
-    private confirmacionService: ConfirmationService
+    private confirmacionService: ConfirmationService,
+    private dialogService: DialogService
   ) {}
   ngOnInit() {
     // Obtener usuario actual inmediatamente
@@ -92,6 +95,9 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 
   /**
@@ -193,26 +199,26 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   // Search functionality
   onSearch(query: Event): void {
-    console.log('Search query:', query);
     // Implementar lógica de búsqueda
     // Por ejemplo: this.searchService.search(query);
   }
 
   // Notification methods
   onNotificationClick(): void {
-    console.log('Notifications clicked');
-    // Implementar panel de notificaciones
-    // Por ejemplo: this.notificationService.markAsRead();
+    this.dialogRef = this.dialogService.open(NotificationsModalComponent, {
+      header: 'Centro de Notificaciones',
+      width: '500px',
+      modal: true,
+      dismissableMask: true
+    });
   }
 
   // User menu methods
   onProfileClick(): void {
-    console.log('Profile clicked');
     // Implementar navegación al perfil
   }
 
   onSettingsClick(): void {
-    console.log('Settings clicked');
     // Implementar navegación a configuración
   }
 

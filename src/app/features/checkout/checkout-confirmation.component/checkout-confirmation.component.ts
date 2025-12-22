@@ -232,7 +232,6 @@ export class CheckoutConfirmationComponent implements OnInit, OnDestroy {
 
             // Vaciar carrito
             this.cartService.vaciarCarrito().then(() => {
-              console.log('✅ Carrito vaciado');
             });
 
             // Establecer orden en el estado global

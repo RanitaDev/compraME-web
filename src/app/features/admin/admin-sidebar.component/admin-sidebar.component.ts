@@ -1,6 +1,6 @@
 // layouts/admin-sidebar/admin-sidebar.component.ts
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgForOf } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subject, takeUntil } from 'rxjs';
 import { AdminNavigationService } from '../../../services/admin/admin-navigation.service';
@@ -16,7 +16,7 @@ import { PrimeNgModule } from "../../../primeng.module";
 @Component({
   selector: 'app-admin-sidebar',
   standalone: true,
-  imports: [CommonModule, DynamicDialogModule, PrimeNgModule],
+  imports: [CommonModule, NgForOf, DynamicDialogModule, PrimeNgModule],
   providers: [DialogService],
   templateUrl: './admin-sidebar.component.html',
   styleUrls: ['./admin-sidebar.component.css'],
@@ -178,7 +178,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((resultado) => {
       if (resultado) {
         // manejar lo que regresó el dialog (ej. guardar, refrescar lista, etc.)
-        console.log('Resultado:', resultado);
       }
     });
   }

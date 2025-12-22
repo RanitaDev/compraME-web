@@ -28,6 +28,15 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   isSuccess = signal(false);
   isDirectPurchase = signal(false);
 
+    expandedSections = signal({
+      info: true,
+      direccion: false,
+      productos: false,
+      metodoPago: false,
+      entrega: false,
+      resumen: true
+    });
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -73,13 +82,9 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       this.orderData.set(localOrderData);
       this.startOrderMonitoring();
     } else {
-      console.log('No hay datos locales, buscando en backend para orden:', this.orderId);
 
       this.orderService.getOrderById(this.orderId).subscribe({
         next: (backendOrder) => {
-          console.log('Respuesta RAW del backend:', backendOrder);
-          console.log('Tipo de respuesta:', typeof backendOrder);
-          console.log('¿Es objeto?:', backendOrder && typeof backendOrder === 'object');
 
           if (!backendOrder) {
             console.error('Backend retornó undefined o null');
@@ -90,7 +95,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
 
           // Convertir datos del backend al formato IOrderConfirmation
           const orderConfirmation = this.convertBackendOrderToConfirmation(backendOrder);
-          console.log('Orden convertida:', orderConfirmation);
           this.orderData.set(orderConfirmation);
           this.startOrderMonitoring();
         },
@@ -119,10 +123,7 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
    * Convertir orden del backend al formato IOrderConfirmation
    */
   private convertBackendOrderToConfirmation(backendOrder: any): IOrderConfirmation {
-    console.log('Convirtiendo orden del backend:', backendOrder);
 
-    // Esta función convierte los datos del backend al formato que espera el frontend
-    // Usando la estructura real que recibimos del backend
     return {
       ordenId: backendOrder._id || backendOrder.id,
       fecha: new Date(backendOrder.fechaPedido || backendOrder.createdAt || Date.now()),
@@ -188,7 +189,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
     if (this.isProcessing() || this.isSuccess()) return;
 
     const orderData = this.orderData();
-    console.log('Iniciando proceso de compra para la orden:', orderData);
     if (!orderData) {
       console.error('No hay datos de orden disponibles');
       return;
@@ -245,6 +245,12 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
           this.router.navigate(['/checkout/purchase-success', orderData.ordenId]);
         }, 2000);
       }
+    } else {
+      this.orderDataService.clearOrderData();
+      if (this.isDirectPurchase()) {
+        this.directPurchaseService.clearDirectPurchase();
+      }
+      this.router.navigate(['/home']);
     }
   }
 
@@ -266,8 +272,6 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       if (!orderData) {
         throw new Error('No hay datos de orden disponibles');
       }
-
-      console.log('Iniciando proceso PayPal para orden:', orderId);
 
       // Verificar si PayPal está configurado
       if (!this.paypalService.isPayPalConfigured()) {
@@ -315,8 +319,18 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
       this.isProcessing.set(false);
       throw error;
     }
-  }  getTotalItems(): number {
+  }
+
+  getTotalItems(): number {
     return this.orderData()?.productos.reduce((total, producto) => total + producto.cantidad, 0) || 0;
+  }
+
+  toggleSection(section: 'info' | 'direccion' | 'productos' | 'metodoPago' | 'entrega' | 'resumen') {
+    const current = this.expandedSections();
+    this.expandedSections.set({
+      ...current,
+      [section]: !current[section]
+    });
   }
 
   getBankPaymentType(): 'deposito' | 'transferencia' | 'oxxo' {

@@ -1,6 +1,7 @@
 /* Imports - SIEMPRE deben ir al principio del archivo */
 @import 'primeicons/primeicons.css';
 @import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap');
+@import 'app/shared/confirm-template/confirm-template.css';
 
 @tailwind base;
 @tailwind components;
@@ -256,4 +257,25 @@ select,
   .p-toast-detail {
     font-size: 0.8rem !important;
   }
+}
+
+/* Custom styles for PrimeNG confirm dialog buttons */
+.cm-confirm-btn-accept {
+  background-color: #b91c1c !important; /* red-700 */
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.cm-confirm-btn-accept:hover {
+  background-color: #991b1b !important; /* darker on hover */
+}
+
+.cm-confirm-btn-reject {
+  background: transparent !important;
+  color: #000000 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.cm-confirm-btn-reject:hover {
+  background: rgba(0,0,0,0.04) !important;
 }

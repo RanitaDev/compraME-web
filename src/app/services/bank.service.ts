@@ -5,6 +5,7 @@ import { map, catchError, switchMap } from 'rxjs/operators';
 import { IBankAccount, IBankPaymentData, IBankPaymentResult, IBankInstructions } from '../interfaces/bank-payment.interface';
 import { OrderService } from './order.service';
 import { ToastService } from '../core/services/toast.service';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { EstadoPedido } from '../interfaces/orders.interface';
 
@@ -17,6 +18,7 @@ export class BankService {
   constructor(
     private http: HttpClient,
     private orderService: OrderService,
+    private authService: AuthService,
     private toastService: ToastService
   ) {}
 
@@ -125,6 +127,7 @@ export class BankService {
   }
 
   uploadPaymentProof(paymentData: IBankPaymentData): Observable<IBankPaymentResult> {
+    console.log('ENTRAMOS AL SERVICIO DE UPLOAD');
     return this.orderService.uploadPaymentProof(
       paymentData.orderId,
       paymentData.comprobante.archivo,
@@ -148,6 +151,7 @@ export class BankService {
           }))
         );
       }),
+
       catchError(error => {
         console.error('Error uploading payment proof:', error);
         return of({
@@ -172,5 +176,40 @@ export class BankService {
     }
 
     return { valid: true };
+  }
+
+  cancelOrder(orderId: string): Observable<{ success: boolean; message?: string }> {
+    return this.http.patch<any>(`${environment.apiUrl}/orders/${orderId}/cancelar`, {}).
+      pipe(
+        map(response => ({
+          success: true,
+          message: 'Orden cancelada correctamente'
+        })),
+        catchError(error => {
+          return of({
+            success: false,
+            message: error.error?.message || 'Error al cancelar la orden'
+          });
+        })
+      );
+  }
+
+  async agregarAlCarrito(producto: any, cantidad: number): Promise<boolean> {
+    try {
+      const usuarioActual = this.authService.getCurrentUser();
+      if (!usuarioActual) {
+        return false;
+      }
+
+      const dto = {
+        productoID: producto._id,
+        cantidad: cantidad
+      };
+
+      await this.http.post<any>(`${environment.apiUrl}/carritos/agregar/${usuarioActual.id}`, dto).toPromise();
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

@@ -79,7 +79,6 @@ export class CarouselBannerComponent implements OnInit, OnDestroy {
    * @param product - El producto a agregar
    */
   addToCart(product: IProduct): void {
-    console.log('Agregando al carrito:', product);
   }
 
   /**

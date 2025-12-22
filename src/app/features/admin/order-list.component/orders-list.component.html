@@ -93,7 +93,6 @@
           <option value="">Todos los estados</option>
           <option value="pending">Pendientes</option>
           <option value="completed">Completadas</option>
-          <option value="canceled">Canceladas</option>
         </select>
         <i class="pi pi-chevron-down absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
       </div>
@@ -101,7 +100,7 @@
   </div>
 
   <div class="orders-grid p-6">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
            class="order-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
         <div class="order-header p-3 border-b border-gray-200">
@@ -137,7 +136,7 @@
           <div class="order-summary mb-3">
             <div class="flex justify-between text-xs mb-0.5">
               <span class="text-gray-600">Productos:</span>
-              <span class="font-medium text-gray-800">{{ order.productos.length }} {{ order.productos.length === 1 ? 'producto' : 'productos' }}</span>
+              <span class="font-medium text-gray-800">{{ order.productos.length || 0 }} {{ (order.productos.length || 0) === 1 ? 'producto' : 'productos' }}</span>
             </div>
             <div class="flex justify-between text-xs mb-0.5">
               <span class="text-gray-600">Subtotal:</span>
@@ -152,29 +151,38 @@
               <span class="text-gray-900">${{ formatPrice(order.total!) }}</span>
             </div>
           </div>
-          <div class="actions-section flex gap-2">
-            <!-- Botón para revisar comprobante (solo si tiene comprobante subido) -->
-            <button
-              *ngIf="hasProofToReview(order)"
-              class="review-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
-              (click)="onReviewProof(order)"
-              title="Revisar comprobante de pago">
-              <i class="pi pi-file-check text-xs"></i>
-              Revisar
-            </button>
+            <div class="actions-section flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <button class="status-btn flex items-center justify-center px-2.5 py-[6px] bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-[10px]"
+                        (click)="onChangeStatus(order)">
+                  Cambiar estatus
+                </button>
 
-            <button class="view-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
-                    (click)="onViewOrder(order)">
-              <i class="pi pi-eye text-xs"></i>
-              Ver
-            </button>
+                <button class="view-btn flex items-center justify-center px-2.5 py-[6px] bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-[10px]"
+                        (click)="onViewOrder(order)">
+                  Ver orden
+                </button>
+              </div>
 
-            <button class="status-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
-                    (click)="onChangeStatus(order)">
-              <i class="pi pi-refresh text-xs"></i>
-              Estado
-            </button>
-          </div>
+              <div class="flex items-center gap-2 ml-auto">
+                <!-- Botón para revisar comprobante (solo si tiene comprobante subido) -->
+                <button
+                  *ngIf="hasProofToReview(order)"
+                  class="review-btn w-10 h-9 flex items-center justify-center bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 text-xs"
+                  (click)="onReviewProof(order)"
+                  pTooltip="Revisar comprobante de pago"
+                  tooltipPosition="top">
+                  <i class="pi pi-file-check text-sm"></i>
+                </button>
+
+                <button class="archive-btn w-10 h-9 flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duración-200 text-xs"
+                        (click)="onArchiveOrder(order, $event)"
+                        pTooltip="Archivar orden"
+                        tooltipPosition="top">
+                  <i class="pi pi-folder-open text-sm"></i>
+                </button>
+              </div>
+            </div>
         </div>
       </div>
     </div>
@@ -208,4 +216,6 @@
     [title]="'Ir arriba'">
     <i class="pi pi-arrow-up text-sm"></i>
   </button>
+
+  <p-confirmDialog></p-confirmDialog>
 </div>

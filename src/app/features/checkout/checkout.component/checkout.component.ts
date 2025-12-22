@@ -11,11 +11,15 @@ import { OrderDataService } from '../../../services/order-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IPaymentMethod, IAddress, ICheckoutSummary, ICartProducts } from '../../../interfaces/checkout.interface';
 import { action } from '@primeuix/themes/aura/image';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ButtonModule } from 'primeng/button';
+import { AddAddressModalComponent } from '../add-address-modal.component/add-address-modal.component';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonModule],
+  providers: [DialogService],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
@@ -26,7 +30,6 @@ export class CheckoutComponent implements OnInit {
   selectedPaymentMethod: IPaymentMethod | null = null;
   checkoutSummary: ICheckoutSummary | null = null;
   isProcessing: boolean = false;
-  showAddressForm: boolean = false;
 
   // Determinar el tipo de checkout (cart o direct)
   isDirectPurchase: boolean = false;
@@ -34,6 +37,9 @@ export class CheckoutComponent implements OnInit {
   // Estado de autenticación
   isAuthenticated: boolean = false;
   showLoginPrompt: boolean = false;
+
+  // Referencia al diálogo de agregar dirección
+  private dialogRef: DynamicDialogRef | undefined;
 
   // Getter para verificar si se puede proceder
   get canProceed(): boolean {
@@ -52,7 +58,8 @@ export class CheckoutComponent implements OnInit {
     private orderDataService: OrderDataService,
     private toastService: ToastService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit() {
@@ -65,7 +72,6 @@ export class CheckoutComponent implements OnInit {
     });
 
     this.checkPendingOrder();
-
     this.loadInitialData();
     this.buildCheckoutSummary();
     this.checkForPendingPayment();
@@ -83,22 +89,10 @@ export class CheckoutComponent implements OnInit {
     this.orderService.getUserPendingOrder(currentUser.id).subscribe({
       next: (pendingOrder) => {
         if (pendingOrder) {
-          console.log('🔍 Orden pendiente detectada, eliminando automáticamente');
-          console.log('- ID orden pendiente:', pendingOrder._id || pendingOrder.id);
-          console.log('- Tipo de compra actual:', this.isDirectPurchase ? 'COMPRA DIRECTA' : 'CARRITO');
-
-          // SIEMPRE eliminar la orden pendiente anterior (carrito o compra directa)
-          this.orderService.deleteOrder(pendingOrder._id || pendingOrder.id).subscribe({
-            next: () => {},
-            error: (error) => {
-              console.error('❌ Error eliminando orden anterior:', error);
-              this.toastService.warning('Orden pendiente', 'Tienes una orden pendiente. Complétala primero o cancélala.');
-              // Si falla eliminar, redirigir a la orden pendiente como fallback
-              setTimeout(() => {
-                this.router.navigate(['/checkout/order-confirmation', pendingOrder._id || pendingOrder.id]);
-              }, 2000);
-            }
-          });
+          // Reusar la orden pendiente existente sin eliminarla
+          const existingId = pendingOrder._id || pendingOrder.id;
+          this.toastService.info('Orden pendiente', 'Tienes una orden pendiente. Continúa el proceso de pago.');
+          this.router.navigate(['/checkout/order-confirmation', existingId]);
         }
       },
       error: (error) => {
@@ -312,13 +306,21 @@ export class CheckoutComponent implements OnInit {
     const address = this.selectedAddress;
     const paymentMethod = this.selectedPaymentMethod;
 
-    // Validaciones antes de proceder
-    if (!summary || !address || !paymentMethod) {
-      this.toastService.warning('Información incompleta', 'Por favor completa toda la información requerida antes de continuar.');
+    if (!summary) {
+      this.toastService.warning('Información incompleta', 'El resumen de compra no se ha cargado. Por favor recarga la página.');
       return;
     }
 
-    // Validación adicional para carrito vacío
+    if (!address) {
+      this.toastService.warning('Dirección requerida', 'Por favor selecciona una dirección de entrega.');
+      return;
+    }
+
+    if (!paymentMethod) {
+      this.toastService.warning('Método de pago requerido', 'Por favor selecciona un método de pago.');
+      return;
+    }
+
     if (!this.isDirectPurchase && summary.items.length === 0) {
       this.toastService.warning('Carrito vacío', 'Tu carrito está vacío. No se puede proceder con el pago.');
       this.router.navigate(['/']);
@@ -334,60 +336,99 @@ export class CheckoutComponent implements OnInit {
       };
 
       localStorage.setItem('checkout_state_for_payment', JSON.stringify(checkoutState));
-
       this.toastService.info('Iniciar sesión requerido', 'Para completar tu compra necesitas iniciar sesión. Te redirigiremos al login y después regresarás automáticamente aquí.');
       this.router.navigate(['/auth']);
       return;
     }
 
-    this.processPayment(summary, address, paymentMethod);
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.orderService.getUserPendingOrder(currentUser.id).subscribe({
+        next: (pendingOrder) => {
+          if (pendingOrder) {
+            // Ya tiene una orden pendiente, redirigir a pagarla
+            const existingId = pendingOrder._id || pendingOrder.id;
+            this.toastService.info('Orden pendiente detectada', 'Ya tienes una orden pendiente. Te redirigiremos para que la completes primero.');
+            this.router.navigate(['/checkout/order-confirmation', existingId]);
+            return;
+          }
+          // No hay orden pendiente, proceder normalmente
+          this.processPaymentInternal(summary, address, paymentMethod);
+        },
+        error: (error) => {
+          console.error('Error verificando orden pendiente:', error);
+          this.processPaymentInternal(summary, address, paymentMethod);
+        }
+      });
+      return;
+    }
+
+    this.processPaymentInternal(summary, address, paymentMethod);
   }
 
   /**
-   * Procesar el pago
+   * Método interno para procesar el pago
    */
-  private processPayment(summary: ICheckoutSummary, address: IAddress, paymentMethod: IPaymentMethod) {
+  private processPaymentInternal(summary: ICheckoutSummary, address: IAddress, paymentMethod: IPaymentMethod) {
     this.isProcessing = true;
-
     const orderData: ICheckoutSummary = {
       ...summary,
       direccionSeleccionada: address,
       metodoPagoSeleccionado: paymentMethod,
-      // Agregar información del tipo de compra
       isDirectPurchase: this.isDirectPurchase
     };
 
     this.checkoutService.processOrder(orderData).subscribe({
       next: (result) => {
         this.isProcessing = false;
+
         if (result.success) {
           if (result.isUpdate) {
             this.toastService.success('Método actualizado', 'El método de pago ha sido actualizado correctamente.');
           } else {
             this.toastService.success('Orden creada', 'Tu orden ha sido creada exitosamente.');
+
+            if (!this.isDirectPurchase) {
+              const cartBackup = {
+                items: this.checkoutSummary?.items || [],
+                timestamp: Date.now()
+              };
+              localStorage.setItem('cart_backup_before_order', JSON.stringify(cartBackup));
+
+              this.cartService.vaciarCarrito();
+            }
           }
 
           localStorage.removeItem('checkout_state_for_payment');
 
           const queryParams = this.isDirectPurchase ? { type: 'direct' } : {};
           this.router.navigate(['/checkout/order-confirmation', result.orderId], { queryParams });
+
         } else {
           const errorMessage = result.error || 'Error desconocido al procesar el pedido';
-
-          // Si hay un orderId en el error, significa que tiene una orden pendiente
           if (result.orderId) {
             this.toastService.warning('Orden pendiente encontrada', errorMessage);
             setTimeout(() => {
               this.router.navigate(['/checkout/order-confirmation', result.orderId]);
             }, 2000);
-          } else {
-            this.toastService.error('Error al procesar pedido', errorMessage);
           }
+          else this.toastService.error('Error al procesar pedido', errorMessage);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         this.isProcessing = false;
-        this.toastService.error('Error de conexión', 'Por favor verifica tu internet e intenta nuevamente.');
+        console.error('❌ Error al procesar orden:', error);
+
+        // Intentar extraer mensaje más específico del error
+        let errorMessage = 'Error de conexión. Por favor intenta nuevamente.';
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'object' && error?.message) {
+          errorMessage = error.message;
+        }
+
+        this.toastService.error('Error al procesar pedido', errorMessage);
       }
     });
   }
@@ -399,7 +440,39 @@ export class CheckoutComponent implements OnInit {
     }).format(price);
   }
 
+  goBack() {
+    window.history.back();
+  }
+
   addNewAddress() {
-    this.showAddressForm = false;
+    this.dialogRef = this.dialogService.open(AddAddressModalComponent, {
+      header: 'Nueva Dirección',
+      width: '36rem',
+      modal: true,
+      draggable: false,
+      closeOnEscape: true
+    });
+
+    this.dialogRef.onClose.subscribe((result: any) => {
+      if (result && result.saved) {
+        // Aquí enviarías la dirección al backend
+        // Por ahora la agregamos localmente
+        const newAddress: IAddress = {
+          id: this.addresses.length + 1,
+          ...result.address
+        };
+
+        // Si es principal, desmarcar las demás
+        if (newAddress.esPrincipal) {
+          this.addresses.forEach(addr => addr.esPrincipal = false);
+        }
+
+        this.addresses.push(newAddress);
+        this.selectedAddress = newAddress;
+        this.updateShippingCost(newAddress);
+
+        this.toastService.success('Dirección agregada', 'La dirección ha sido agregada correctamente.');
+      }
+    });
   }
 }

@@ -166,7 +166,6 @@ export class AuthComponent {
 
       this.authService.register(registerData).subscribe({
         next: (response: any) => {
-          console.log('Usuario registrado:', response.user);
           this.toastService.success('¡Cuenta creada!', 'Tu cuenta ha sido creada exitosamente. ¡Bienvenido a compraME!');
 
           // Pequeño delay para que el usuario vea el toast antes de navegar

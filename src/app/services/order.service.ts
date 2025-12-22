@@ -72,7 +72,7 @@ export class OrderService {
   }
 
   /**
-   * Actualizar productos de una orden existente (para carrito)
+   * Actualizar productos de una orden existente
    */
   public updateOrderProducts(orderId: string, checkoutData: ICheckoutSummary): Observable<{ success: boolean }> {
     const payload = {
@@ -87,12 +87,10 @@ export class OrderService {
       impuestos: checkoutData.impuestos,
       costoEnvio: checkoutData.envio,
       descuentos: checkoutData.descuentos || 0,
-      total: checkoutData.total,
-      // Actualizar fecha límite para carrito (resetear 2 días)
-      fechaLimitePago: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)).toISOString()
+      total: checkoutData.total
     };
 
-    return this.http.put<any>(`${this.apiUrl}/${orderId}/products`, payload).pipe(
+    return this.http.patch<any>(`${this.apiUrl}/${orderId}`, payload).pipe(
       map(response => ({ success: response.success || true })),
       catchError(error => {
         console.error('Error updating order products:', error);
@@ -114,25 +112,37 @@ export class OrderService {
     );
   }
 
-  /**
-   * Crear una nueva orden en el backend
-   */
+
   public createOrder(checkoutData: ICheckoutSummary): Observable<{ orderId: string; orderNumber: string; paymentDeadline: Date }> {
-    const orderPayload = this.buildOrderPayload(checkoutData);
+    let orderPayload;
+
+    try {
+      orderPayload = this.buildOrderPayload(checkoutData);
+      console.log('OBJETO A MANDAR AL BACK', orderPayload);
+    } catch (error: any) {
+      return throwError(() =>
+          new Error(`Error de validación: ${error.message}`
+        ));
+    }
 
     return this.http.post<any>(`${this.apiUrl}`, orderPayload).pipe(
       map(response => {
-        // Adaptar la respuesta del backend a lo que espera el frontend
+        const orderId = response._id || response.id || response.data?._id || response.data?.id;
+        const numeroOrden = response.numeroOrden || response.orderNumber || response.data?.numeroOrden;
+        const paymentDeadline = response.fechaLimitePago || response.data?.fechaLimitePago;
+
+        if (!orderId) throw new Error('La respuesta del backend no contiene ID de orden');
+
         return {
-          orderId: response.id || response._id || response.data?.id,
-          orderNumber: response.numeroOrden || response.orderNumber || response.data?.numeroOrden,
-          paymentDeadline: response.fechaLimitePago ? new Date(response.fechaLimitePago) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+          orderId: orderId.toString(),
+          orderNumber: numeroOrden || 'N/A',
+          paymentDeadline: paymentDeadline ? new Date(paymentDeadline) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
         };
       }),
-      catchError(error => {
-        console.error('Error creating order:', error);
 
-        // Si el error es por orden pendiente existente, retornarlo para manejo especial
+      catchError(error => {
+        console.error('- Error Response:', error.error);
+
         if (error.status === 400 && error.error?.existingOrder) {
           return throwError(() => ({
             type: 'PENDING_ORDER_EXISTS',
@@ -141,7 +151,11 @@ export class OrderService {
           }));
         }
 
-        return throwError(() => new Error('Error al crear la orden'));
+        const errorMessage = error.error?.message || error.error?.error ||
+                              error.error?.statusText || 'Error al crear la orden';
+
+        console.error('📌 Final error message:', errorMessage);
+        return throwError(() => new Error(errorMessage));
       })
     );
   }
@@ -151,9 +165,8 @@ export class OrderService {
    */
   public updatePaymentMethod(orderId: string, paymentMethodType: string, paymentMethodName: string): Observable<{ success: boolean }> {
     const payload = {
-      paymentMethodType,
-      paymentMethodName,
-      lastPaymentMethodUpdate: new Date().toISOString()
+      tipoMetodoPago: paymentMethodType,
+      metodoPago: paymentMethodName
     };
 
     return this.http.put<any>(`${this.apiUrl}/${orderId}/payment-method`, payload).pipe(
@@ -167,42 +180,21 @@ export class OrderService {
 
   /**
    * Actualizar estado de una orden
+   * Solo envía los campos que el backend permite (UpdateStatusDto)
    */
   public updateOrderStatus(
     orderId: string,
     status: IOrders['estado'],
-    notas?: string
+    numeroReferencia?: string
   ): Observable<{ success: boolean; message?: string }> {
+    // UpdateStatusDto solo acepta: estado, comprobanteUrl, numeroReferencia
     const payload: any = {
-      estado: status,
-      updatedAt: new Date().toISOString()
+      estado: status
     };
 
-    // Agregar notas si se proporcionan
-    if (notas) {
-      payload.notasAdmin = notas;
-    }
-
-    // Agregar campos específicos según el estado
-    switch (status) {
-      case 'paid':
-        payload.fechaPagado = new Date().toISOString();
-        break;
-      case 'shipped':
-        payload.fechaEnvio = new Date().toISOString();
-        if (!payload.fechaPreparacion) {
-          payload.fechaPreparacion = new Date().toISOString();
-        }
-        break;
-      case 'delivered':
-        payload.fechaEntrega = new Date().toISOString();
-        break;
-      case 'canceled':
-        payload.razonCancelacion = notas || 'Cancelado por administrador';
-        break;
-      case 'expired':
-        payload.razonCancelacion = notas || 'Tiempo de pago expirado';
-        break;
+    // Agregar número de referencia si se proporciona
+    if (numeroReferencia) {
+      payload.numeroReferencia = numeroReferencia;
     }
 
     return this.http.put<any>(`${this.apiUrl}/${orderId}/status`, payload).pipe(
@@ -226,7 +218,7 @@ export class OrderService {
     paymentMethod: string;
     transactionDate: Date;
   }): Observable<{ success: boolean; proofUrl: string }> {
-    // Validar que el monto sea un número válido
+    console.log('ENTRAMOS AL SERVICIO DE ORDENES');
     const monto = Number(paymentData.amount);
     if (isNaN(monto) || monto < 0) {
       return throwError(() => new Error('El monto debe ser un número válido mayor o igual a 0'));
@@ -318,53 +310,73 @@ export class OrderService {
     );
   }
 
-  /**
-   * Construir payload para crear orden según DTOs del backend
-   */
+
   private buildOrderPayload(checkoutData: ICheckoutSummary): any {
     const selectedAddress = checkoutData.direccionSeleccionada;
     const selectedPayment = checkoutData.metodoPagoSeleccionado;
     const currentUser = this.authService.getCurrentUser();
 
-    if (!selectedAddress || !selectedPayment) {
-      throw new Error('Datos de dirección y método de pago son requeridos');
+    if (!selectedAddress || !selectedPayment || !currentUser) {
+      throw new Error('Datos de dirección, método de pago y usuario son requeridos');
     }
 
-    if (!currentUser) {
-      throw new Error('Usuario debe estar autenticado para crear orden');
+    if (!checkoutData.items || checkoutData.items.length === 0) {
+      throw new Error('La orden debe contener al menos un producto');
     }
 
-    // Construir payload exactamente como lo espera el backend
-    const payload = {
-      usuarioId: currentUser.id,
-      productos: checkoutData.items.map(item => ({
-        productoId: item.idProducto || '', // Backend espera 'productoId', no 'idProducto'
-        nombre: item.nombre || '',
-        cantidad: item.cantidad || 1,
-        precioUnitario: item.precio || 0,
-        subtotal: item.subtotal || 0
-      })),
-      direccionEnvio: {
-        nombreCompleto: selectedAddress.nombreCompleto || '',
-        telefono: selectedAddress.telefono || '',
-        calle: selectedAddress.calle || '',
-        numeroExterior: selectedAddress.numeroExterior || '',
-        numeroInterior: selectedAddress.numeroInterior || undefined,
-        colonia: selectedAddress.colonia || '',
-        ciudad: selectedAddress.ciudad || '',
-        estado: selectedAddress.estado || '',
-        codigoPostal: selectedAddress.codigoPostal || '',
-        referencias: selectedAddress.referencias || undefined
-      },
-      subtotal: checkoutData.subtotal || 0,
-      impuestos: checkoutData.impuestos || 0,
-      costoEnvio: checkoutData.envio || 0,
-      descuentos: checkoutData.descuentos || 0,
-      total: checkoutData.total || 0,
-      metodoPago: selectedPayment.nombre || '',
-      tipoMetodoPago: selectedPayment.tipo || 'transferencia'
+    if (!selectedAddress.nombreCompleto?.trim()) throw new Error('Nombre completo es requerido');
+    if (!selectedAddress.telefono?.trim()) throw new Error('Teléfono es requerido');
+    if (!selectedAddress.calle?.trim()) throw new Error('Calle es requerida');
+    if (!selectedAddress.numeroExterior?.trim()) throw new Error('Número exterior es requerido');
+    if (!selectedAddress.colonia?.trim()) throw new Error('Colonia es requerida');
+    if (!selectedAddress.ciudad?.trim()) throw new Error('Ciudad es requerida');
+    if (!selectedAddress.estado?.trim()) throw new Error('Estado es requerido');
+    if (!selectedAddress.codigoPostal?.trim()) throw new Error('Código postal es requerido');
+
+    const productosPayload = checkoutData.items.map(item => {
+      if (!item.idProducto?.trim()) throw new Error('ID de producto es requerido');
+      if (!item.nombre?.trim()) throw new Error('Nombre de producto es requerido');
+      if (item.cantidad < 1) throw new Error('Cantidad debe ser mayor a 0');
+      if (item.precio < 0) throw new Error('Precio no puede ser negativo');
+
+      return {
+        productoId: item.idProducto,
+        nombre: item.nombre,
+        cantidad: Math.round(item.cantidad),
+        precioUnitario: Number(item.precio),
+        subtotal: Number(item.subtotal)
+      };
+    }) || [];
+
+    const direccionPayload = {
+      nombreCompleto: selectedAddress.nombreCompleto.trim(),
+      telefono: selectedAddress.telefono.trim(),
+      calle: selectedAddress.calle.trim(),
+      numeroExterior: selectedAddress.numeroExterior.trim(),
+      numeroInterior: selectedAddress.numeroInterior?.trim() || '',
+      colonia: selectedAddress.colonia.trim(),
+      ciudad: selectedAddress.ciudad.trim(),
+      estado: selectedAddress.estado.trim(),
+      codigoPostal: selectedAddress.codigoPostal.trim(),
+      referencias: selectedAddress.referencias?.trim() || ''
     };
 
+    if (!selectedPayment.tipo?.trim()) throw new Error('Tipo de método de pago es requerido');
+    if (!selectedPayment.nombre?.trim()) throw new Error('Nombre de método de pago es requerido');
+
+    const payload = {
+      usuarioId: currentUser.id,
+      productos: productosPayload,
+      direccionEnvio: direccionPayload,
+      subtotal: Math.max(0, Number(checkoutData.subtotal || 0)),
+      impuestos: Math.max(0, Number(checkoutData.impuestos || 0)),
+      costoEnvio: Math.max(0, Number(checkoutData.envio || 0)),
+      descuentos: Math.max(0, Number(checkoutData.descuentos || 0)),
+      total: Math.max(0, Number(checkoutData.total || 0)),
+      metodoPago: selectedPayment.nombre,
+      tipoMetodoPago: selectedPayment.tipo,
+      notas: ''
+    };
     return payload;
   }
 
@@ -434,5 +446,70 @@ export class OrderService {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     return { days, hours, minutes, expired: false };
+  }
+
+  public getArchivedOrders(): Observable<IOrders[]> {
+    return this.http.get<IOrders[]>(`${this.apiUrl}/archivadas/all`)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching archived orders:', error);
+          return of([]);
+        })
+      );
+  }
+
+  public archiveOrder(orderId: string): Observable<{ success: boolean }> {
+    return this.http.patch<any>(`${this.apiUrl}/${orderId}/archivo`, {})
+      .pipe(
+        map(response => ({ success: !!response })),
+        catchError(error => {
+          console.error('Error archiving order:', error);
+          return of({ success: false });
+        })
+      );
+  }
+
+  public unarchiveOrder(orderId: string): Observable<{ success: boolean }> {
+    return this.http.patch<any>(`${this.apiUrl}/${orderId}/desarchivo`, {})
+      .pipe(
+        map(response => ({ success: !!response })),
+        catchError(error => {
+          console.error('Error unarchiving order:', error);
+          return of({ success: false });
+        })
+      );
+  }
+
+  public deleteArchivedOrder(orderId: string): Observable<{ success: boolean; message?: string }> {
+    return this.http.delete<any>(`${this.apiUrl}/${orderId}/archivo`)
+      .pipe(
+        map(response => ({ success: !!response })),
+        catchError(error => {
+          return of({
+            success: false,
+            message: error.error?.message || 'Error deleting archived order'
+          });
+        })
+      );
+  }
+
+  public canDeleteOrder(order: IOrders): { canDelete: boolean; daysRemaining: number } {
+    if (!order || !order.estado) {
+      return { canDelete: false, daysRemaining: 30 };
+    }
+
+    const historiaCancelacion = order.historialEstados
+      ?.find(h => h.estado === 'canceled');
+
+    if (!historiaCancelacion) {
+      return { canDelete: false, daysRemaining: 30 };
+    }
+
+    const fechaCancelacion = new Date(historiaCancelacion.fecha);
+    const ahora = new Date();
+    const diasTranscurridos = Math.floor((ahora.getTime() - fechaCancelacion.getTime()) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.max(0, 30 - diasTranscurridos);
+
+    return { canDelete: diasTranscurridos >= 30, daysRemaining };
   }
 }

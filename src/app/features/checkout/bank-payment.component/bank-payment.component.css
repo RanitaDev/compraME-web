@@ -16,3 +16,18 @@
     transform: translateY(-1px);
   }
 }
+
+/* Forzar que el botón de PrimeNG ocupe todo el ancho */
+::ng-deep p-fileUpload .p-fileupload-buttonbar {
+  width: 100% !important;
+  display: flex;
+  justify-content: center;
+}
+
+::ng-deep p-fileUpload .p-fileupload-buttonbar .p-button {
+  width: 100% !important;
+  max-width: 400px;
+  padding: 0.75rem 2rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}

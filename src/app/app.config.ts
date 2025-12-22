@@ -10,7 +10,7 @@ import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 
 export const appConfig: ApplicationConfig = {
@@ -18,6 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     MessageService,
     DialogService,
+    ConfirmationService,
     provideAnimationsAsync(),
     provideHttpClient(
       withInterceptors(

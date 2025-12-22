@@ -1,0 +1,58 @@
+/* archived-orders-list.component.css */
+
+.archived-orders-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.deletion-info {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actions-section button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actions-section button:disabled:hover {
+  opacity: 0.6;
+}
+
+.empty-state {
+  padding: 4rem 2rem;
+}
+
+@media (max-width: 768px) {
+  .orders-grid {
+    padding: 1rem;
+  }
+
+  .order-card {
+    margin-bottom: 1rem;
+  }
+}

@@ -1,0 +1,278 @@
+<div class="archived-orders-container min-h-full bg-gray-50">
+  <div class="bg-white border-b border-gray-200 p-4">
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <h1 class="text-lg font-semibold text-gray-800">Órdenes Archivadas</h1>
+        <p class="text-sm text-gray-600 mt-0.5">Gestiona órdenes archivadas y canceladas</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button *ngIf="searchTerm || statusFilter"
+                class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm flex items-center gap-2"
+                (click)="clearFilters()">
+          <i class="pi pi-filter-slash text-xs"></i>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-section grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+      <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-xs font-medium">Total Archivadas</p>
+            <p class="text-lg font-bold text-gray-900">{{ totalArchived }}</p>
+          </div>
+          <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+            <i class="pi pi-archive text-gray-600 text-xs"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-xs font-medium">Canceladas</p>
+            <p class="text-lg font-bold text-red-700">{{ totalCanceled }}</p>
+          </div>
+          <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+            <i class="pi pi-times-circle text-red-600 text-xs"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-xs font-medium">Listas para eliminar</p>
+            <p class="text-lg font-bold text-orange-700">{{ pendingDelete }}</p>
+          </div>
+          <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+            <i class="pi pi-trash text-orange-600 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-section flex flex-col md:flex-row gap-3">
+      <div class="flex-1 relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input
+          type="text"
+          placeholder="Buscar por número de orden, cliente o ID..."
+          class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200 text-sm"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()">
+      </div>
+
+      <div class="relative">
+        <select class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent bg-white transition-all duration-200 appearance-none pr-8 text-sm"
+                [(ngModel)]="statusFilter"
+                (change)="onFilterChange()">
+          <option value="">Todos los estados</option>
+          <option value="canceled">Canceladas</option>
+          <option value="pending">Pendientes</option>
+          <option value="completed">Completadas</option>
+        </select>
+        <i class="pi pi-chevron-down absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="flex items-center justify-center py-20">
+    <div class="text-center">
+      <i class="pi pi-spin pi-spinner text-3xl text-gray-400 mb-4 inline-block"></i>
+      <p class="text-gray-600 text-sm">Cargando órdenes archivadas...</p>
+    </div>
+  </div>
+
+  <div class="orders-grid p-6" *ngIf="!isLoading">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
+           class="order-card bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 relative flex flex-col">
+
+        <div class="order-header p-3 border-b border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="order-number text-base font-bold text-gray-900">
+              #{{ order.numeroOrden }}
+            </h3>
+            <span class="status-badge px-2 py-1 rounded-full text-xs font-semibold text-gray-100"
+                  [class]="getStatusBadgeClass(order.estado)">
+              {{ getStatusText(order.estado) }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1.5 text-gray-500">
+              <i class="pi pi-calendar text-xs"></i>
+              <span>{{ formatDate(order.createdAt) }}</span>
+            </div>
+            <div *ngIf="order.fechaArchivado" class="flex items-center gap-1.5 text-gray-500">
+              <i class="pi pi-archive text-xs"></i>
+              <span>{{ formatDate(order.fechaArchivado) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-content p-3 flex flex-col flex-1">
+          <div class="customer-info mb-3 pb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user text-gray-400 text-xs"></i>
+              <span class="customer-name text-xs font-medium text-gray-700">
+                Cliente ID: {{ order.usuarioId }}
+              </span>
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <i class="pi pi-credit-card text-gray-400 text-xs"></i>
+              <span class="text-xs font-medium text-gray-700">
+                {{ order.metodoPago || 'Sin método' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="order-summary mb-3">
+            <div class="flex justify-between text-xs mb-0.5">
+              <span class="text-gray-600">Productos:</span>
+              <span class="font-medium text-gray-800">{{ order.productos.length || 0 }} {{ (order.productos.length || 0) === 1 ? 'producto' : 'productos' }}</span>
+            </div>
+            <div class="flex justify-between text-xs mb-0.5">
+              <span class="text-gray-600">Subtotal:</span>
+              <span class="font-medium text-gray-800">${{ formatPrice(order.subtotal || 0) }}</span>
+            </div>
+            <div *ngIf="order.costoEnvio" class="flex justify-between text-xs mb-0.5">
+              <span class="text-gray-600">Envío:</span>
+              <span class="font-medium text-gray-800">${{ formatPrice(order.costoEnvio) }}</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
+              <span class="text-gray-800">Total:</span>
+              <span class="text-gray-900">${{ formatPrice(order.total!) }}</span>
+            </div>
+          </div>
+
+          <!-- Información de eliminación para órdenes canceladas -->
+          <div *ngIf="order.estado === 'canceled'" class="deletion-info mb-3 p-2 rounded bg-red-50 border border-red-200">
+            <div class="text-xs text-red-800">
+              <div class="font-semibold mb-1 flex items-center gap-1">
+                <i class="pi pi-exclamation-triangle text-xs"></i>
+                Información de Eliminación
+              </div>
+              <div *ngIf="!canDeleteOrder(order)" class="text-red-700">
+                Esperando {{ getDaysRemaining(order) }} día(s) para poder eliminar
+              </div>
+              <div *ngIf="canDeleteOrder(order)" class="text-orange-700 font-semibold">
+                ¡Lista para eliminar permanentemente!
+              </div>
+            </div>
+          </div>
+
+          <div class="actions-section flex gap-2 mt-auto">
+            <button class="view-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
+                    (click)="onViewOrder(order)">
+              <i class="pi pi-eye text-xs"></i>
+              Ver
+            </button>
+
+            <button class="unarchive-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
+                    (click)="onUnarchiveOrder(order, $event)"
+                    title="Desarchivar esta orden"
+                    *ngIf="order.estado !== 'canceled'"
+                    >
+              <i class="pi pi-inbox text-xs"></i>
+              Desarchivar orden
+            </button>
+
+            <button class="delete-btn flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-white rounded-lg transition-colors duration-200 font-medium text-xs"
+                    [ngClass]="canDeleteOrder(order) ? 'bg-red-600 hover:bg-red-700 cursor-pointer' : 'bg-red-300 cursor-not-allowed'"
+                    [disabled]="!canDeleteOrder(order)"
+                    (click)="onDeleteOrder(order, $event)"
+                    [title]="canDeleteOrder(order) ? 'Eliminar permanentemente' : 'No se puede eliminar aún'">
+              <i class="pi pi-trash text-xs"></i>
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredOrders.length === 0" class="empty-state text-center py-16">
+      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+        <i class="pi pi-inbox text-gray-400 text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron órdenes</h3>
+      <p class="text-gray-600 mb-6">
+        {{ searchTerm || statusFilter ? 'Intenta con otros criterios de búsqueda' : 'No hay órdenes archivadas aún' }}
+      </p>
+      <button *ngIf="searchTerm || statusFilter"
+              class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
+              (click)="clearFilters()">
+        <i class="pi pi-filter-slash text-sm"></i>
+        Limpiar Filtros
+      </button>
+    </div>
+
+    <div *ngIf="hasMoreOrders" class="load-more-section text-center mt-8">
+      <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+              (click)="loadMoreOrders()">
+        <i class="pi pi-refresh text-sm mr-2"></i>
+        Cargar más órdenes
+      </button>
+    </div>
+  </div>
+
+  <button
+    class="fixed bottom-6 right-6 w-12 h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 z-50"
+    (click)="scrollToTop()"
+    [title]="'Ir arriba'">
+    <i class="pi pi-arrow-up text-sm"></i>
+  </button>
+
+  <!-- Dialog de confirmación para escritura de "eliminar" -->
+  <p-dialog
+    [(visible)]="showDeleteConfirmDialog"
+    [header]="'Confirmar Eliminación'"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    [blockScroll]="true"
+    [dismissableMask]="false"
+    [showHeader]="true"
+    [resizable]="false">
+
+    <div class="space-y-4">
+      <div class="text-sm text-gray-700 mt-2">
+        <p class="font-semibold mb-1">
+          ¿Deseas eliminar la orden <span class="text-red-600">{{ pendingDeleteOrder?.numeroOrden }}</span>?
+        </p>
+        <p class="text-gray-600 mb-3">
+          Para continuar, debes escribir exactamente <span class="font-bold text-red-600">"eliminar"</span> en el campo de abajo.
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Escribe "eliminar":</label>
+        <input
+          type="text"
+          [(ngModel)]="deleteConfirmText"
+          placeholder="Escribe 'eliminar'"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+          (keyup.enter)="confirmDelete()">
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex gap-2 justify-end mt-2">
+        <button
+          type="button"
+          class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-colors duration-200 font-medium text-sm"
+          (click)="closeDeleteConfirmDialog()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="deleteConfirmText !== 'eliminar'"
+          (click)="confirmDelete()">
+          Continuar
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

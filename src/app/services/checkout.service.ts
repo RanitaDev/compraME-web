@@ -39,12 +39,8 @@ export class CheckoutService {
     return this.taxConfigService.calculateShipping(subtotal, address.codigoPostal);
   }
 
-  /**
-   * Procesar orden - Lógica mejorada según tipo de compra
-   */
-  processOrder(orderData: ICheckoutSummary): Observable<{ success: boolean; orderId?: string; error?: string; paymentDeadline?: Date; isUpdate?: boolean }> {
+  public processOrder(orderData: ICheckoutSummary): Observable<{ success: boolean; orderId?: string; error?: string; paymentDeadline?: Date; isUpdate?: boolean }> {
     const currentUser = this.authService.getCurrentUser();
-
     if (!currentUser) {
       return of({
         success: false,
@@ -52,74 +48,38 @@ export class CheckoutService {
       });
     }
 
-    // Determinar si es compra directa
-    const isDirectPurchase = this.isDirectPurchaseFlow(orderData);
-
-    // Primero verificar si tiene orden pendiente
     return this.orderService.getUserPendingOrder(currentUser.id).pipe(
       switchMap(pendingOrder => {
 
         if (pendingOrder) {
-
-          if (isDirectPurchase) {
-
-            return this.orderService.deleteOrder(pendingOrder._id || pendingOrder.id).pipe(
-              switchMap(() => {
-                // Crear nueva orden después de eliminar la anterior
-                return this.orderService.createOrder(orderData).pipe(
-                  map(response => {
-                    this.orderDataService.createOrderFromCheckout(orderData, response.orderId);
-
-                    return {
-                      success: true,
-                      orderId: response.orderId,
-                      paymentDeadline: response.paymentDeadline,
-                      isUpdate: false
-                    };
-                  })
-                );
-              }),
-              catchError(error => {
-                console.error('❌ Error en compra directa:', error);
-                return of({
-                  success: false,
-                  error: error.message || 'Error al procesar compra directa'
-                });
-              })
-            );
-          } else {
-            // CARRITO con orden pendiente: Actualizar productos de orden existente
-
-            return this.orderService.updateOrderProducts(pendingOrder.id, orderData).pipe(
-              switchMap(() => {
-                // También actualizar método de pago si cambió
-                const paymentMethod = orderData.metodoPagoSeleccionado;
-                if (paymentMethod && paymentMethod.tipo !== pendingOrder.tipoMetodoPago) {
-                  return this.orderService.updatePaymentMethod(pendingOrder.id, paymentMethod.tipo, paymentMethod.nombre).pipe(
-                    map(() => ({
-                      success: true,
-                      orderId: pendingOrder.id,
-                      paymentDeadline: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)), // Nueva fecha límite
-                      isUpdate: true
-                    }))
-                  );
-                } else {
-                  return of({
+          return this.orderService.updateOrderProducts(pendingOrder.id, orderData).pipe(
+            switchMap(() => {
+              // También actualizar método de pago si cambió
+              const paymentMethod = orderData.metodoPagoSeleccionado;
+              if (paymentMethod && paymentMethod.tipo !== pendingOrder.tipoMetodoPago) {
+                return this.orderService.updatePaymentMethod(pendingOrder.id, paymentMethod.tipo, paymentMethod.nombre).pipe(
+                  map(() => ({
                     success: true,
                     orderId: pendingOrder.id,
                     paymentDeadline: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)), // Nueva fecha límite
                     isUpdate: true
-                  });
-                }
-              }),
-              catchError(error => of({
-                success: false,
-                error: error.message || 'Error al actualizar orden del carrito'
-              }))
-            );
-          }
+                  }))
+                );
+              } else {
+                return of({
+                  success: true,
+                  orderId: pendingOrder.id,
+                  paymentDeadline: new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)), // Nueva fecha límite
+                  isUpdate: true
+                });
+              }
+            }),
+            catchError(error => of({
+              success: false,
+              error: error.message || 'Error al actualizar orden existente'
+            }))
+          );
         } else {
-
           return this.orderService.createOrder(orderData).pipe(
             map(response => {
               this.orderDataService.createOrderFromCheckout(orderData, response.orderId);
@@ -130,6 +90,7 @@ export class CheckoutService {
                 isUpdate: false
               };
             }),
+
             catchError(error => {
               if (error.type === 'PENDING_ORDER_EXISTS') {
                 return of({
@@ -147,6 +108,7 @@ export class CheckoutService {
           );
         }
       }),
+
       catchError(error => {
         console.error('Error in processOrder:', error);
         return of({
@@ -165,7 +127,7 @@ export class CheckoutService {
   }  /**
    * Actualizar método de pago de una orden existente
    */
-  updateOrderPaymentMethod(orderId: string, paymentMethod: IPaymentMethod): Observable<{ success: boolean; error?: string }> {
+  public updateOrderPaymentMethod(orderId: string, paymentMethod: IPaymentMethod): Observable<{ success: boolean; error?: string }> {
     return this.orderService.updatePaymentMethod(orderId, paymentMethod.tipo, paymentMethod.nombre).pipe(
       map(response => ({ success: response.success })),
       catchError(error => {
@@ -178,7 +140,7 @@ export class CheckoutService {
     );
   }
 
-  addNewAddress(address: Omit<IAddress, 'id'>): Observable<IAddress> {
+  public addNewAddress(address: Omit<IAddress, 'id'>): Observable<IAddress> {
     return this.addressService.addNewAddress(address);
   }
 }

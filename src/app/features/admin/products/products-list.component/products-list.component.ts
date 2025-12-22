@@ -6,15 +6,17 @@ import { Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ProductService } from '../../../../services/products.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import { IProduct } from '../../../../interfaces/products.interface';
 import { CategoryService } from '../../../../services/category.service';
 import { Category } from '../../../../interfaces/categories.interface';
 import { AddProductModalComponent } from '../add-product-modal.component/add-product-modal.component';
+import { PrimeNgModule } from '../../../../primeng.module';
 
 @Component({
   selector: 'app-products-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PrimeNgModule],
   templateUrl: './products-list.component.html',
   styleUrls: ['./products-list.component.css'],
   providers: [DialogService]
@@ -47,6 +49,9 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   // Referencia del modal
   private modalRef?: DynamicDialogRef;
 
+  // Confirm service
+  private confirmService = inject(ConfirmService);
+
   // Subject para búsqueda con debounce
   private searchSubject = new Subject<string>();
 
@@ -54,7 +59,6 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.initializeSearchDebounce();
     this.loadProducts();
     this.loadCategories();
-    console.log('productos', this.allProducts);
   }
 
   ngOnDestroy(): void {
@@ -96,8 +100,6 @@ export class ProductsListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (products) => {
-          console.log('PRODUCTOS', products);
-
           this.allProducts = products.filter(p => p.activo);
           this.updateFilteredProducts();
           this.calculateStats();
@@ -157,7 +159,6 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   onEditProduct(product: IProduct): void {
-    console.log('Editing product:', product);
     this.modalRef = this.dialog.open(AddProductModalComponent, {
       header: 'Editar Producto',
       width: '800px',
@@ -171,14 +172,12 @@ export class ProductsListComponent implements OnInit, OnDestroy {
 
     this.modalRef.onClose.subscribe((resultado) => {
       if (resultado && resultado.action === 'saved') {
-        console.log('Producto actualizado:', resultado.product);
         this.onProductUpdated(resultado.product);
       }
     });
   }
 
   onViewProduct(product: IProduct): void {
-    console.log('Viewing product:', product.nombre);
     // Mostrar modal o navegar a vista detallada
     // this.router.navigate(['/admin/products/view', product.idProducto]);
   }
@@ -253,11 +252,50 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    console.log('✅ Éxito:', message);
   }
 
   trackByProductId(index: number, product: IProduct): string | undefined {
     return product?.idProducto;
+  }
+
+  /** Toggle product active state with confirmation and backend update */
+  toggleProductStatus(product: IProduct): void {
+    const previous = product.activo;
+    const newStatus = !previous;
+    const action = newStatus ? 'activar' : 'desactivar';
+    const message = `Se va a ${action} el producto "${product.nombre}". ¿Deseas continuar?`;
+
+    this.confirmService.confirm({
+      header: 'Confirmar cambio de estado',
+      message,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí',
+      rejectLabel: 'No',
+      accept: () => {
+        this.productService.actualizarProducto(product._id, { activo: newStatus })
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res) => {
+              if (res) {
+                const idx = this.allProducts.findIndex(p => p._id === product._id);
+                if (idx !== -1) this.allProducts[idx] = res;
+                this.updateFilteredProducts();
+                this.calculateStats();
+                this.showSuccessMessage(`Producto ${res.activo ? 'activado' : 'desactivado'} correctamente`);
+              } else {
+                this.showErrorMessage('No se pudo actualizar el producto');
+              }
+            },
+            error: (err) => {
+              console.error('Error actualizando producto:', err);
+              this.showErrorMessage('Error al actualizar el producto');
+            }
+          });
+      },
+      reject: () => {
+        // usuario canceló
+      }
+    });
   }
 
   scrollToTop(): void {

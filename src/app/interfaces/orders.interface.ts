@@ -84,6 +84,8 @@ export interface IOrders {
   // Metadatos
   stockReservado?: boolean; // true = stock reservado, false = stock liberado
   razonCancelacion?: string;
+  archivada?: boolean;
+  fechaArchivado?: Date;
 }
 
 export interface IOrderItem {

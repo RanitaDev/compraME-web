@@ -2,9 +2,12 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ConfirmationService } from 'primeng/api';
 import { IOrders, IOrderItem } from '../../../interfaces/orders.interface';
 import { OrderService } from '../../../services';
 import { ToastService } from '../../../core/services/toast.service';
@@ -15,8 +18,8 @@ import { OrderDetailModalComponent } from '../order-detail-modal.component/order
 @Component({
   selector: 'app-orders-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  providers: [DialogService],
+  imports: [CommonModule, FormsModule, TooltipModule, ConfirmDialogModule],
+  providers: [DialogService, ConfirmationService],
   templateUrl: './orders-list.component.html',
   styleUrls: ['./orders-list.component.css']
 })
@@ -26,6 +29,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   private ordersService = inject(OrderService);
   private dialogService = inject(DialogService);
   private toastService = inject(ToastService);
+  private confirmationService = inject(ConfirmationService);
   private destroy$ = new Subject<void>();
   private dialogRef: DynamicDialogRef | undefined;
 
@@ -83,8 +87,8 @@ export class OrdersListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (orders) => {
-          console.log('Órdenes cargadas:', orders);
-          this.allOrders = orders;
+          this.allOrders = orders.filter(order => order.estado !== 'canceled');
+          console.log('Orders loaded:', this.allOrders);
           this.updateFilteredOrders();
           this.calculateStats();
         },
@@ -210,7 +214,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   public onChangeStatus(order: IOrders): void {
     this.dialogRef = this.dialogService.open(ChangeOrderStatusComponent, {
       header: 'Cambiar Estado de Orden',
-      width: '600px',
+      width: '85%',
       modal: true,
       dismissableMask: false,
       data: {
@@ -257,6 +261,43 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Archiva una orden
+   */
+  public onArchiveOrder(order: IOrders, event: Event): void {
+    event.stopPropagation();
+
+    this.confirmationService.confirm({
+      message: `¿Deseas archivar la orden #${order.numeroOrden}? Se moverá a la sección de archivadas.`,
+      header: 'Archivar Orden',
+      icon: 'pi pi-info-circle',
+      acceptLabel: 'Sí, archivar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success mt-2',
+      rejectButtonStyleClass: 'p-button-secondary mt-2',
+      accept: () => {
+        this.ordersService.archiveOrder(order._id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (result) => {
+              // Remover del array local
+              this.allOrders = this.allOrders.filter(o => o._id !== order._id);
+              this.updateFilteredOrders();
+              this.calculateStats();
+              this.toastService.success('Éxito', `Orden #${order.numeroOrden} archivada correctamente`);
+            },
+            error: (error) => {
+              console.error('Error archiving order:', error);
+              this.toastService.error('Error', 'Error al archivar la orden');
+            }
+          });
+      },
+      reject: () => {
+        // Usuario canceló
+      }
+    });
+  }
+
+  /**
    * Exportar órdenes
    */
   public onExportOrders(): void {
@@ -296,7 +337,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   public getStatusText(status: string): string {
     const statusTexts: { [key: string]: string } = {
       'pending': 'Pendiente',
-      'proof_uploaded': 'Comprobada',
+      'proof_uploaded': 'Comprobante subido',
       'paid': 'Pagada',
       'shipped': 'Enviada',
       'completed': 'Completada',
@@ -343,7 +384,6 @@ export class OrdersListComponent implements OnInit, OnDestroy {
    * Muestra mensaje de éxito
    */
   private showSuccessMessage(message: string): void {
-    console.log('✅ Éxito:', message);
     // TODO: Implementar sistema de notificaciones
     // this.messageService.add({severity: 'success', summary: 'Éxito', detail: message});
   }

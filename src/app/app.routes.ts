@@ -98,6 +98,12 @@ export const routes: Routes = [
             .then(m => m.OrdersListComponent)
       },
       {
+        path: 'archived-orders-list',
+        loadComponent: () =>
+          import('./features/admin/archived-orders-list.component/archived-orders-list.component')
+            .then(m => m.ArchivedOrdersListComponent)
+      },
+      {
         path: 'users-list',
         loadComponent: () =>
           import('./features/admin/users/users-list.component/users-list.component')

@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { CategoryService } from '../../../../services/category.service';
+import { ConfirmService } from '../../../../core/services/confirm.service';
 import { CategoryModalComponent } from '../category-modal.component/category-modal.component';
 import { Category } from '../../../../interfaces/categories.interface';
 import { PrimeNgModule } from '../../../../primeng.module';
@@ -42,6 +43,8 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
   // Referencia del modal
   private modalRef?: DynamicDialogRef;
 
+  // Confirm service
+  private confirmService = inject(ConfirmService);
   // Subject para búsqueda con debounce
   private searchSubject = new Subject<string>();
 
@@ -110,8 +113,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     const endIndex = this.currentPage * this.itemsPerPage;
     this.filteredCategories = filtered.slice(startIndex, endIndex);
     this.hasMoreCategories = filtered.length > endIndex;
-
-    console.log('CATEGORÍAS FILTRADAS:', this.filteredCategories);
   }
 
   /**
@@ -155,9 +156,7 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
     });
 
     this.modalRef.onClose.subscribe((resultado) => {
-      console.log('Modal cerrado con resultado:', resultado);
       if (resultado && resultado.action === 'saved') {
-        console.log('Categoría creada:', resultado.category);
         this.onCategoryCreated(resultado.category);
       }
     });
@@ -181,7 +180,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
 
     this.modalRef.onClose.subscribe((resultado) => {
       if (resultado && resultado.action === 'saved') {
-        console.log('Categoría actualizada:', resultado.category);
         this.onCategoryUpdated(resultado.category);
       }
     });
@@ -191,7 +189,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
    * Muestra información detallada de la categoría
    */
   onViewCategory(category: Category): void {
-    console.log('Viendo categoría:', category.nombre);
     // Implementar vista detallada o modal de información
     // this.router.navigate(['/admin/categories/view', category.idCateogria]);
   }
@@ -201,25 +198,43 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
    */
   toggleCategoryStatus(category: Category): void {
     const previousStatus = category.activa;
-    category.activa = !category.activa;
+    const newStatus = !previousStatus;
 
-    console.log(`Categoría ${category.nombre} ${category.activa ? 'activada' : 'desactivada'}`);
+    const action = newStatus ? 'activar' : 'desactivar';
+    const message = `Se va a ${action} la categoría "${category.nombre}". ¿Deseas continuar?`;
 
-    // TODO: Conectar con el backend
-    // this.categoryService.updateCategory(category).subscribe({
-    //   next: () => {
-    //     this.calculateStats();
-    //     this.showSuccessMessage(`Categoría ${category.activa ? 'activada' : 'desactivada'} correctamente`);
-    //   },
-    //   error: (error) => {
-    //     category.activa = previousStatus; // Revertir cambio
-    //     this.showErrorMessage('Error al actualizar el estado de la categoría');
-    //   }
-    // });
-
-    // Por ahora, simular éxito
-    this.calculateStats();
-    this.showSuccessMessage(`Categoría ${category.activa ? 'activada' : 'desactivada'} correctamente`);
+    this.confirmService.confirm({
+      header: 'Confirmar cambio de estado',
+      message,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí',
+      rejectLabel: 'No',
+      accept: () => {
+        const updatedCategory: Category = { ...category, activa: newStatus } as Category;
+        this.categoryService.actualizarCategoria(category._id as string, updatedCategory)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (res) => {
+              if (res) {
+                const idx = this.allCategories.findIndex(c => c._id === category._id);
+                if (idx !== -1) this.allCategories[idx] = res;
+                this.updateFilteredCategories();
+                this.calculateStats();
+                this.showSuccessMessage(`Categoría ${res.activa ? 'activada' : 'desactivada'} correctamente`);
+              } else {
+                this.showErrorMessage('No se pudo actualizar la categoría');
+              }
+            },
+            error: (err) => {
+              console.error('Error actualizando categoría:', err);
+              this.showErrorMessage('Error al actualizar el estado de la categoría');
+            }
+          });
+      },
+      reject: () => {
+        // usuario canceló, no hacer nada
+      }
+    });
   }
 
   /**
@@ -281,7 +296,6 @@ export class CategoriesListComponent implements OnInit, OnDestroy {
    * Muestra mensaje de éxito
    */
   private showSuccessMessage(message: string): void {
-    console.log('✅ Éxito:', message);
     // TODO: Implementar sistema de notificaciones
     // this.messageService.add({severity: 'success', summary: 'Éxito', detail: message});
   }

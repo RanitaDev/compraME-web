@@ -91,7 +91,6 @@ export class CategoryProductsComponent implements OnInit {
     this.categoryService.getCategory(categoryId).subscribe({
       next: (category) => {
         this.currentCategory = category || null;
-        console.log('Categoría cargada:', this.currentCategory);
       },
       error: (error) => {
         console.error('Error cargando datos de categoría:', error);

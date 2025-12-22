@@ -96,11 +96,9 @@ export class OrderMonitorService implements OnDestroy {
    * Limpiar carrito y notificar al usuario
    */
   private clearCartAndNotify(orderId: string) {
-    console.log(`🧹 Limpiando carrito para orden ${orderId} (comprobante verificado)`);
 
     this.cartService.clearCart().then(success => {
       if (success) {
-        console.log('✅ Carrito limpiado exitosamente');
         this.toastService.success('Carrito limpiado', 'Tu carrito ha sido limpiado automáticamente tras verificar el comprobante.');
       } else {
         console.error('❌ Error limpiando carrito');
