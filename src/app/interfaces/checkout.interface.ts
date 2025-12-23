@@ -1,5 +1,5 @@
 export interface IAddress {
-  id: number;
+  _id: string;
   alias: string; // "Casa", "Trabajo", etc.
   nombreCompleto: string;
   telefono: string;

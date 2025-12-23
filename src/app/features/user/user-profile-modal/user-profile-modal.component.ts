@@ -331,7 +331,7 @@ export class UserProfileModalComponent implements OnInit, OnDestroy {
    */
   private convertirIAddressAIDireccionUsuario(addresses: IAddress[]): IDireccionUsuario[] {
     return addresses.map(address => ({
-      id: address.id.toString(),
+      id: address._id.toString(),
       alias: address.alias,
       nombreCompleto: address.nombreCompleto,
       telefono: address.telefono,
@@ -352,7 +352,7 @@ export class UserProfileModalComponent implements OnInit, OnDestroy {
    */
   private convertirIDireccionUsuarioAIAddress(direcciones: IDireccionUsuario[]): IAddress[] {
     return direcciones.map(direccion => ({
-      id: parseInt(direccion.id),
+      _id: direccion.id,
       alias: direccion.alias,
       nombreCompleto: direccion.nombreCompleto,
       telefono: direccion.telefono,

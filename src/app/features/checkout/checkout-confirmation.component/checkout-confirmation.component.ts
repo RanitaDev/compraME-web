@@ -139,7 +139,7 @@ export class CheckoutConfirmationComponent implements OnInit, OnDestroy {
           if (addresses.length > 0) {
             // Seleccionar la primera dirección por defecto
             this.addressForm.patchValue({
-              selectedAddressId: addresses[0].id
+              selectedAddressId: addresses[0]._id
             });
             this.fillAddressForm(addresses[0]);
           }

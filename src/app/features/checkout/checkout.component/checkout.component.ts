@@ -116,7 +116,7 @@ export class CheckoutComponent implements OnInit {
         if (timeDiff < 30 * 60 * 1000) {
           setTimeout(() => {
             if (checkoutState.selectedAddress) {
-              const address = this.addresses.find(a => a.id === checkoutState.selectedAddress.id);
+              const address = this.addresses.find(a => a._id === checkoutState.selectedAddress.id);
               if (address) this.selectedAddress = address;
             }
 
@@ -172,7 +172,7 @@ export class CheckoutComponent implements OnInit {
   private loadGuestCheckoutData() {
     this.addresses = [
       {
-        id: 999,
+        _id: '',
         alias: 'Dirección de entrega',
         nombreCompleto: '',
         telefono: '',

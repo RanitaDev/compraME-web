@@ -40,10 +40,14 @@ export class AddressService {
       )
       .subscribe(addresses => {
         // Mapear _id a id para compatibilidad con el frontend
-        const mappedAddresses = addresses.map(addr => ({
-          ...addr,
-          id: (addr as any)._id || addr.id
-        }));
+        const mappedAddresses = addresses.map(addr => {
+          const mapped = { ...addr };
+          // Asegurar que siempre tenemos id
+          if ((mapped as any)._id && !mapped._id) {
+            mapped._id = (mapped as any)._id;
+          }
+          return mapped;
+        });
         this.addressesSubject.next(mappedAddresses);
       });
   }
@@ -64,7 +68,13 @@ export class AddressService {
 
     return this.http.get<IAddress>(`${this.apiUrl}/${user.id}/addresses/primary`)
       .pipe(
-        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        map(addr => {
+          const mapped = { ...addr };
+          if ((mapped as any)._id && !mapped._id) {
+            mapped._id = (mapped as any)._id;
+          }
+          return mapped;
+        }),
         catchError(() => of(null))
       );
   }
@@ -72,7 +82,7 @@ export class AddressService {
   /**
    * Agregar nueva dirección
    */
-  addNewAddress(address: Omit<IAddress, 'id'>): Observable<IAddress> {
+  addNewAddress(address: Omit<IAddress, '_id'>): Observable<IAddress> {
     const user = this.authService.getCurrentUser();
     if (!user) {
       throw new Error('Usuario no autenticado');
@@ -80,10 +90,16 @@ export class AddressService {
 
     return this.http.post<IAddress>(`${this.apiUrl}/${user.id}/addresses`, address)
       .pipe(
-        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        map(addr => {
+          const mapped = { ...addr };
+          if ((mapped as any)._id && !mapped._id) {
+            mapped._id = (mapped as any)._id;
+          }
+          return mapped;
+        }),
         tap(newAddress => {
           const currentAddresses = this.addressesSubject.value;
-          
+
           // Si es principal, desmarcar las demás
           if (newAddress.esPrincipal) {
             currentAddresses.forEach(addr => addr.esPrincipal = false);
@@ -105,18 +121,24 @@ export class AddressService {
 
     return this.http.put<IAddress>(`${this.apiUrl}/${user.id}/addresses/${id}`, address)
       .pipe(
-        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        map(addr => {
+          const mapped = { ...addr };
+          if ((mapped as any)._id && !mapped._id) {
+            mapped._id = (mapped as any)._id;
+          }
+          return mapped;
+        }),
         tap(updatedAddress => {
           const currentAddresses = this.addressesSubject.value;
-          const addressIndex = currentAddresses.findIndex(addr => 
-            addr.id === id || (addr as any)._id === id
+          const addressIndex = currentAddresses.findIndex(addr =>
+            addr._id === id || (addr as any)._id === id
           );
 
           if (addressIndex !== -1) {
             // Si es principal, desmarcar las demás
             if (updatedAddress.esPrincipal) {
               currentAddresses.forEach(addr => {
-                if (addr.id !== id) addr.esPrincipal = false;
+                if (addr._id !== id) addr.esPrincipal = false;
               });
             }
 
@@ -138,13 +160,19 @@ export class AddressService {
 
     return this.http.patch<IAddress>(`${this.apiUrl}/${user.id}/addresses/${id}/primary`, {})
       .pipe(
-        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        map(addr => {
+          const mapped = { ...addr };
+          if ((mapped as any)._id && !mapped._id) {
+            mapped._id = (mapped as any)._id;
+          }
+          return mapped;
+        }),
         tap(updatedAddress => {
           const currentAddresses = this.addressesSubject.value;
-          
+
           // Desmarcar todas las demás
           currentAddresses.forEach(addr => {
-            addr.esPrincipal = addr.id === id || (addr as any)._id === id;
+            addr.esPrincipal = addr._id === id || (addr as any)._id === id;
           });
 
           this.addressesSubject.next([...currentAddresses]);
@@ -166,8 +194,8 @@ export class AddressService {
         map(result => result.deleted),
         tap(() => {
           const currentAddresses = this.addressesSubject.value;
-          const filteredAddresses = currentAddresses.filter(addr => 
-            addr.id !== id && (addr as any)._id !== id
+          const filteredAddresses = currentAddresses.filter(addr =>
+            addr._id !== id && (addr as any)._id !== id
           );
 
           this.addressesSubject.next(filteredAddresses);
