@@ -141,13 +141,16 @@ export class UserAddresses implements OnInit, OnDestroy {
   }
 
   establecerComoPrincipal(direccion: IAddress): void {
-    this.addressService.updateAddress(direccion.id, { esPrincipal: true })
+    this.addressService.setAsPrimary(direccion.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.direcciones.forEach(d => d.esPrincipal = false);
           direccion.esPrincipal = true;
           this.direccionesActualizadas.emit(this.direcciones);
+        },
+        error: (error) => {
+          console.error('Error setting as primary:', error);
         }
       });
   }

@@ -455,23 +455,20 @@ export class CheckoutComponent implements OnInit {
 
     this.dialogRef.onClose.subscribe((result: any) => {
       if (result && result.saved) {
-        // Aquí enviarías la dirección al backend
-        // Por ahora la agregamos localmente
-        const newAddress: IAddress = {
-          id: this.addresses.length + 1,
-          ...result.address
-        };
-
-        // Si es principal, desmarcar las demás
-        if (newAddress.esPrincipal) {
-          this.addresses.forEach(addr => addr.esPrincipal = false);
-        }
-
-        this.addresses.push(newAddress);
-        this.selectedAddress = newAddress;
-        this.updateShippingCost(newAddress);
-
-        this.toastService.success('Dirección agregada', 'La dirección ha sido agregada correctamente.');
+        // Enviar al backend a través del servicio
+        this.checkoutService.addNewAddress(result.address).subscribe({
+          next: (newAddress) => {
+            // Actualizar lista local
+            this.addresses.push(newAddress);
+            this.selectedAddress = newAddress;
+            this.updateShippingCost(newAddress);
+            this.toastService.success('Dirección agregada', 'La dirección ha sido agregada correctamente.');
+          },
+          error: (error) => {
+            console.error('Error adding address:', error);
+            this.toastService.error('Error', 'No se pudo agregar la dirección');
+          }
+        });
       }
     });
   }

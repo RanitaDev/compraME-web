@@ -40,7 +40,6 @@ export class AuthService {
     if (typeof window !== 'undefined') {
       (window as any).authDebug = {
         sessionInfo: () => this.debugSessionInfo(),
-        sessionService: () => this.sessionService ? this.sessionService.debugSessionInfo() : 'SessionService not available',
         forceLogout: () => this.clearSession(),
         getToken: () => this.getToken(),
         isValid: () => this.hasValidToken()

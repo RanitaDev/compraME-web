@@ -1,21 +1,26 @@
-import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, tap, catchError, of, map } from 'rxjs';
 import { IAddress } from '../interfaces/checkout.interface';
 import { AuthService } from './auth.service';
-import { IUser } from '../interfaces/auth.interface';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AddressService {
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+  private apiUrl = `${environment.apiUrl}/users`;
+
   private addressesSubject = new BehaviorSubject<IAddress[]>([]);
   public addresses$ = this.addressesSubject.asObservable();
 
-  constructor(private authService: AuthService) {
+  constructor() {
     // Cargar direcciones cuando el usuario cambie
     this.authService.currentUser$.subscribe(user => {
       if (user) {
-        this.loadUserAddresses(user);
+        this.loadUserAddresses(user.id);
       } else {
         this.addressesSubject.next([]);
       }
@@ -23,66 +28,24 @@ export class AddressService {
   }
 
   /**
-   * Cargar direcciones del usuario
+   * Cargar direcciones del usuario desde el backend
    */
-  private loadUserAddresses(user: IUser): void {
-    // Crear dirección principal basada en datos del usuario
-    const primaryAddress: IAddress = {
-      id: 1,
-      alias: 'Principal',
-      nombreCompleto: user.nombre,
-      telefono: user.telefono || '477-000-0000',
-      calle: user.direccion || 'Dirección no especificada',
-      numeroExterior: '1',
-      numeroInterior: '',
-      colonia: 'Centro',
-      ciudad: 'León',
-      estado: 'Guanajuato',
-      codigoPostal: '37000',
-      referencias: '',
-      esPrincipal: true
-    };
-
-    // En una aplicación real, aquí harías una llamada al backend
-    // Por ahora, simulamos con la dirección del usuario + algunas adicionales
-    const userAddresses: IAddress[] = [primaryAddress];
-
-    // Agregar direcciones adicionales solo si hay datos del usuario
-    if (user.direccion && user.direccion !== 'Dirección no especificada') {
-      // Dividir la dirección si tiene formato completo
-      const addressParts = this.parseAddress(user.direccion);
-      primaryAddress.calle = addressParts.calle;
-      primaryAddress.numeroExterior = addressParts.numeroExterior;
-      primaryAddress.colonia = addressParts.colonia;
-      primaryAddress.ciudad = addressParts.ciudad;
-      primaryAddress.estado = addressParts.estado;
-      primaryAddress.codigoPostal = addressParts.codigoPostal;
-    }
-
-    this.addressesSubject.next(userAddresses);
-  }
-
-  /**
-   * Parsear dirección completa en componentes
-   */
-  private parseAddress(fullAddress: string): {
-    calle: string;
-    numeroExterior: string;
-    colonia: string;
-    ciudad: string;
-    estado: string;
-    codigoPostal: string;
-  } {
-    // Implementación básica para parsear direcciones
-    // En una aplicación real, esto sería más sofisticado
-    return {
-      calle: fullAddress.split(',')[0]?.trim() || fullAddress,
-      numeroExterior: '1',
-      colonia: 'Centro',
-      ciudad: 'León',
-      estado: 'Guanajuato',
-      codigoPostal: '37000'
-    };
+  private loadUserAddresses(userId: string): void {
+    this.http.get<IAddress[]>(`${this.apiUrl}/${userId}/addresses`)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading addresses:', error);
+          return of([]);
+        })
+      )
+      .subscribe(addresses => {
+        // Mapear _id a id para compatibilidad con el frontend
+        const mappedAddresses = addresses.map(addr => ({
+          ...addr,
+          id: (addr as any)._id || addr.id
+        }));
+        this.addressesSubject.next(mappedAddresses);
+      });
   }
 
   /**
@@ -96,100 +59,129 @@ export class AddressService {
    * Obtener dirección principal
    */
   getPrimaryAddress(): Observable<IAddress | null> {
-    return new Observable(observer => {
-      this.addresses$.subscribe(addresses => {
-        const primary = addresses.find(addr => addr.esPrincipal);
-        observer.next(primary || null);
-      });
-    });
+    const user = this.authService.getCurrentUser();
+    if (!user) return of(null);
+
+    return this.http.get<IAddress>(`${this.apiUrl}/${user.id}/addresses/primary`)
+      .pipe(
+        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        catchError(() => of(null))
+      );
   }
 
   /**
    * Agregar nueva dirección
    */
   addNewAddress(address: Omit<IAddress, 'id'>): Observable<IAddress> {
-    const currentAddresses = this.addressesSubject.value;
-    const newAddress: IAddress = {
-      ...address,
-      id: Math.max(...currentAddresses.map(a => a.id), 0) + 1
-    };
-
-    // Si es principal, quitar principal de las demás
-    if (newAddress.esPrincipal) {
-      currentAddresses.forEach(addr => addr.esPrincipal = false);
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('Usuario no autenticado');
     }
 
-    const updatedAddresses = [...currentAddresses, newAddress];
-    this.addressesSubject.next(updatedAddresses);
+    return this.http.post<IAddress>(`${this.apiUrl}/${user.id}/addresses`, address)
+      .pipe(
+        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        tap(newAddress => {
+          const currentAddresses = this.addressesSubject.value;
+          
+          // Si es principal, desmarcar las demás
+          if (newAddress.esPrincipal) {
+            currentAddresses.forEach(addr => addr.esPrincipal = false);
+          }
 
-    // En una aplicación real, aquí harías una llamada al backend
-    return of(newAddress);
+          this.addressesSubject.next([...currentAddresses, newAddress]);
+        })
+      );
   }
 
   /**
    * Actualizar dirección existente
    */
-  updateAddress(id: number, address: Partial<IAddress>): Observable<IAddress> {
-    const currentAddresses = this.addressesSubject.value;
-    const addressIndex = currentAddresses.findIndex(addr => addr.id === id);
-
-    if (addressIndex === -1) {
-      throw new Error('Dirección no encontrada');
+  updateAddress(id: number | string, address: Partial<IAddress>): Observable<IAddress> {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('Usuario no autenticado');
     }
 
-    const updatedAddress = { ...currentAddresses[addressIndex], ...address };
+    return this.http.put<IAddress>(`${this.apiUrl}/${user.id}/addresses/${id}`, address)
+      .pipe(
+        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        tap(updatedAddress => {
+          const currentAddresses = this.addressesSubject.value;
+          const addressIndex = currentAddresses.findIndex(addr => 
+            addr.id === id || (addr as any)._id === id
+          );
 
-    // Si es principal, quitar principal de las demás
-    if (updatedAddress.esPrincipal) {
-      currentAddresses.forEach(addr => {
-        if (addr.id !== id) addr.esPrincipal = false;
-      });
+          if (addressIndex !== -1) {
+            // Si es principal, desmarcar las demás
+            if (updatedAddress.esPrincipal) {
+              currentAddresses.forEach(addr => {
+                if (addr.id !== id) addr.esPrincipal = false;
+              });
+            }
+
+            currentAddresses[addressIndex] = updatedAddress;
+            this.addressesSubject.next([...currentAddresses]);
+          }
+        })
+      );
+  }
+
+  /**
+   * Marcar dirección como principal
+   */
+  setAsPrimary(id: number | string): Observable<IAddress> {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('Usuario no autenticado');
     }
 
-    currentAddresses[addressIndex] = updatedAddress;
-    this.addressesSubject.next([...currentAddresses]);
+    return this.http.patch<IAddress>(`${this.apiUrl}/${user.id}/addresses/${id}/primary`, {})
+      .pipe(
+        map(addr => ({ ...addr, id: (addr as any)._id || addr.id })),
+        tap(updatedAddress => {
+          const currentAddresses = this.addressesSubject.value;
+          
+          // Desmarcar todas las demás
+          currentAddresses.forEach(addr => {
+            addr.esPrincipal = addr.id === id || (addr as any)._id === id;
+          });
 
-    return of(updatedAddress);
+          this.addressesSubject.next([...currentAddresses]);
+        })
+      );
   }
 
   /**
    * Eliminar dirección
    */
-  deleteAddress(id: number): Observable<boolean> {
-    const currentAddresses = this.addressesSubject.value;
-    const filteredAddresses = currentAddresses.filter(addr => addr.id !== id);
-
-    // Si se eliminó la dirección principal, hacer principal la primera
-    const hadPrimary = currentAddresses.some(addr => addr.id === id && addr.esPrincipal);
-    if (hadPrimary && filteredAddresses.length > 0) {
-      filteredAddresses[0].esPrincipal = true;
+  deleteAddress(id: number | string): Observable<boolean> {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      throw new Error('Usuario no autenticado');
     }
 
-    this.addressesSubject.next(filteredAddresses);
-    return of(true);
+    return this.http.delete<{ deleted: boolean }>(`${this.apiUrl}/${user.id}/addresses/${id}`)
+      .pipe(
+        map(result => result.deleted),
+        tap(() => {
+          const currentAddresses = this.addressesSubject.value;
+          const filteredAddresses = currentAddresses.filter(addr => 
+            addr.id !== id && (addr as any)._id !== id
+          );
+
+          this.addressesSubject.next(filteredAddresses);
+        })
+      );
   }
 
   /**
-   * Generar dirección rápida desde datos del usuario
+   * Refrescar direcciones desde el backend
    */
-  createQuickAddressFromUser(): IAddress | null {
+  refreshAddresses(): void {
     const user = this.authService.getCurrentUser();
-    if (!user) return null;
-
-    return {
-      id: Date.now(), // ID temporal
-      alias: 'Dirección rápida',
-      nombreCompleto: user.nombre,
-      telefono: user.telefono || '477-000-0000',
-      calle: user.direccion || 'Calle sin especificar',
-      numeroExterior: '1',
-      numeroInterior: '',
-      colonia: 'Centro',
-      ciudad: 'León',
-      estado: 'Guanajuato',
-      codigoPostal: '37000',
-      referencias: 'Dirección generada automáticamente',
-      esPrincipal: false
-    };
+    if (user) {
+      this.loadUserAddresses(user.id);
+    }
   }
 }
