@@ -88,7 +88,6 @@ export class OrdersListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (orders) => {
           this.allOrders = orders.filter(order => order.estado !== 'canceled');
-          console.log('Orders loaded:', this.allOrders);
           this.updateFilteredOrders();
           this.calculateStats();
         },

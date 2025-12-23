@@ -127,7 +127,6 @@ export class BankService {
   }
 
   uploadPaymentProof(paymentData: IBankPaymentData): Observable<IBankPaymentResult> {
-    console.log('ENTRAMOS AL SERVICIO DE UPLOAD');
     return this.orderService.uploadPaymentProof(
       paymentData.orderId,
       paymentData.comprobante.archivo,

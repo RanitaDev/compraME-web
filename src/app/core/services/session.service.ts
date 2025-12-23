@@ -134,16 +134,4 @@ export class SessionService {
     // Esta funcionalidad se puede implementar más adelante si es necesaria
     return 0;
   }
-
-  /**
-   * Método de diagnóstico - Solo para desarrollo
-   */
-  public debugSessionInfo(): void {
-    const config = this.getSessionConfig();
-    console.log('🔧 DEBUG - SessionService estado:', {
-      config,
-      hasTimer: !!this.sessionTimer,
-      shouldPersist: this.shouldPersistSession()
-    });
-  }
 }

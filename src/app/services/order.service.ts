@@ -118,7 +118,6 @@ export class OrderService {
 
     try {
       orderPayload = this.buildOrderPayload(checkoutData);
-      console.log('OBJETO A MANDAR AL BACK', orderPayload);
     } catch (error: any) {
       return throwError(() =>
           new Error(`Error de validación: ${error.message}`
@@ -218,7 +217,6 @@ export class OrderService {
     paymentMethod: string;
     transactionDate: Date;
   }): Observable<{ success: boolean; proofUrl: string }> {
-    console.log('ENTRAMOS AL SERVICIO DE ORDENES');
     const monto = Number(paymentData.amount);
     if (isNaN(monto) || monto < 0) {
       return throwError(() => new Error('El monto debe ser un número válido mayor o igual a 0'));

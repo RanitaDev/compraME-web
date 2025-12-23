@@ -1,2 +1,0 @@
-# Admin
-Panel de administración.
