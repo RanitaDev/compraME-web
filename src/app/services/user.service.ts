@@ -10,12 +10,13 @@ import {
   IConfiguracionSeguridad,
   IEstadisticasUsuario
 } from '../interfaces/users.interface';
+import { IOrders } from '../interfaces/orders.interface';
 
 // Interface para todos los datos del usuario (optimización)
 export interface IDatosCompletoUsuario {
   usuario: IUsuario;
   direcciones: IDireccionUsuario[];
-  pedidosRecientes: IPedidoUsuario[];
+  pedidosRecientes: IOrders[];
   estadisticas: IEstadisticasUsuario;
   configuracionSeguridad: IConfiguracionSeguridad;
 }

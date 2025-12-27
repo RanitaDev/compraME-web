@@ -299,8 +299,8 @@ export class OrderService {
    * Obtener órdenes del usuario actual
    */
   public getUserOrders(userId: string, status?: IOrders['estado']): Observable<IOrders[]> {
-    return this.http.get<any>(`${this.apiUrl}/user/${userId}${status ? `?status=${status}` : ''}`).pipe(
-      map(response => response.data),
+    return this.http.get<any>(`${this.apiUrl}/usuario/${userId}${status ? `?status=${status}` : ''}`).pipe(
+      map(response => response.data || response),
       catchError(error => {
         console.error('Error fetching user orders:', error);
         return throwError(() => new Error('Error al obtener órdenes del usuario'));

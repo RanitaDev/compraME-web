@@ -151,15 +151,14 @@
                   </div>
                 }
               }
-              @case ('seguridad') {
-                <!-- Seguridad -->
+              <!-- @case ('seguridad') {
                 <div class="space-y-6">
                   <app-user-security
                     [configuracion]="datosUsuario.configuracionSeguridad"
                     (configuracionActualizada)="onConfiguracionActualizada($event)">
                   </app-user-security>
                 </div>
-              }
+              } -->
               @case ('historial') {
                 @if (!(historialCompleto && historialCompleto.length)) {
                   <div class="space-y-6">
