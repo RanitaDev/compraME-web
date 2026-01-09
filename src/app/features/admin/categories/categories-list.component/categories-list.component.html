@@ -81,28 +81,33 @@
         </div>
       </div>
     </div>
-    <div *ngIf="filteredCategories.length === 0" class="empty-state text-center py-16">
-      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-gray-400 text-3xl"></i>
+    @if(filteredCategories.length === 0) {
+      <div class="empty-state text-center py-16">
+        <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+          <i class="pi pi-search text-gray-400 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron categorías</h3>
+        <p class="text-gray-600 mb-6">
+          {{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'Comienza creando tu primera categoría' }}
+        </p>
+        <button *ngIf="!searchTerm"
+                class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
+                (click)="onAddCategory()">
+          <i class="pi pi-plus text-sm"></i>
+          Crear Primera Categoría
+        </button>
       </div>
-      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron categorías</h3>
-      <p class="text-gray-600 mb-6">
-        {{ searchTerm ? 'Intenta con otros términos de búsqueda' : 'Comienza creando tu primera categoría' }}
-      </p>
-      <button *ngIf="!searchTerm"
-              class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
-              (click)="onAddCategory()">
-        <i class="pi pi-plus text-sm"></i>
-        Crear Primera Categoría
-      </button>
-    </div>
-    <div *ngIf="hasMoreCategories" class="load-more-section text-center mt-8">
-      <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
-              (click)="loadMoreCategories()">
-        <i class="pi pi-refresh text-sm mr-2"></i>
-        Cargar más categorías
-      </button>
-    </div>
+    }
+
+    @if(hasMoreCategories) {
+      <div class="load-more-section text-center mt-8">
+        <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+                (click)="loadMoreCategories()">
+          <i class="pi pi-refresh text-sm mr-2"></i>
+          Cargar más categorías
+        </button>
+      </div>
+    }
   </div>
 
   <button
