@@ -1,9 +1,143 @@
 <!-- Contenido del modal para PrimeNG Dialog -->
 <div class="bg-white text-gray-900">
 <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="p-4 bg-white">
+
+  <!-- Sección de Imágenes - Ancho completo -->
+  <div class="mb-6">
+    <h3 class="text-base font-medium text-gray-900 border-b border-gray-200 pb-2 mb-4">
+      Imágenes del producto
+    </h3>
+
+    <!-- Grid de imágenes cargadas -->
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-3" *ngIf="uploadedImages.length > 0">
+      <div
+        *ngFor="let img of uploadedImages; let i = index"
+        class="relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-400 transition-all aspect-square"
+      >
+        <!-- Badge de imagen principal -->
+        <div
+          *ngIf="i === 0"
+          class="absolute top-1 left-1 z-10 bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full shadow-lg"
+        >
+          Principal
+        </div>
+
+        <!-- Preview de imagen -->
+        <img
+          [src]="img.preview"
+          [alt]="'Imagen ' + (i + 1)"
+          class="w-full h-full object-cover"
+        >
+
+        <!-- Overlay con información -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="absolute bottom-0 left-0 right-0 p-1.5 text-white">
+            <p class="text-[10px] font-medium truncate">{{ img.file.name || 'Imagen' }}</p>
+            <p class="text-[9px] opacity-75" *ngIf="img.file">{{ formatFileSize(img.file.size) }}</p>
+          </div>
+        </div>
+
+        <!-- Botón eliminar -->
+        <button
+          type="button"
+          (click)="removeImageByIndex(i)"
+          class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-all transform hover:scale-110"
+          title="Eliminar imagen"
+        >
+          <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Indicador de subida -->
+        <div
+          *ngIf="img.uploading"
+          class="absolute inset-0 bg-black/50 flex items-center justify-center"
+        >
+          <svg class="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zona de carga de archivos - Más compacta -->
+    <div
+      class="relative border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-all cursor-pointer bg-gray-50 hover:bg-blue-50"
+      [class.border-blue-500]="isDragging"
+      [class.bg-blue-50]="isDragging"
+      (click)="fileInput.click()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <input
+        #fileInput
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        multiple
+        (change)="onFilesSelected($event)"
+        class="hidden"
+      >
+
+      <div class="py-6 text-center">
+        <!-- Icono de upload -->
+        <svg
+          class="mx-auto h-10 w-10 text-gray-400 mb-2"
+          [class.text-blue-500]="isDragging"
+          stroke="currentColor"
+          fill="none"
+          viewBox="0 0 48 48"
+        >
+          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+        <!-- Texto principal -->
+        <p class="text-sm font-medium text-gray-700 mb-1">
+          <span class="text-blue-600 hover:text-blue-700 font-semibold">Haz clic para seleccionar</span>
+          o arrastra imágenes aquí
+        </p>
+
+        <!-- Información adicional -->
+        <div class="flex items-center justify-center gap-4 text-xs text-gray-500">
+          <span>PNG, JPG, GIF o WEBP</span>
+          <span class="text-gray-300">|</span>
+          <span>Máx. 2MB por imagen</span>
+          <span class="text-gray-300">|</span>
+          <div class="flex items-center gap-1 font-medium text-gray-700">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+            </svg>
+            <span>{{ uploadedImages.length }} imagen{{ uploadedImages.length !== 1 ? 'es' : '' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="mt-2 space-y-2">
+      <div class="flex items-start gap-2 text-xs text-gray-600 bg-blue-50 p-2 rounded">
+        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <span>La primera imagen será la portada del producto</span>
+      </div>
+
+      <div *ngIf="uploadError" class="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-2 rounded border border-red-200">
+        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ uploadError }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid de 2 columnas para el resto -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <!-- Información básica -->
+    <!-- Columna 1: Información básica -->
     <div class="space-y-4">
       <h3 class="text-base font-medium text-gray-900 border-b border-gray-200 pb-2">
         Información Básica
@@ -35,7 +169,7 @@
         <textarea
           id="descripcion"
           formControlName="descripcion"
-          rows="3"
+          rows="4"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
           placeholder="Describe las características principales del producto..."
         ></textarea>
@@ -44,6 +178,35 @@
           La descripción es requerida (mínimo 10 caracteres)
         </div>
       </div>
+
+      <!-- Categoría -->
+      <div>
+        <label for="idCategoria" class="block text-sm font-medium text-gray-700 mb-1">
+          Categoría *
+        </label>
+        <select
+          id="idCategoria"
+          formControlName="idCategoria"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+        >
+          <option value="">Seleccionar categoría</option>
+          <option *ngFor="let categoria of categorias" [value]="categoria._id">
+            {{ categoria.nombre }}
+          </option>
+        </select>
+        @if (productForm.get('idCategoria')?.invalid && productForm.get('idCategoria')?.touched) {
+          <div class="text-red-600 text-xs mt-1">
+            Selecciona una categoría
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Columna 2: Configuración -->
+    <div class="space-y-4">
+      <h3 class="text-base font-medium text-gray-900 border-b border-gray-200 pb-2">
+        Configuración
+      </h3>
 
       <!-- Precio y Stock -->
       <div class="grid grid-cols-2 gap-3">
@@ -85,90 +248,6 @@
         </div>
       </div>
 
-      <!-- Categoría -->
-      <div>
-        <label for="idCategoria" class="block text-sm font-medium text-gray-700 mb-1">
-          Categoría *
-        </label>
-        <select
-          id="idCategoria"
-          formControlName="idCategoria"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-        >
-          <option value="">Seleccionar categoría</option>
-          <option *ngFor="let categoria of categorias" [value]="categoria._id">
-            {{ categoria.nombre }}
-          </option>
-        </select>
-        @if (productForm.get('idCategoria')?.invalid && productForm.get('idCategoria')?.touched) {
-          <div
-              class="text-red-600 text-xs mt-1">
-            Selecciona una categoría
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Configuración e imágenes -->
-    <div class="space-y-4">
-      <h3 class="text-base font-medium text-gray-900 border-b border-gray-200 pb-2">
-        Configuración
-      </h3>
-
-      <!-- Imágenes -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Imágenes del producto
-        </label>
-
-        <!-- Lista de imágenes actuales -->
-        <div class="space-y-2 mb-3" *ngIf="imageUrls.length > 0">
-          <div
-            *ngFor="let imagen of imageUrls; let i = index"
-            class="flex items-center gap-2 p-2 border border-gray-200 rounded"
-          >
-            <img
-              [src]="imagen || '/assets/placeholderImage.webp'"
-              alt="Imagen del producto"
-              class="w-8 h-8 object-cover rounded border flex-shrink-0"
-              onerror="this.src='/assets/placeholder.jpg'"
-            >
-            <input
-              type="url"
-              [(ngModel)]="imageUrls[i]"
-              [ngModelOptions]="{standalone: true}"
-              class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-              placeholder="https://ejemplo.com/imagen.jpg"
-              (blur)="updateFormImages()"
-            >
-            <button
-              type="button"
-              class="text-red-500 hover:text-red-700 p-1 flex-shrink-0"
-              (click)="removeImage(i)"
-              *ngIf="imageUrls.length > 1"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Agregar nueva imagen -->
-        <button
-          type="button"
-          class="w-full py-2 px-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors text-sm"
-          (click)="addImageUrl()"
-        >
-          + Agregar imagen
-        </button>
-
-        <p class="text-xs text-gray-500 mt-1">
-          La primera imagen será la principal
-        </p>
-      </div>
-
       <!-- Color principal -->
       <div>
         <label for="color" class="block text-sm font-medium text-gray-700 mb-1">
@@ -179,7 +258,7 @@
             type="color"
             id="color"
             formControlName="color"
-            class="w-10 h-8 border border-gray-300 rounded cursor-pointer flex-shrink-0"
+            class="w-12 h-10 border border-gray-300 rounded cursor-pointer flex-shrink-0"
           >
           <input
             type="text"
@@ -194,8 +273,19 @@
         </div>
       </div>
 
+      <!-- Vista previa del color -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Vista previa del color
+        </label>
+        <div
+          class="w-full h-12 rounded-lg border border-gray-300 shadow-inner"
+          [style.background]="productForm.get('color')?.value || '#ffffff'"
+        ></div>
+      </div>
+
       <!-- Checkboxes de configuración -->
-      <div class="space-y-3">
+      <div class="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
         <div class="flex items-center">
           <input
             type="checkbox"
@@ -203,7 +293,7 @@
             formControlName="activo"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           >
-          <label for="activo" class="ml-2 text-sm text-gray-700">
+          <label for="activo" class="ml-2 text-sm text-gray-700 font-medium">
             Producto activo
           </label>
         </div>
@@ -215,21 +305,10 @@
             formControlName="destacado"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           >
-          <label for="destacado" class="ml-2 text-sm text-gray-700">
+          <label for="destacado" class="ml-2 text-sm text-gray-700 font-medium">
             Producto destacado
           </label>
         </div>
-      </div>
-
-      <!-- Vista previa del color -->
-      <div class="mt-3">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Vista previa
-        </label>
-        <div
-          class="w-full h-8 rounded border border-gray-300"
-          [style.background]="productForm.get('color')?.value || '#ffffff'"
-        ></div>
       </div>
     </div>
   </div>

@@ -10,6 +10,7 @@ import { Category } from '../../../../interfaces/categories.interface';
 import { SpinnerService } from '../../../../core/services/spinner.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../../../core/services/toast.service';
+import { UploadService } from '../../../../services/upload.service';
 
 @Component({
   selector: 'app-add-product-modal',
@@ -25,8 +26,19 @@ export class AddProductModalComponent implements OnInit {
   isEditMode = false;
   productId: string | null = null;
   product: IProduct | null = null;
-  imageUrls: string[] = [''];
+  imageUrls: string[] = [];
   categorias: Category[] = [];
+
+  // Propiedades para manejo de imágenes
+  uploadedImages: Array<{
+    file: File;
+    preview: string;
+    url?: string;
+    uploading?: boolean;
+  }> = [];
+  isDragging = false;
+  uploadError: string | null = null;
+  maxFileSize = 2 * 1024 * 1024; // 2MB en bytes
 
   constructor(
     private fb: FormBuilder,
@@ -35,7 +47,8 @@ export class AddProductModalComponent implements OnInit {
     private readonly productsService: ProductService,
     private readonly categoryService: CategoryService,
     private readonly spinnerService: SpinnerService,
-    private readonly toastService: ToastService
+    private readonly toastService: ToastService,
+    private readonly uploadService: UploadService
   ) {}
 
   ngOnInit() {
@@ -142,10 +155,13 @@ export class AddProductModalComponent implements OnInit {
       destacado: product.destacado
     });
 
-    // Cargar las URLs de imágenes
-    this.imageUrls = [...product.imagenes];
-    if (this.imageUrls.length === 0) {
-      this.imageUrls = [''];
+    // Cargar las URLs de imágenes existentes como previews
+    if (product.imagenes && product.imagenes.length > 0) {
+      this.uploadedImages = product.imagenes.map(url => ({
+        file: null as any,
+        preview: url,
+        url: url
+      }));
     }
   }
 
@@ -164,16 +180,19 @@ export class AddProductModalComponent implements OnInit {
       color: '#4299e1',
       destacado: false
     });
-    this.imageUrls = [''];
+    this.uploadedImages = [];
+    this.uploadError = null;
   }
 
   /**
    * Maneja el envío del formulario
    */
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.productForm.valid) {
       this.isSubmitting = true;
 
+      // Subir todas las imágenes que no tienen URL
+      await this.uploadAllPendingImages();
       // Preparar datos para envío
       const formData = this.prepareFormData();
 
@@ -217,8 +236,12 @@ export class AddProductModalComponent implements OnInit {
   private prepareFormData(): Partial<IProduct> {
     const formData = { ...this.productForm.value };
 
-    const validImageUrls = this.imageUrls.filter(url => url.trim() !== '');
-    formData.imagenes = validImageUrls;
+    // Obtener solo las URLs de las imágenes subidas
+    const imageUrls = this.uploadedImages
+      .filter(img => img.url)
+      .map(img => img.url!);
+
+    formData.imagenes = imageUrls;
 
     // Incluir el ID del producto si está en modo edición
     if (this.isEditMode && this.product) {
@@ -228,29 +251,140 @@ export class AddProductModalComponent implements OnInit {
     return formData;
   }
 
+  // ============================================
+  // MÉTODOS DE MANEJO DE IMÁGENES
+  // ============================================
+
   /**
-   * Agrega una nueva URL de imagen
+   * Maneja la selección de archivos desde el input
    */
-  addImageUrl() {
-    this.imageUrls.push('');
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.handleFiles(Array.from(input.files));
+    }
+    // Resetear el input para permitir seleccionar el mismo archivo de nuevo
+    input.value = '';
   }
 
   /**
-   * Remueve una URL de imagen por índice
+   * Maneja el evento de drag over
    */
-  removeImage(index: number) {
-    if (this.imageUrls.length > 1) {
-      this.imageUrls.splice(index, 1);
-      this.updateFormImages();
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  /**
+   * Maneja el evento de drag leave
+   */
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  /**
+   * Maneja el evento de drop
+   */
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.handleFiles(Array.from(event.dataTransfer.files));
     }
   }
 
   /**
-   * Actualiza el formulario con las URLs de imágenes actuales
+   * Procesa los archivos seleccionados
    */
-  updateFormImages() {
-    const validUrls = this.imageUrls.filter(url => url.trim() !== '');
-    this.productForm.patchValue({ imagenes: validUrls });
+  private handleFiles(files: File[]): void {
+    this.uploadError = null;
+
+    // Filtrar solo imágenes
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (imageFiles.length === 0) {
+      this.uploadError = 'Por favor selecciona solo archivos de imagen (PNG, JPG, GIF, WEBP)';
+      return;
+    }
+
+    // Validar tamaño de cada archivo
+    const oversizedFiles = imageFiles.filter(file => file.size > this.maxFileSize);
+    if (oversizedFiles.length > 0) {
+      this.uploadError = `${oversizedFiles.length} imagen(es) superan el tamaño máximo de 2MB`;
+      return;
+    }
+
+    // Agregar imágenes al array con preview
+    imageFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.uploadedImages.push({
+          file: file,
+          preview: e.target?.result as string,
+          uploading: false
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Elimina una imagen por índice
+   */
+  removeImageByIndex(index: number): void {
+    this.uploadedImages.splice(index, 1);
+    this.uploadError = null;
+  }
+
+  /**
+   * Sube todas las imágenes pendientes a Cloudinary
+   */
+  private async uploadAllPendingImages(): Promise<void> {
+    const pendingImages = this.uploadedImages.filter(img => !img.url && img.file);
+
+    if (pendingImages.length === 0) {
+      return;
+    }
+
+    this.spinnerService.show('Subiendo imágenes...', 'bar', 'images-upload');
+
+    try {
+      for (const img of pendingImages) {
+        if (!img.file) continue;
+
+        img.uploading = true;
+
+        try {
+          const response = await this.uploadService.uploadImage(img.file).toPromise();
+          if (response?.success && response.url) {
+            img.url = response.url;
+            img.uploading = false;
+          }
+        } catch (error) {
+          img.uploading = false;
+          console.error('Error subiendo imagen:', error);
+          throw error;
+        }
+      }
+    } finally {
+      this.spinnerService.hide('images-upload');
+    }
+  }
+
+  /**
+   * Formatea el tamaño del archivo
+   */
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
   /**

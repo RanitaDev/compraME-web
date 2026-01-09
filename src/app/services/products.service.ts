@@ -72,6 +72,7 @@ export class ProductService {
   }
 
   public agregarProducto(producto: IProduct): Observable<IProduct | undefined> {
+    console.log('Agregando producto:', producto);
     return this.http.post<IProduct>(`${this.apiUrl}/agregar-producto`, producto)
       .pipe(
         catchError(error => {
