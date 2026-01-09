@@ -133,6 +133,14 @@
         Agregar Primer Producto
       </button>
     </div>
+
+    <div *ngIf="hasMoreProducts" class="load-more-section text-center mt-8">
+      <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+              (click)="loadMoreProducts()">
+        <i class="pi pi-refresh text-sm mr-2"></i>
+        Cargar más productos
+      </button>
+    </div>
   </div>
 
   <button
