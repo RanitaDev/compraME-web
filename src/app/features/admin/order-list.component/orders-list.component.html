@@ -142,10 +142,12 @@
               <span class="text-gray-600">Subtotal:</span>
               <span class="font-medium text-gray-800">${{ formatPrice(order.subtotal || 0) }}</span>
             </div>
-            <div *ngIf="order.costoEnvio" class="flex justify-between text-xs mb-0.5">
-              <span class="text-gray-600">Envío:</span>
-              <span class="font-medium text-gray-800">${{ formatPrice(order.costoEnvio) }}</span>
-            </div>
+            @if (order.costoEnvio) {
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-gray-600">Envío:</span>
+                <span class="font-medium text-gray-800">${{ formatPrice(order.costoEnvio) }}</span>
+              </div>
+            }
             <div class="flex justify-between text-sm font-bold pt-1.5 border-t border-gray-100">
               <span class="text-gray-800">Total:</span>
               <span class="text-gray-900">${{ formatPrice(order.total!) }}</span>
@@ -166,14 +168,15 @@
 
               <div class="flex items-center gap-2 ml-auto">
                 <!-- Botón para revisar comprobante (solo si tiene comprobante subido) -->
-                <button
-                  *ngIf="hasProofToReview(order)"
-                  class="review-btn w-10 h-9 flex items-center justify-center bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 text-xs"
-                  (click)="onReviewProof(order)"
-                  pTooltip="Revisar comprobante de pago"
-                  tooltipPosition="top">
-                  <i class="pi pi-file-check text-sm"></i>
-                </button>
+                @if(hasProofToReview(order)) {
+                  <button
+                    class="review-btn w-10 h-9 flex items-center justify-center bg-gray-900 hover:bg-gray-950 text-white rounded-lg transition-colors duration-200 text-xs"
+                    (click)="onReviewProof(order)"
+                    pTooltip="Revisar comprobante de pago"
+                    tooltipPosition="top">
+                    <i class="pi pi-file-check text-sm"></i>
+                  </button>
+                }
 
                 <button class="archive-btn w-10 h-9 flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duración-200 text-xs"
                         (click)="onArchiveOrder(order, $event)"
@@ -186,28 +189,33 @@
         </div>
       </div>
     </div>
-    <div *ngIf="filteredOrders.length === 0" class="empty-state text-center py-16">
-      <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
-        <i class="pi pi-search text-gray-400 text-3xl"></i>
+    @if(filteredOrders.length === 0) {
+      <div class="empty-state text-center py-16">
+        <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-6">
+          <i class="pi pi-search text-gray-400 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron órdenes</h3>
+        <p class="text-gray-600 mb-6">
+          {{ searchTerm || statusFilter ? 'Intenta con otros criterios de búsqueda' : 'No hay órdenes registradas aún' }}
+        </p>
+        <button *ngIf="searchTerm || statusFilter"
+                class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
+                (click)="clearFilters()">
+          <i class="pi pi-filter-slash text-sm"></i>
+          Limpiar Filtros
+        </button>
       </div>
-      <h3 class="text-xl font-semibold text-gray-800 mb-2">No se encontraron órdenes</h3>
-      <p class="text-gray-600 mb-6">
-        {{ searchTerm || statusFilter ? 'Intenta con otros criterios de búsqueda' : 'No hay órdenes registradas aún' }}
-      </p>
-      <button *ngIf="searchTerm || statusFilter"
-              class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 font-medium mx-auto text-sm"
-              (click)="clearFilters()">
-        <i class="pi pi-filter-slash text-sm"></i>
-        Limpiar Filtros
-      </button>
-    </div>
-    <div *ngIf="hasMoreOrders" class="load-more-section text-center mt-8">
-      <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
-              (click)="loadMoreOrders()">
-        <i class="pi pi-refresh text-sm mr-2"></i>
-        Cargar más órdenes
-      </button>
-    </div>
+    }
+
+    @if(hasMoreOrders) {
+      <div class="load-more-section text-center mt-8">
+        <button class="px-6 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200 font-medium text-sm"
+                (click)="loadMoreOrders()">
+          <i class="pi pi-refresh text-sm mr-2"></i>
+          Cargar más órdenes
+        </button>
+      </div>
+    }
   </div>
 
   <button

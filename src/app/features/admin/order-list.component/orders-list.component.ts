@@ -238,6 +238,7 @@ export class OrdersListComponent implements OnInit, OnDestroy {
       width: '900px',
       modal: true,
       dismissableMask: false,
+      closable: true,
       data: {
         orden: order
       }

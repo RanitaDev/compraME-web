@@ -1,149 +1,276 @@
   <!-- Header interno removido: el modal padre ya provee encabezado -->
 
   <!-- Contenido principal -->
-  <div class="modal-content" *ngIf="orden">
+   @if(orden) {
+    <div class="modal-content">
 
-    <!-- Información de la orden -->
-    <div class="order-info-section">
-      <h3 class="section-title">Información de la Orden</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="label">Número de Orden:</span>
-          <span class="value">{{ orden.numeroOrden }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Total:</span>
-          <span class="value font-bold text-lg">${{ formatPrice(orden.total) }} MXN</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Método de Pago:</span>
-          <span class="value">{{ getMetodoPagoInfo() }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Fecha de Creación:</span>
-          <span class="value">{{ formatDate(orden.createdAt) }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Fecha Subida Comprobante:</span>
-          <span class="value">{{ formatDate(orden.uploadedFileDate) }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">Límite de Pago:</span>
-          <span class="value text-red-600">{{ formatDate(orden.fechaLimitePago) }}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Detalles del pago -->
-    <div class="payment-details-section" *ngIf="orden.comprobanteUrl">
-      <h3 class="section-title">Detalles del Pago</h3>
-      <div class="info-grid">
-        <div class="info-item" *ngIf="orden.metodoPago === 'transferencia' || orden.metodoPago === 'deposito'">
-          <span class="label">Referencia:</span>
-          <span class="value">{{ orden.comprobanteUrl || 'N/A' }}</span>
-        </div>
-        <!-- Puedes agregar más campos específicos del método de pago aquí -->
-      </div>
-    </div>
-
-    <!-- Visualizador de comprobante -->
-    <div class="proof-viewer-section">
-      <h3 class="section-title">Comprobante de Pago</h3>
-
-      <!-- Controles de zoom y acciones -->
-      <div class="viewer-controls">
-        <div class="zoom-controls">
-          <button
-            (click)="zoomOut()"
-            [disabled]="zoomLevel <= 0.5"
-            class="control-btn"
-            title="Alejar">
-            <i class="pi pi-search-minus"></i>
-          </button>
-          <span class="zoom-level">{{ (zoomLevel * 100).toFixed(0) }}%</span>
-          <button
-            (click)="zoomIn()"
-            [disabled]="zoomLevel >= 3"
-            class="control-btn"
-            title="Acercar">
-            <i class="pi pi-search-plus"></i>
-          </button>
-          <button
-            (click)="resetZoom()"
-            class="control-btn"
-            title="Restablecer zoom">
-            <i class="pi pi-refresh"></i>
-          </button>
-        </div>
-
-        <div class="action-controls">
-          <button
-            (click)="abrirEnNuevaVentana()"
-            class="control-btn"
-            title="Abrir en nueva ventana">
-            <i class="pi pi-external-link"></i>
-            Abrir
-          </button>
-          <button
-            (click)="descargarComprobante()"
-            class="control-btn"
-            title="Descargar comprobante">
-            <i class="pi pi-download"></i>
-            Descargar
-          </button>
+      <!-- Información de la orden -->
+      <div class="order-info-section">
+        <h3 class="section-title">Información de la Orden</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Número de Orden:</span>
+            <span class="value">{{ orden.numeroOrden }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Total:</span>
+            <span class="value font-bold text-lg">${{ formatPrice(orden.total) }} MXN</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Método de Pago:</span>
+            <span class="value">{{ getMetodoPagoInfo() }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Fecha de Creación:</span>
+            <span class="value">{{ formatDate(orden.createdAt) }}</span>
+          </div>
+          <!-- <div class="info-item">
+            <span class="label">Fecha Subida Comprobante:</span>
+            <span class="value">{{ formatDate(orden.uploadedFileDate) }}</span>
+          </div> -->
+          <div class="info-item">
+            <span class="label">Límite de Pago:</span>
+            <span class="value text-red-600">{{ formatDate(orden.fechaLimitePago) }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Imagen del comprobante -->
-      <div class="proof-container" *ngIf="esImagen()">
-        <img
-          [src]="orden.comprobanteUrl"
-          [style.transform]="'scale(' + zoomLevel + ')'"
-          alt="Comprobante de pago"
-          class="proof-image">
-      </div>
+      <!-- Detalles del pago -->
+      @if(orden.comprobanteUrl) {
+        <div class="payment-details-section">
+          <h3 class="section-title">Detalles del Comprobante</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Estado del Pago:</span>
+              <span class="value">
+                <span class="px-3 py-1 rounded-full text-sm font-semibold ml-[-5px]"
+                  [ngClass]="{
+                    'bg-[#756D1A]': orden.estado === 'proof_uploaded',
+                    'bg-[#1C5739]': orden.estado === 'paid',
+                    'bg-[#1C5157]': orden.estado === 'shipped',
+                    'bg-gray-600': orden.estado === 'pending'
+                  }"
+                  style="color: white;"
+                  >
+                  {{ orden.estado | titlecase }}
+                </span>
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="label">Archivo Subido:</span>
+              <span class="value">
+                <span
+                  class="px-3 py-1 rounded-full text-sm font-semibold ml-[-5px] inline-flex items-center gap-2"
+                  [ngClass]="esPDF() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
+                  <i
+                    class="pi text-base"
+                    [ngClass]="esPDF() ? 'pi-file-pdf' : 'pi-image'"
+                  ></i>
+                  {{ esPDF() ? 'PDF' : 'Imagen' }}
+                </span>
+              </span>
+            </div>
+            @if(orden.uploadedFileDate) {
+              <div class="info-item">
+                <span class="label">Fecha de Subida:</span>
+                <span class="value">{{ formatDate(orden.uploadedFileDate) }}</span>
+              </div>
+            }
+            @if(orden.tipoMetodoPago === 'transferencia' || orden.tipoMetodoPago === 'deposito') {
+              <div class="info-item">
+                <span class="label">Tipo de Transacción:</span>
+                <span class="value capitalize">{{ orden.tipoMetodoPago }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
 
-      <!-- PDF del comprobante -->
-      <div class="proof-container" *ngIf="esPDF()">
-        <iframe
-          [src]="orden.comprobanteUrl"
-          class="proof-pdf"
-          frameborder="0">
-        </iframe>
+      <!-- Visualizador de comprobante -->
+      <div class="proof-viewer-section" *ngIf="orden.comprobanteUrl">
+        <h3 class="section-title">Comprobante de Pago</h3>
+
+        <!-- Botones de acción -->
+        <div class="flex gap-3 mb-0 justify-end">
+          <button
+            pButton
+            type="button"
+            icon="pi pi-download"
+            label="Descargar"
+            class="p-button-secondary p-button-outlined"
+            style="color: #1f2937; border-color: #1f2937;"
+            pTooltip="Descargar comprobante a tu equipo"
+            tooltipPosition="top"
+            (click)="descargarComprobante()">
+          </button>
+
+          <button
+            pButton
+            type="button"
+            icon="pi pi-external-link"
+            label="Ver en Otra Ventana"
+            class="p-button-secondary p-button-outlined"
+            style="color: #1f2937; border-color: #1f2937;"
+            pTooltip="Abrir comprobante en una nueva pestaña"
+            tooltipPosition="top"
+            (click)="abrirEnNuevaVentana()">
+          </button>
+
+          <!-- @if(!vistaPrevia) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-eye"
+              label="Abrir Aquí"
+              class="p-button-secondary"
+              style="background-color: #1f2937; border-color: #1f2937; color: white;"
+              pTooltip="Mostrar vista previa en este modal"
+              tooltipPosition="top"
+              (click)="mostrarVistaPrevia()"
+            ></button>
+          }
+
+          @if (vistaPrevia) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-eye-slash"
+              label="Ocultar"
+              class="p-button-secondary p-button-outlined"
+              style="color: #1f2937; border-color: #1f2937;"
+              pTooltip="Ocultar vista previa"
+              tooltipPosition="top"
+              (click)="ocultarVistaPrevia()"
+            ></button>
+          } -->
+        </div>
+
+        <!-- Vista previa condicional -->
+        @if(vistaPrevia) {
+          <div class="mt-4">
+            <!-- Loader mientras carga -->
+            @if(cargandoPDF) {
+              <div class="flex items-center justify-center h-96 bg-gray-50 rounded-lg">
+                <div class="text-center">
+                  <i class="pi pi-spin pi-spinner text-4xl text-blue-600 mb-3"></i>
+                  <p class="text-gray-600">Cargando vista previa...</p>
+                </div>
+              </div>
+            }
+
+            <!-- Controles de zoom para imágenes -->
+            @if(esImagen() && !cargandoPDF) {
+              <div class="flex gap-2 mb-3 justify-center items-center">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-search-minus"
+                  class="p-button-rounded p-button-text"
+                  [disabled]="zoomLevel <= 0.5"
+                  pTooltip="Alejar"
+                  (click)="zoomOut()">
+                </button>
+                <span class="text-sm font-medium px-3">{{ (zoomLevel * 100).toFixed(0) }}%</span>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-search-plus"
+                  class="p-button-rounded p-button-text"
+                  [disabled]="zoomLevel >= 3"
+                  pTooltip="Acercar"
+                  (click)="zoomIn()">
+                </button>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-refresh"
+                  class="p-button-rounded p-button-text"
+                  pTooltip="Restablecer zoom"
+                  (click)="resetZoom()">
+                </button>
+              </div>
+            }
+
+            <!-- Imagen del comprobante -->
+            @if(esImagen() && !cargandoPDF) {
+              <div class="flex justify-center overflow-auto bg-gray-50 rounded-lg p-4">
+                <img
+                  [src]="pdfBlobUrl || orden.comprobanteUrl"
+                  [style.transform]="'scale(' + zoomLevel + ')'"
+                  alt="Comprobante de pago"
+                  class="max-w-full h-auto"
+                  style="transform-origin: center; transition: transform 0.2s;">
+              </div>
+            }
+
+            <!-- PDF del comprobante -->
+            @if(esPDF() && !cargandoPDF) {
+              @if(!errorCargaPDF && pdfUrl) {
+                <iframe
+                  [src]="pdfUrl"
+                  width="100%"
+                  height="600px"
+                  frameborder="0"
+                  class="border border-gray-200 rounded-lg">
+                </iframe>
+              }
+
+              <!-- Error cargando PDF -->
+              @if(errorCargaPDF) {
+                <div class="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                  <i class="pi pi-exclamation-triangle text-5xl text-yellow-500 mb-4"></i>
+                  <p class="text-gray-700 mb-4">No se pudo cargar la vista previa del PDF</p>
+                  <button
+                    pButton
+                    type="button"
+                    icon="pi pi-download"
+                    label="Descargar PDF para Revisarlo"
+                    class="p-button-success p-button-lg"
+                    (click)="descargarComprobante()">
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        }
       </div>
 
       <!-- Sin comprobante -->
-      <div class="no-proof" *ngIf="!orden.comprobanteUrl">
-        <i class="pi pi-file text-6xl text-gray-400"></i>
-        <p class="text-gray-500 mt-4">No hay comprobante disponible</p>
+      <div class="proof-viewer-section" *ngIf="!orden.comprobanteUrl">
+        <h3 class="section-title">Comprobante de Pago</h3>
+        <div class="no-proof">
+          <i class="pi pi-file text-6xl text-gray-400"></i>
+          <p class="text-gray-500 mt-4">No hay comprobante disponible</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Notas del admin -->
-    <div class="admin-notes-section">
-      <h3 class="section-title">Notas del Administrador (Opcional)</h3>
-      <textarea
-        [(ngModel)]="notasAdmin"
-        placeholder="Agrega notas internas sobre esta revisión..."
-        class="admin-notes-textarea"
-        rows="3"
-        [disabled]="isLoading">
-      </textarea>
-    </div>
+      <!-- Notas del admin -->
+      <div class="admin-notes-section">
+        <h3 class="section-title">Notas del Administrador (Opcional)</h3>
+        <textarea
+          [(ngModel)]="notasAdmin"
+          placeholder="Agrega notas internas sobre esta revisión..."
+          class="admin-notes-textarea"
+          rows="3"
+          [disabled]="isLoading">
+        </textarea>
+      </div>
 
-    <!-- Sección de rechazo (condicional) -->
-    <div class="reject-section" *ngIf="showRejectReason">
-      <h3 class="section-title text-red-600">Razón del Rechazo</h3>
-      <textarea
-        [(ngModel)]="razonRechazo"
-        placeholder="Explica por qué se rechaza el comprobante (será enviado al usuario)..."
-        class="reject-textarea"
-        rows="3"
-        [disabled]="isLoading">
-      </textarea>
-    </div>
+      <!-- Sección de rechazo (condicional) -->
+      <div class="reject-section" *ngIf="showRejectReason">
+        <h3 class="section-title text-red-600">Razón del Rechazo</h3>
+        <textarea
+          [(ngModel)]="razonRechazo"
+          placeholder="Explica por qué se rechaza el comprobante (será enviado al usuario)..."
+          class="reject-textarea"
+          rows="3"
+          [disabled]="isLoading">
+        </textarea>
+      </div>
 
-  </div>
+    </div>
+   }
+
 
   <!-- Footer con botones de acción -->
   <div class="modal-footer">
