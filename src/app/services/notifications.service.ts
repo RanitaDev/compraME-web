@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { INotification, INotificationResponse, ICreateNotificationDto } from '../interfaces/notifications.interface';
 import { environment } from '../../environments/environment';
 
@@ -16,11 +17,22 @@ export class NotificationsService {
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
   getNotifications(): Observable<INotification[]> {
-    return this.http.get<INotification[]>(`${this.apiUrl}`);
+    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}`)
+      .pipe(
+        map(response => {
+          const data = response.data || [];
+          // Mapear _id a id para compatibilidad con la interfaz
+          return data.map(notification => ({
+            ...notification,
+            id: notification._id || notification.id,
+            timestamp: new Date(notification.timestamp)
+          }));
+        })
+      );
   }
 
   getUnreadCount(): Observable<{ count: number }> {
-    return this.http.get<{ count: number }>(`${this.apiUrl}/unread/count`);
+    return this.http.get<{ success: boolean; count: number }>(`${this.apiUrl}/unread/count`);
   }
 
   markAsRead(notificationId: string): Observable<{ success: boolean }> {

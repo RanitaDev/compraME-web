@@ -37,10 +37,12 @@ export class NotificationsModalComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.notifications = data;
+          this.notifications = Array.isArray(data) ? data : [];
           this.isLoading = false;
         },
-        error: () => {
+        error: (err) => {
+          console.error('Error loading notifications:', err);
+          this.notifications = [];
           this.isLoading = false;
           this.toastService.warning('Aviso', 'No se pudieron cargar notificaciones');
         }
@@ -48,6 +50,9 @@ export class NotificationsModalComponent implements OnInit, OnDestroy {
   }
 
   public get filteredNotifications(): INotification[] {
+    if (!Array.isArray(this.notifications)) {
+      return [];
+    }
     if (this.activeTab === 'unread') {
       return this.notifications.filter(n => !n.isRead);
     }
@@ -55,7 +60,7 @@ export class NotificationsModalComponent implements OnInit, OnDestroy {
   }
 
   public get unreadCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
+    return Array.isArray(this.notifications) ? this.notifications.filter(n => !n.isRead).length : 0;
   }
 
   public toggleRead(notification: INotification, event: Event): void {
