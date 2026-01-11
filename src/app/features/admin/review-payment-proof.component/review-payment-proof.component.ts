@@ -1,15 +1,18 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { Subject, takeUntil } from 'rxjs';
+import { ConfirmationService } from 'primeng/api';
+import { Subject, takeUntil, catchError, of, switchMap } from 'rxjs';
 import { EstadoPedido, IOrders } from '../../../interfaces/orders.interface';
 import { OrderService } from '../../../services/order.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
+import { environment } from '../../../../environments/environment';
 
 interface ProofReviewData {
   orden: IOrders;
@@ -30,6 +33,8 @@ export class ReviewPaymentProofComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private spinnerService = inject(SpinnerService);
   private sanitizer = inject(DomSanitizer);
+  private http = inject(HttpClient);
+  private confirmationService = inject(ConfirmationService);
 
   private destroy$ = new Subject<void>();
 
@@ -153,24 +158,61 @@ export class ReviewPaymentProofComponent implements OnInit, OnDestroy {
   public aprobarComprobante(): void {
     if (!this.orden) return;
 
-    if (!confirm('¿Estás seguro de que deseas aprobar este comprobante? La orden pasará a estado PAGADO.')) {
-      return;
-    }
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de que deseas aprobar este comprobante?<br><br>La orden <strong>${this.orden.numeroOrden}</strong> pasará a estado <strong>PAGADO</strong>.`,
+      header: 'Confirmar Aprobación',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'Sí, Aprobar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-outlined',
+      accept: () => {
+        this.ejecutarAprobacion();
+      }
+    });
+  }
+
+  /**
+   * Ejecutar la aprobación del comprobante
+   */
+  private ejecutarAprobacion(): void {
+    if (!this.orden) return;
 
     this.isLoading = true;
     this.spinnerService.show();
 
+    // Primero actualizar el estado a PAID
     this.orderService.updateOrderStatus(this.orden._id, EstadoPedido.PAID, this.notasAdmin)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((response) => {
+          if (response.success) {
+            // Enviar notificación al usuario
+            return this.enviarNotificacion(
+              this.orden!.usuarioId,
+              'Pago Confirmado ✓',
+              `Tu pago para la orden ${this.orden!.numeroOrden} ha sido verificado y aprobado. Comenzaremos a preparar tu pedido.`,
+              'success',
+              'payment',
+              `/orders/order-detail?orderId=${this.orden!._id}`
+            );
+          }
+          return of(response);
+        }),
+        catchError((error) => {
+          console.error('Error approving proof:', error);
+          return of({ success: false, message: 'Error al aprobar el comprobante' });
+        })
+      )
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           this.isLoading = false;
           this.spinnerService.hide();
 
-          if (response.success) {
+          if (response.success !== false) {
             this.toastService.success(
               'Comprobante Aprobado',
-              `La orden ${this.orden?.numeroOrden} ha sido marcada como PAGADA`
+              `La orden ${this.orden?.numeroOrden} ha sido marcada como PAGADA y el usuario ha sido notificado`
             );
             this.dialogRef.close({ approved: true, orden: this.orden });
           } else {
@@ -197,26 +239,65 @@ export class ReviewPaymentProofComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm('¿Estás seguro de que deseas rechazar este comprobante? La orden volverá a estado PENDIENTE.')) {
-      return;
-    }
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de que deseas rechazar este comprobante?<br><br>La orden <strong>${this.orden.numeroOrden}</strong> volverá a estado <strong>PENDIENTE</strong> y el usuario será notificado con la razón del rechazo.`,
+      header: 'Confirmar Rechazo',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, Rechazar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-outlined',
+      accept: () => {
+        this.ejecutarRechazo();
+      }
+    });
+  }
+
+  /**
+   * Ejecutar el rechazo del comprobante
+   */
+  private ejecutarRechazo(): void {
+    if (!this.orden) return;
 
     this.isLoading = true;
     this.spinnerService.show();
 
     const notaCompleta = `RECHAZADO: ${this.razonRechazo}${this.notasAdmin ? '\n' + this.notasAdmin : ''}`;
 
-    this.orderService.updateOrderStatus(this.orden._id, EstadoPedido.PENDING, notaCompleta)
-      .pipe(takeUntil(this.destroy$))
+    // Primero limpiar el comprobante y volver a PENDING
+    this.http.put(`${environment.apiUrl}/orders/${this.orden._id}/reject-proof`, {
+      razon: this.razonRechazo
+    })
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((response: any) => {
+          if (response.success) {
+            // Enviar notificación al usuario
+            return this.enviarNotificacion(
+              this.orden!.usuarioId,
+              'Comprobante Rechazado',
+              `El comprobante de pago para la orden ${this.orden!.numeroOrden} fue rechazado. Motivo: ${this.razonRechazo}. Por favor, sube un comprobante válido.`,
+              'warning',
+              'payment',
+              `/orders/order-detail?orderId=${this.orden!._id}`
+            );
+          }
+          return of(response);
+        }),
+        catchError((error) => {
+          console.error('Error rejecting proof:', error);
+          return of({ success: false, message: 'Error al rechazar el comprobante' });
+        })
+      )
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           this.isLoading = false;
           this.spinnerService.hide();
 
-          if (response.success) {
+          if (response.success !== false) {
             this.toastService.success(
               'Comprobante Rechazado',
-              `La orden ${this.orden?.numeroOrden} ha vuelto a estado PENDIENTE`
+              `La orden ${this.orden?.numeroOrden} ha vuelto a PENDIENTE y el usuario ha sido notificado`
             );
             this.dialogRef.close({ approved: false, rejected: true, orden: this.orden });
           } else {
@@ -247,6 +328,27 @@ export class ReviewPaymentProofComponent implements OnInit, OnDestroy {
    */
   public cerrar(): void {
     this.dialogRef.close({ approved: false });
+  }
+
+  /**
+   * Enviar notificación al usuario
+   */
+  private enviarNotificacion(
+    userId: string,
+    titulo: string,
+    descripcion: string,
+    tipo: 'info' | 'success' | 'warning' | 'error' | 'payment',
+    notificationType: 'payment' | 'order_status',
+    actionUrl?: string
+  ) {
+    return this.http.post(`${environment.apiUrl}/notifications`, {
+      usuarioId: userId,
+      title: titulo,
+      description: descripcion,
+      type: notificationType,
+      actionUrl: actionUrl,
+      actionLabel: 'Ver Orden'
+    });
   }
 
   /**

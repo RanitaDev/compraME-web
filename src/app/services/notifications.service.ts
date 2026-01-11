@@ -31,6 +31,10 @@ export class NotificationsService {
     return this.http.put<{ success: boolean }>(`${this.apiUrl}/read-all`, {});
   }
 
+  markAsAttended(notificationId: string): Observable<{ success: boolean }> {
+    return this.http.put<{ success: boolean }>(`${this.apiUrl}/${notificationId}/attended`, {});
+  }
+
   deleteNotification(notificationId: string): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(`${this.apiUrl}/${notificationId}`);
   }

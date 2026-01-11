@@ -96,16 +96,53 @@ export class NotificationsModalComponent implements OnInit, OnDestroy {
   }
 
   public handleNotificationClick(notification: INotification): void {
+    // Marcar como leída si no lo está
     if (!notification.isRead) {
       this.toggleRead(notification, new Event('click'));
     }
+
+    // Marcar como atendida
+    this.markAsAttended(notification);
+
+    // Navegar si hay actionUrl
     if (notification.actionUrl) {
       this.dialogRef.close({ action: 'navigate', url: notification.actionUrl });
     }
   }
 
+  private markAsAttended(notification: INotification): void {
+    this.notificationsService.markAsAttended(notification.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          notification.isAttended = true;
+          notification.attendedAt = new Date();
+        },
+        error: () => {
+          this.toastService.warning('Error', 'No se pudo marcar como atendida');
+        }
+      });
+  }
+
   public cerrar(): void {
     this.dialogRef.close();
+  }
+
+  public getNotificationClasses(notification: INotification): string {
+    const classes = [];
+
+    if (notification.isRead) {
+      classes.push('bg-white');
+    } else {
+      const bgColor = this.getNotificationBgColor(notification.type);
+      classes.push(bgColor);
+    }
+
+    if (notification.isAttended) {
+      classes.push('opacity-50');
+    }
+
+    return classes.join(' ');
   }
 
   public getNotificationIcon(type: string): string {

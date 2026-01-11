@@ -104,17 +104,19 @@
             (click)="descargarComprobante()">
           </button>
 
-          <button
-            pButton
-            type="button"
-            icon="pi pi-external-link"
-            label="Ver en Otra Ventana"
-            class="p-button-secondary p-button-outlined"
-            style="color: #1f2937; border-color: #1f2937;"
-            pTooltip="Abrir comprobante en una nueva pestaña"
-            tooltipPosition="top"
-            (click)="abrirEnNuevaVentana()">
-          </button>
+          @if(esPDF()) {
+            <button
+              pButton
+              type="button"
+              icon="pi pi-external-link"
+              label="Ver en Otra Ventana"
+              class="p-button-secondary p-button-outlined"
+              style="color: #1f2937; border-color: #1f2937;"
+              pTooltip="Abrir comprobante en una nueva pestaña"
+              tooltipPosition="top"
+              (click)="abrirEnNuevaVentana()">
+            </button>
+          }
 
           <!-- @if(!vistaPrevia) {
             <button

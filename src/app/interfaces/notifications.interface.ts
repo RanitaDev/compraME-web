@@ -8,6 +8,8 @@ export interface INotification {
   type: NotificationType;
   role: UserRole | UserRole[];
   isRead: boolean;
+  isAttended?: boolean;
+  attendedAt?: Date;
   timestamp: Date;
   actionUrl?: string;
   actionLabel?: string;
@@ -22,10 +24,11 @@ export interface INotificationResponse {
 }
 
 export interface ICreateNotificationDto {
+  usuarioId?: string;
   title: string;
   description: string;
   type: NotificationType;
-  role: UserRole | UserRole[];
+  role?: UserRole | UserRole[];
   actionUrl?: string;
   actionLabel?: string;
   relatedId?: string;
