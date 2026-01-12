@@ -18,11 +18,12 @@ export class PayPalService {
   private isProcessingSubject = new BehaviorSubject<boolean>(false);
   public isProcessing$ = this.isProcessingSubject.asObservable();
 
-  private paypalConfig: IPayPalConfig = {
-    clientId: environment.paypal?.clientId || '',
-    environment: environment.paypal?.environment || 'sandbox',
-    currency: 'MXN'
-  };
+  // TODO: Descomentar cuando se configure PayPal
+  // private paypalConfig: IPayPalConfig = {
+  //   clientId: environment.paypal?.clientId || '',
+  //   environment: environment.paypal?.environment || 'sandbox',
+  //   currency: 'MXN'
+  // };
 
   constructor(private http: HttpClient) {}
 
@@ -63,7 +64,7 @@ export class PayPalService {
       const orderRequest: IPayPalOrderRequest = {
         orderId: orderData.orderId,
         amount: orderData.amount,
-        currency: this.paypalConfig.currency,
+        currency: 'MXN', // this.paypalConfig.currency,
         items: orderData.items,
         shipping: orderData.shipping
       };
@@ -130,14 +131,16 @@ export class PayPalService {
    * Verificar si PayPal está configurado correctamente
    */
   isPayPalConfigured(): boolean {
-    return !!(this.paypalConfig.clientId && this.paypalConfig.environment);
+    // return !!(this.paypalConfig.clientId && this.paypalConfig.environment);
+    return false; // Temporalmente deshabilitado
   }
 
   /**
    * Obtener configuración de PayPal
    */
   getPayPalConfig(): IPayPalConfig {
-    return { ...this.paypalConfig };
+    // return { ...this.paypalConfig };
+    return { clientId: '', environment: 'sandbox', currency: 'MXN' };
   }
 
   /**
